@@ -1,0 +1,81 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: jiangnan-travel
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/smart_travel?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: Lai20050802@
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      max-lifetime: 1200000
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.jiangnan.travel.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# Knife4j (Swagger) 接口文档
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+# JWT 配置
+jwt:
+  secret: jiangnan-travel-jwt-secret-key-2024-must-be-at-least-256-bits-long
+  expiration: 86400000  # 24小时
+
+# DeepSeek AI 配置
+deepseek:
+  api-key: sk-839a2d6119de496398d80aae23626c8a
+  base-url: https://api.deepseek.com/v1
+  model: deepseek-chat
+
+# 高德地图配置
+amap:
+  web-api-key: 4b0b6a9db2b2a3f10ccfecd53afa7db9
+  js-api-key: 4b0b6a9db2b2a3f10ccfecd53afa7db9
+  security-code: 01646b6ce6b541c2057afc03bb2ea17a
+
+# 日志
+logging:
+  level:
+    com.jiangnan.travel: debug
+    org.springframework.security: info
