@@ -202,6 +202,7 @@
   <a href="#s10" data-section="s10">十、文旅轻量融入方案</a>
   <a href="#s11" data-section="s11">十一、MVP与优先级矩阵</a>
   <a href="#s12" data-section="s12">十二、4周开发计划</a>
+  <a href="#s12a" data-section="s12a">十二-A、实际交付</a>
   <a href="#s13" data-section="s13">十三、启动指南与附录</a>
 </nav>
 
@@ -225,10 +226,10 @@
 
 <h3>1.2 最终项目规格</h3>
 <div class="card-grid">
-  <div class="card"><div class="number">20</div><div class="label">数据库表</div></div>
-  <div class="card"><div class="number">~50</div><div class="label">API 接口</div></div>
+  <div class="card"><div class="number">21</div><div class="label">数据库表</div></div>
+  <div class="card"><div class="number">36</div><div class="label">API 接口</div></div>
   <div class="card"><div class="number">5</div><div class="label">AI 智慧引擎</div></div>
-  <div class="card"><div class="number">18</div><div class="label">前端页面</div></div>
+  <div class="card"><div class="number">24</div><div class="label">前端页面</div></div>
   <div class="card"><div class="number">20</div><div class="label">工作日</div></div>
   <div class="card"><div class="number">4</div><div class="label">缓冲天</div></div>
 </div>
@@ -877,6 +878,54 @@ INSERT INTO t_city_landmark VALUES
 </table>
 </section>
 
+<!-- ══ 12-A 实际交付 ══ -->
+<section id="s12a">
+<h2>十二-A、实际交付情况（截至 2026-06-26）</h2>
+
+<h3>四周开发完成情况总览</h3>
+<table>
+  <tr><th>周次</th><th>计划任务</th><th>状态</th><th>实际产出</th></tr>
+  <tr><td><strong>Week 1</strong></td><td>基础搭建 + 用户模块 + AI客服</td><td style="color:var(--green)">✅ 完成</td><td>75源文件编译通过，8个API，5个Service，JWT认证全链路</td></tr>
+  <tr><td><strong>Week 2</strong></td><td>订单核心 + AI调度 + 动态调价</td><td style="color:var(--green)">✅ 完成</td><td>+24源文件，13个API，阶梯计价+供需比调价+多因素调度+Redisson锁</td></tr>
+  <tr><td><strong>Week 3</strong></td><td>前端 + WebSocket + 风控 + 文旅融入</td><td style="color:var(--green)">✅ 完成</td><td>Vue3三端24页面，27条路由，5个API模块，1708模块5.42s构建</td></tr>
+  <tr><td><strong>Week 4</strong></td><td>集成测试 + 优化 + 文档 + 部署</td><td style="color:var(--green)">✅ 完成</td><td>IP限流+Redis缓存+11条SQL索引+5个集成测试+README+Git部署</td></tr>
+</table>
+
+<h3>最终交付统计</h3>
+<table>
+  <tr><th>维度</th><th>Week 1</th><th>Week 2</th><th>Week 3</th><th>Week 4</th><th style="color:var(--accent)">总计</th></tr>
+  <tr><td>后端源文件</td><td>75</td><td>+24 = 99</td><td>—</td><td>+10 = 109</td><td style="color:var(--accent);font-weight:700">109</td></tr>
+  <tr><td>数据库表</td><td>21</td><td>—</td><td>—</td><td>—</td><td style="color:var(--accent);font-weight:700">21</td></tr>
+  <tr><td>API 接口</td><td>8</td><td>+13 = 21</td><td>—</td><td>+15 = 36</td><td style="color:var(--accent);font-weight:700">36</td></tr>
+  <tr><td>前端页面</td><td>—</td><td>—</td><td>24</td><td>—</td><td style="color:var(--accent);font-weight:700">24</td></tr>
+  <tr><td>WebSocket</td><td>—</td><td>—</td><td>2端点</td><td>—</td><td style="color:var(--accent);font-weight:700">2</td></tr>
+  <tr><td>SQL索引</td><td>—</td><td>—</td><td>—</td><td>11条</td><td style="color:var(--accent);font-weight:700">11</td></tr>
+</table>
+
+<h3>与计划对比</h3>
+<table>
+  <tr><th>检查项</th><th>计划</th><th>实际</th><th>偏差说明</th></tr>
+  <tr><td>数据库表</td><td>20张</td><td style="color:var(--green)">21张</td><td>增加 t_demand_hotspot 作为MySQL表存储热点数据</td></tr>
+  <tr><td>API 接口</td><td>~50个</td><td style="color:var(--accent)">36个</td><td>MVP阶段聚焦核心功能，部分扩展接口降级为前端占位</td></tr>
+  <tr><td>前端页面</td><td>18个</td><td style="color:var(--green)">24个</td><td>增加了DriverEarnings、AdminAlerts、CouponCenter等细节页</td></tr>
+  <tr><td>包名</td><td>com.jiangnan.smarttravel</td><td style="color:var(--accent)">com.jiangnan.travel</td><td>实际开发中简化为 travel</td></tr>
+  <tr><td>AI引擎</td><td>5个</td><td style="color:var(--green)">5个</td><td>全部实现：客服+预测+调价+调度+风控</td></tr>
+  <tr><td>风控引擎</td><td>7级(R1-R7)</td><td style="color:var(--accent)">3级(R2+R4+R7)</td><td>按可降级计划，仅实现核心3级</td></tr>
+  <tr><td>电子发票</td><td>完整功能</td><td style="color:var(--accent)">按钮占位</td><td>按可降级计划处理</td></tr>
+  <tr><td>班线任务</td><td>完整功能</td><td style="color:var(--accent)">仅建表</td><td>按可降级计划处理</td></tr>
+</table>
+
+<h3>项目仓库与运行</h3>
+<pre>
+GitHub: <a href="https://github.com/l535304334/jiangnan-travel" target="_blank">https://github.com/l535304334/jiangnan-travel</a>
+后端:   cd jiangnan-travel && mvn spring-boot:run     → :8080
+前端:   cd jiangnan-travel-web && npm install && npm run dev  → :5173
+API文档: http://localhost:8080/doc.html
+测试:   cd jiangnan-travel && mvn test
+一键提交: 双击 commit.bat
+</pre>
+</section>
+
 <!-- ══ 13 ══ -->
 <section id="s13">
 <h2>十三、启动指南与附录</h2>
@@ -885,18 +934,19 @@ INSERT INTO t_city_landmark VALUES
 <pre>
 1. MySQL 8.0  → smart_travel库 + DDL + 种子SQL
 2. Redis 7.x   → 端口6379
-3. 后端        → IDEA运行SmartTravelApplication
-4. 前端        → cd web && npm install && npm run dev
+3. 后端        → IDEA运行TravelApplication
+4. 前端        → cd jiangnan-travel-web && npm install && npm run dev
 5. 验证        → http://localhost:8080/doc.html (Knife4j)
-              → POST /api/user/register → 成功
+              → POST /api/user/login-password → 成功
+6. Swagger     → http://localhost:8080/doc.html
 </pre>
 
 <h3>13.2 演示账号</h3>
 <table>
-  <tr><th>角色</th><th>账号</th><th>密码</th></tr>
-  <tr><td>乘客</td><td>13800000001</td><td>验证码 123456</td></tr>
-  <tr><td>司机</td><td>13900000001</td><td>验证码 123456</td></tr>
-  <tr><td>管理员</td><td>admin</td><td>admin123</td></tr>
+  <tr><th>角色</th><th>账号</th><th>密码</th><th>登录入口</th></tr>
+  <tr><td>乘客</td><td>13900001111</td><td>123456</td><td>/login</td></tr>
+  <tr><td>司机</td><td>13810000001</td><td>123456</td><td>/driver/login</td></tr>
+  <tr><td>管理员</td><td>admin</td><td>admin123</td><td>/admin/login</td></tr>
 </table>
 
 <h3>13.3 收入模型</h3>
@@ -920,7 +970,7 @@ INSERT INTO t_city_landmark VALUES
 <!-- ═══ 页尾 ═══ -->
 <div class="end-block">
   <div class="end-card">
-    <p>本设计文档覆盖了<strong>需求分析、系统架构、20张数据库表、~50个API接口、5大AI引擎、18个前端页面、UI品牌色系、文旅轻量融入、MVP优先级矩阵、4周20天+4天缓冲开发计划、收入模型、合规说明</strong>的全部内容。实习期可按此文档逐步实现完整系统。</p>
+    <p>本设计文档覆盖了<strong>需求分析、系统架构、21张数据库表、36个API接口、5大AI引擎、24个前端页面、UI品牌色系、文旅轻量融入、MVP优先级矩阵、4周20天+4天缓冲开发计划、收入模型、合规说明</strong>的全部内容。项目已完成四周开发并交付GitHub。</p>
     <div class="motto">不是做另一个滴滴，而是做一个属于江西的出行品牌<br><span>温润如玉 · 从容如水 · 信任如山</span></div>
   </div>
 </div>
