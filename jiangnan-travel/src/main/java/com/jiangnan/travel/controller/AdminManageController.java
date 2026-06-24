@@ -191,7 +191,7 @@ public class AdminManageController {
                 .eq(Driver::getStatus, 1));
 
         List<Order> todayCompletedOrders = orderMapper.selectList(new LambdaQueryWrapper<Order>()
-                .eq(Order::getStatus, 5)
+                .eq(Order::getStatus, 4)
                 .apply("DATE(create_time) = CURDATE()"));
         BigDecimal todayRevenue = todayCompletedOrders.stream()
                 .map(o -> o.getFinalPrice() != null ? o.getFinalPrice() : BigDecimal.ZERO)

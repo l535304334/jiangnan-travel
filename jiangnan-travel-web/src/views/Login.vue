@@ -155,8 +155,14 @@ const handleAdminLogin = async () => {
   try {
     const res = await adminApi.login(adminForm.username, adminForm.password)
     if (res.code === 200) {
+      const adminInfo = {
+        ...res.data,
+        name: res.data?.nickname || adminForm.username,
+        role: 'admin'
+      }
       userStore.setToken(res.data.token)
-      userStore.setUserInfo(res.data)
+      userStore.setUserInfo(adminInfo)
+      localStorage.setItem('adminInfo', JSON.stringify(adminInfo))
       ElMessage.success('管理员登录成功')
       router.push('/admin/dashboard')
     }
