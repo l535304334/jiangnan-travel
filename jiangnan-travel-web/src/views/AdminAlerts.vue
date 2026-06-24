@@ -3,7 +3,7 @@
     <div class="page-header">
       <h3>风控告警</h3>
     </div>
-    <el-table :data="tableData" border stripe style="width: 100%">
+    <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading">
       <el-table-column label="告警级别" width="100">
         <template #default="{ row }">
           <el-tag :type="row.levelTag" size="small">{{ row.levelText }}</el-tag>
@@ -29,21 +29,48 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { adminApi } from '@/api/admin'
 
-const tableData = ref([
-  { id: 1, levelText: '高危', levelTag: 'danger', ruleCode: 'RISK-SPEED-001', user: '江南旅人', orderNo: 'JN20260621001', time: '2026-06-21 10:35', handled: false, statusText: '未处理' },
-  { id: 2, levelText: '中危', levelTag: 'warning', ruleCode: 'RISK-ROUTE-003', user: '无锡小张', orderNo: 'JN20260621002', time: '2026-06-21 11:20', handled: false, statusText: '未处理' },
-  { id: 3, levelText: '低危', levelTag: 'info', ruleCode: 'RISK-CANCEL-005', user: '太湖游客', orderNo: 'JN20260621003', time: '2026-06-21 12:05', handled: true, statusText: '已处理' },
-  { id: 4, levelText: '高危', levelTag: 'danger', ruleCode: 'RISK-AREA-002', user: '江南好', orderNo: 'JN20260621004', time: '2026-06-21 14:25', handled: false, statusText: '未处理' },
-])
+const loading = ref(false)
+const tableData = ref([])
+const levelMap = {
+  1: ['低危', 'info'],
+  2: ['中危', 'warning'],
+  3: ['高危', 'danger']
+}
 
-const handleAlert = (row) => {
-  row.handled = true
+const loadData = async () => {
+  loading.value = true
+  try {
+    const res = await adminApi.alerts({ page: 1, size: 20 })
+    tableData.value = (res.data?.records || []).map(item => {
+      const [levelText, levelTag] = levelMap[item.alertLevel] || ['提醒', 'info']
+      return {
+        ...item,
+        levelText,
+        levelTag,
+        user: item.userId || '-',
+        orderNo: item.orderId || '-',
+        time: item.createTime,
+        handled: item.handled === 1,
+        statusText: item.handled === 1 ? '已处理' : '未处理'
+      }
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleAlert = async (row) => {
+  await adminApi.handleAlert(row.id)
+  row.handled = 1
   row.statusText = '已处理'
   ElMessage.success('告警已处理')
 }
+
+onMounted(loadData)
 </script>
 
 <style scoped>

@@ -13,7 +13,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(properties = "jiangnan.websocket.enabled=false")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class UserServiceTest {
 
@@ -26,15 +26,15 @@ class UserServiceTest {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    private static final String TEST_PHONE = "13800138001";
+    private static final String SMS_PREFIX = "sms:code:";
+    private static final String TEST_PHONE = String.format("13988%06d", System.currentTimeMillis() % 1_000_000);
     private static String testCode;
 
     @Test
     @Order(1)
     @DisplayName("发送验证码")
     void testSendCode() {
-        userService.sendCode(TEST_PHONE);
-        testCode = redisTemplate.opsForValue().get("sms:code:" + TEST_PHONE);
+        testCode = issueCode(TEST_PHONE);
         assertNotNull(testCode, "验证码不应为空");
         assertEquals(6, testCode.length(), "验证码应为6位");
     }
@@ -57,9 +57,7 @@ class UserServiceTest {
     @Order(3)
     @DisplayName("重复注册应报错")
     void testDuplicateRegister() {
-        // 重新发码
-        userService.sendCode(TEST_PHONE);
-        testCode = redisTemplate.opsForValue().get("sms:code:" + TEST_PHONE);
+        testCode = issueCode(TEST_PHONE);
 
         RegisterRequest req = new RegisterRequest();
         req.setPhone(TEST_PHONE);
@@ -72,8 +70,7 @@ class UserServiceTest {
     @Order(4)
     @DisplayName("验证码登录")
     void testLogin() {
-        userService.sendCode(TEST_PHONE);
-        testCode = redisTemplate.opsForValue().get("sms:code:" + TEST_PHONE);
+        testCode = issueCode(TEST_PHONE);
 
         LoginRequest req = new LoginRequest();
         req.setPhone(TEST_PHONE);
@@ -93,5 +90,11 @@ class UserServiceTest {
         User profile = userService.getProfile(user.getId());
         assertNotNull(profile);
         assertNull(profile.getPassword(), "密码不应返回");
+    }
+
+    private String issueCode(String phone) {
+        redisTemplate.delete(SMS_PREFIX + "rate:" + phone);
+        userService.sendCode(phone);
+        return redisTemplate.opsForValue().get(SMS_PREFIX + phone);
     }
 }

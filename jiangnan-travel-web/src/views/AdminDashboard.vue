@@ -17,26 +17,41 @@
     <div class="dash-section">
       <h3>数据概览</h3>
       <el-descriptions :column="3" border>
-        <el-descriptions-item label="平台注册用户">8,562</el-descriptions-item>
-        <el-descriptions-item label="认证司机">326</el-descriptions-item>
-        <el-descriptions-item label="累计订单">128,430</el-descriptions-item>
-        <el-descriptions-item label="今日新增用户">128</el-descriptions-item>
-        <el-descriptions-item label="今日投诉">3</el-descriptions-item>
-        <el-descriptions-item label="今日风控告警">5</el-descriptions-item>
+        <el-descriptions-item label="平台注册用户">{{ stats.totalUsers }}</el-descriptions-item>
+        <el-descriptions-item label="今日订单">{{ stats.todayOrders }}</el-descriptions-item>
+        <el-descriptions-item label="在线司机">{{ stats.onlineDrivers }}</el-descriptions-item>
+        <el-descriptions-item label="今日收入">¥{{ stats.todayRevenue }}</el-descriptions-item>
+        <el-descriptions-item label="未处理风控">{{ stats.alertCount }}</el-descriptions-item>
+        <el-descriptions-item label="数据来源">实时接口</el-descriptions-item>
       </el-descriptions>
     </div>
   </div>
 </template>
 
 <script setup>
+import { computed, onMounted, reactive } from 'vue'
 import { User, Van, Tickets, Warning } from '@element-plus/icons-vue'
+import { adminApi } from '@/api/admin'
 
-const cards = [
-  { label: '总用户数', value: '8,562', icon: User, color: '#1890FF' },
-  { label: '今日订单', value: '1,285', icon: Tickets, color: '#52C41A' },
-  { label: '在线司机', value: '128', icon: Van, color: '#2D8A6E' },
-  { label: '风控告警', value: '5', icon: Warning, color: '#FAAD14' }
-]
+const stats = reactive({
+  totalUsers: 0,
+  todayOrders: 0,
+  onlineDrivers: 0,
+  todayRevenue: 0,
+  alertCount: 0
+})
+
+const cards = computed(() => [
+  { label: '总用户数', value: stats.totalUsers, icon: User, color: '#1890FF' },
+  { label: '今日订单', value: stats.todayOrders, icon: Tickets, color: '#52C41A' },
+  { label: '在线司机', value: stats.onlineDrivers, icon: Van, color: '#2D8A6E' },
+  { label: '风控告警', value: stats.alertCount, icon: Warning, color: '#FAAD14' }
+])
+
+onMounted(async () => {
+  const res = await adminApi.dashboard()
+  Object.assign(stats, res.data || {})
+})
 </script>
 
 <style scoped>

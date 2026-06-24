@@ -26,6 +26,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { adminApi } from '@/api/admin'
 
 const router = useRouter()
 const formRef = ref(null)
@@ -43,12 +44,19 @@ const handleLogin = async () => {
   if (!valid) return
   loading.value = true
   try {
-    // TODO: 调用管理员登录 API
-    localStorage.setItem('token', 'admin-token')
-    localStorage.setItem('adminInfo', JSON.stringify({ name: form.username, role: 'admin' }))
+    const res = await adminApi.login(form.username, form.password)
+    const adminInfo = {
+      ...res.data,
+      name: res.data?.nickname || form.username,
+      role: 'admin'
+    }
+    localStorage.setItem('token', res.data?.token || '')
+    localStorage.setItem('userInfo', JSON.stringify(adminInfo))
+    localStorage.setItem('adminInfo', JSON.stringify(adminInfo))
     ElMessage.success('登录成功')
     router.push('/admin/dashboard')
-  } catch {
+  } catch (e) {
+    ElMessage.error('管理员登录失败，请检查账号密码')
   } finally {
     loading.value = false
   }

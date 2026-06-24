@@ -188,7 +188,7 @@
 <nav class="sidebar" id="sidebar">
   <div class="meta">
     <div class="info">南昌大学软件学院<br>软件工程2307班 · 毕业实习<br>2026.7.6 — 2026.8.6</div>
-    <div class="spec">20表 · ~50API · 5AI引擎 · 18页面</div>
+    <div class="spec">21表 · 36API · 5AI引擎 · 24页面</div>
   </div>
   <a href="#s1" data-section="s1">一、项目概述与技术栈</a>
   <a href="#s2" data-section="s2">二、系统功能模块总览</a>
@@ -200,9 +200,9 @@
   <a href="#s8" data-section="s8">八、移动端页面设计</a>
   <a href="#s9" data-section="s9">九、管理后台桌面端设计</a>
   <a href="#s10" data-section="s10">十、文旅轻量融入方案</a>
-  <a href="#s11" data-section="s11">十一、MVP与优先级矩阵</a>
-  <a href="#s12" data-section="s12">十二、4周开发计划</a>
-  <a href="#s12a" data-section="s12a">十二-A、实际交付</a>
+  <a href="#s11" data-section="s11">十一、可行性与MVP边界</a>
+  <a href="#s12" data-section="s12">十二、后续开发计划</a>
+  <a href="#s12a" data-section="s12a">十二-A、交付与接手状态</a>
   <a href="#s13" data-section="s13">十三、启动指南与附录</a>
 </nav>
 
@@ -796,126 +796,156 @@ INSERT INTO t_city_landmark VALUES
 
 <!-- ══ 11 ══ -->
 <section id="s11">
-<h2>十一、MVP 定义与优先级矩阵</h2>
+<h2>十一、产品可行性与 MVP 边界（2026-06-24 更新）</h2>
 
-<h3>MVP 门槛（必须完成）</h3>
+<h3>11.1 用户与业务视角</h3>
 <table>
-  <tr><th>☑</th><th>功能</th><th>验收标准</th></tr>
-  <tr><td>☑</td><td>乘客注册登录 + 下单</td><td>手机号验证码注册→登录→输入起终点→选车型→确认下单</td></tr>
-  <tr><td>☑</td><td>司机接单 + 状态流转</td><td>司机登录→上线→看附近订单→接单→到达→开始→完成</td></tr>
-  <tr><td>☑</td><td>实时位置追踪</td><td>WebSocket连接→司机位置实时更新到乘客端地图→ETA显示</td></tr>
-  <tr><td>☑</td><td>AI智能调度</td><td>多因素评分排序→分布式锁选最高分司机→正确派单</td></tr>
-  <tr><td>☑</td><td>AI客服</td><td>能回答≥3类问题</td></tr>
-  <tr><td>☑</td><td>管理后台数据大屏</td><td>看板展示今日订单/收入/活跃司机 + ECharts趋势图</td></tr>
-  <tr><td>☑</td><td>模拟支付 + 评价</td><td>订单完成→支付→评价→评分写入→司机avg更新</td></tr>
+  <tr><th>角色</th><th>核心诉求</th><th>当前满足度</th><th>下一步改进</th></tr>
+  <tr><td>乘客</td><td>快速登录、估价、下单、查看行程、支付评价</td><td style="color:var(--green)">高</td><td>提升地图稳定性、补充行程异常提示、优化优惠券选择体验</td></tr>
+  <tr><td>司机</td><td>上线接单、状态流转、位置上报、查看收入</td><td style="color:var(--accent)">中高</td><td>补齐认证材料展示、拒单/取消规则、WebSocket 断线重连</td></tr>
+  <tr><td>运营管理员</td><td>看数据、审司机、管订单、处理告警</td><td style="color:var(--accent)">中高</td><td>增加分页控件、搜索筛选、详情弹窗、导出与车型定价入口</td></tr>
+  <tr><td>企业/实习评审</td><td>看到完整工程实践和技术闭环</td><td style="color:var(--green)">高</td><td>补充演示脚本、测试报告和真实完成度说明</td></tr>
 </table>
 
-<h3>可降级</h3>
+<h3>11.2 可行性判断</h3>
 <table>
-  <tr><th>功能</th><th>降级方案</th></tr>
-  <tr><td>动态调价引擎</td><td>始终返回系数1.0</td></tr>
-  <tr><td>安全风控引擎</td><td>仅实现R2+R4+R7</td></tr>
-  <tr><td>优惠券</td><td>仅满减券，后台只做发放</td></tr>
-  <tr><td>班线功能</td><td>仅建表，前端不做</td></tr>
-  <tr><td>电子发票</td><td>按钮显示"开发中"</td></tr>
-  <tr><td>司机热力图</td><td>返回静态演示数据</td></tr>
-  <tr><td>文旅文化短句</td><td>仅3条通用池</td></tr>
+  <tr><th>场景</th><th>可行性</th><th>判断依据</th></tr>
+  <tr><td>毕业实习/课程项目交付</td><td style="color:var(--green)">高</td><td>前后端分离、三端页面、数据库、接口、AI概念、地图、WebSocket、测试与文档均已覆盖</td></tr>
+  <tr><td>企业内部原型演示</td><td style="color:var(--green)">中高</td><td>可演示乘客下单、司机接单、后台管理闭环；需保证本地 MySQL/Redis/高德 Key 可用</td></tr>
+  <tr><td>小范围试运营</td><td style="color:var(--accent)">中低</td><td>需要真实短信、支付、资质审核、隐私合规、日志审计、运维部署和客服流程</td></tr>
+  <tr><td>真实网约车商业上线</td><td style="color:var(--red)">低</td><td>网约车为强监管业务，必须取得平台、司机、车辆相关许可，当前仅适合作为学术 MVP</td></tr>
+</table>
+
+<h3>11.3 MVP 边界与验收标准</h3>
+<table>
+  <tr><th>优先级</th><th>功能</th><th>当前状态</th><th>验收标准</th></tr>
+  <tr><td>P0</td><td>乘客登录、注册、下单、估价</td><td style="color:var(--green)">已完成</td><td>测试账号可完成登录并创建订单，估价结果可展示</td></tr>
+  <tr><td>P0</td><td>司机接单与订单状态流转</td><td style="color:var(--green)">已完成</td><td>司机可上线、查看附近订单、接单、到达、开始、完成</td></tr>
+  <tr><td>P0</td><td>模拟支付与评价</td><td style="color:var(--green)">已完成</td><td>订单完成后可支付、评价，后端写入评价与评分</td></tr>
+  <tr><td>P0</td><td>管理后台真实数据联动</td><td style="color:var(--green)">已完成（2026-06-24 修复）</td><td>大屏、用户、司机、订单、告警页面读取真实后端接口</td></tr>
+  <tr><td>P1</td><td>WebSocket 实时追踪</td><td style="color:var(--accent)">基础可用</td><td>已有服务端点；下一步补心跳、断线重连和连接状态 UI</td></tr>
+  <tr><td>P1</td><td>AI 客服/推荐/调价/调度/风控</td><td style="color:var(--accent)">MVP 可演示</td><td>允许部分规则化实现；文档需明确不等同于生产级智能决策</td></tr>
+  <tr><td>P2</td><td>电子发票</td><td style="color:var(--gray)">未完成</td><td>当前仅有表结构/占位；后续实现申请、查询、后台处理</td></tr>
+  <tr><td>P2</td><td>班线系统</td><td style="color:var(--gray)">未完成</td><td>当前仅建表；后续实现班线列表、预订、订单查询</td></tr>
+</table>
+
+<h3>11.4 主要产品风险</h3>
+<table>
+  <tr><th>风险</th><th>影响</th><th>建议</th></tr>
+  <tr><td>合规风险</td><td>无法直接用于真实网约车运营</td><td>文档中明确 MVP 为学术演示；真实运营需办理平台、车辆、司机许可</td></tr>
+  <tr><td>地图服务依赖</td><td>高德 Key、白名单、配额配置错误会导致演示失败</td><td>提供地图降级数据和配置检查清单</td></tr>
+  <tr><td>供需冷启动</td><td>无司机时乘客下单闭环中断</td><td>保留测试司机、模拟调度和种子订单数据</td></tr>
+  <tr><td>AI 过度承诺</td><td>评审或接手者误解实现深度</td><td>区分"AI接口调用"、"规则算法"、"静态演示数据"</td></tr>
+  <tr><td>测试覆盖不足</td><td>后续修改容易破坏核心链路</td><td>优先补订单、后台、司机端接口测试和前端 E2E</td></tr>
 </table>
 </section>
 
 <!-- ══ 12 ══ -->
 <section id="s12">
-<h2>十二、4周精确开发计划</h2>
+<h2>十二、下一阶段精细开发计划（交给下一位助手）</h2>
 
-<h3>第 1 周：基础搭建 + 用户模块 + AI客服（7/6-7/10）</h3>
+<h3>12.1 接手原则</h3>
 <table>
-  <tr><th>日期</th><th>上午（4h）</th><th>下午（4h）</th><th>交付物</th></tr>
-  <tr><td>7/6 周一</td><td>① 业务流程图 ② 5个AI引擎功能定义</td><td>③ 需求规格说明书 ④ 注册DeepSeek API ⑤ 注册高德开放平台</td><td>需求分析文档</td></tr>
-  <tr><td>7/7 周二</td><td>① 系统架构图 ② 模块划分 ③ ER图</td><td>④ 全部20张表DDL ⑤ MySQL建库 ⑥ application-dev.yml</td><td>DDL+配置</td></tr>
-  <tr><td>7/8 周三</td><td>① Maven项目+pom.xml ② 全部实体类</td><td>③ Mapper+XML ④ Result+ErrorCode+异常处理 ⑤ CORS配置</td><td>骨架可启动</td></tr>
-  <tr><td>7/9 周四</td><td>① 用户注册API ② 用户登录API（JWT） ③ Postman测试</td><td>④ DeepSeek客户端配置 ⑤ AI客服对话接口（含文旅知识）</td><td>用户模块+AI客服</td></tr>
-  <tr><td>7/10 周五</td><td>① AI出行预测引擎 ② /ai/recommend-dest ③ 常用路线接口</td><td>④ 收藏地址CRUD ⑤ AI编程日志 ⑥ 第1周周报</td><td>预测+收藏+周报</td></tr>
+  <tr><th>原则</th><th>说明</th></tr>
+  <tr><td>先验证再开发</td><td>每次接手先运行 `npm run build` 与 `mvn test`，再做功能改动</td></tr>
+  <tr><td>先闭环后扩展</td><td>优先保证乘客下单、司机接单、后台可见这条链路稳定</td></tr>
+  <tr><td>先真实数据后视觉润色</td><td>页面不要再写死演示数据，必须优先接后端接口或明确标记为占位</td></tr>
+  <tr><td>AI 能力分级表达</td><td>区分真实大模型调用、规则算法、静态数据，避免文档过度承诺</td></tr>
 </table>
 
-<h3>第 2 周：订单核心 + AI调度 + 动态调价（7/13-7/17）</h3>
+<h3>12.2 P0：演示闭环稳定化（建议 1-2 天）</h3>
 <table>
-  <tr><th>日期</th><th>上午（4h）</th><th>下午（4h）</th><th>交付物</th></tr>
-  <tr><td>7/13 周一</td><td>① 高德路径规划API ② 阶梯计价 ③ /order/estimate</td><td>④ /order/create（幂等+风控R4） ⑤ 地理编码+订单号</td><td>下单+估价</td></tr>
-  <tr><td>7/14 周二</td><td>① 动态调价引擎 ② 调价系数注入</td><td>③ 订单列表+详情 ④ 取消接口（R2校验）</td><td>调价+查询</td></tr>
-  <tr><td>7/15 周三</td><td>① AI智能调度引擎 ② Redisson分布式锁</td><td>③ 司机端"附近订单" ④ /order/{id}/accept</td><td>智能调度</td></tr>
-  <tr><td>7/16 周四</td><td>① 订单状态流转 ② 最终价格计算</td><td>③ 司机注册+登录+上下线 ④ 并发下单联调</td><td>全生命周期</td></tr>
-  <tr><td>7/17 周五</td><td>① 优惠券模板 ② 领取+抵扣 ③ 新用户发券</td><td>④ 支付+评价 ⑤ 种子数据SQL ⑥ 第2周周报</td><td>券+支付+评价</td></tr>
+  <tr><th>任务</th><th>涉及文件/模块</th><th>验收标准</th></tr>
+  <tr><td>编写完整演示脚本</td><td>README.md / 新增 DEMO.md</td><td>按步骤完成乘客登录→下单→司机接单→完成→支付评价→后台查看</td></tr>
+  <tr><td>管理后台分页控件</td><td>AdminUsers/AdminDrivers/AdminOrders/AdminAlerts</td><td>每页条数、当前页、总数来自 MyBatis-Plus Page</td></tr>
+  <tr><td>后台详情弹窗</td><td>用户/司机/订单/告警页面</td><td>表格每行可查看完整字段，空字段显示为 "-"</td></tr>
+  <tr><td>订单状态口径统一</td><td>前端状态映射 + 后端常量</td><td>0待接单、1已接单、2已到达、3行程中、4已完成、5已取消、6风控拦截全项目一致</td></tr>
+  <tr><td>演示账号自检</td><td>init.sql / test_accounts.sql</td><td>README 中的乘客、司机、管理员账号均可登录</td></tr>
 </table>
 
-<h3>第 3 周：前端 + WebSocket + 风控 + 文旅融入（7/20-7/24）</h3>
+<h3>12.3 P1：体验与可靠性增强（建议 3-5 天）</h3>
 <table>
-  <tr><th>日期</th><th>上午（4h）</th><th>下午（4h）</th><th>交付物</th></tr>
-  <tr><td>7/20 周一</td><td>① Vue3项目搭建 ② Axios拦截器 ③ 登录/注册页</td><td>④ 引导页 ⑤ 首页（地图+AI推荐+常用路线+收藏）</td><td>前端框架+首页</td></tr>
-  <tr><td>7/21 周二</td><td>① 下单页面 ② 搜索集成地标标签</td><td>③ 订单列表页 ④ 订单详情页</td><td>用户端核心页面</td></tr>
-  <tr><td>7/22 周三</td><td>① 行程追踪页 ② 分享+报警 ③ AI客服悬浮窗</td><td>④ 支付+评价页 ⑤ 再来一单 ⑥ 收藏管理</td><td>用户端全部</td></tr>
-  <tr><td>7/23 周四</td><td>① 司机端全部页面 ② WebSocket（心跳+清理）</td><td>③ 司机端WS客户端 ④ 风控R2+R4+R7</td><td>司机端+WS+风控</td></tr>
-  <tr><td>7/24 周五</td><td>① 管理后台：登录+大屏+用户管理+司机审核</td><td>② 订单监控+风控告警+车型定价 ③ 联调+第3周周报</td><td>管理后台+周报</td></tr>
+  <tr><th>任务</th><th>开发要点</th><th>验收标准</th></tr>
+  <tr><td>WebSocket 客户端生产化</td><td>封装 ws 工具，支持连接状态、心跳、断线重连、错误提示</td><td>断网/刷新后能恢复连接，页面显示连接状态</td></tr>
+  <tr><td>订单追踪轨迹</td><td>司机位置写入 Redis/数据库，乘客端绘制最近轨迹</td><td>行程追踪页能看到司机位置变化和基础 ETA</td></tr>
+  <tr><td>司机端认证资料</td><td>司机资料页展示身份证、驾驶证、车牌、车型、审核状态</td><td>待审核/通过/拒绝状态清晰，后台审核后司机端可见</td></tr>
+  <tr><td>地图降级方案</td><td>高德不可用时使用本地地标坐标和文本路线</td><td>无地图 Key 时下单页仍能选择地标并计算模拟距离</td></tr>
+  <tr><td>后台车型定价页面</td><td>接入 `/api/admin/car-types`</td><td>管理员可查看和修改车型价格、座位数、启停状态</td></tr>
 </table>
 
-<h3>第 4 周：集成测试 + 优化 + 文档（7/27-7/31）+ 缓冲（8/3-8/6）</h3>
+<h3>12.4 P1：测试与质量补齐（建议 2-3 天）</h3>
 <table>
-  <tr><th>日期</th><th>上午（4h）</th><th>下午（4h）</th><th>交付物</th></tr>
-  <tr><td>7/27 周一</td><td>① AI数据分析助手</td><td>② 管理后台剩余页面</td><td>管理后台全部</td></tr>
-  <tr><td>7/28 周二</td><td>① 全系统集成测试：全链路 ② Bug清单</td><td>③ 修复严重Bug ④ 边界场景测试</td><td>测试报告+修复</td></tr>
-  <tr><td>7/29 周三</td><td>① SQL索引优化 ② Redis缓存优化 ③ 接口限流</td><td>④ 代码规范+注释 ⑤ AI降级完善</td><td>优化后代码</td></tr>
-  <tr><td>7/30 周四</td><td>① 部署文档+用户手册 ② Knife4j导出</td><td>③ 实习报告素材 ④ AI编程记录汇总</td><td>文档</td></tr>
-  <tr><td>7/31 周五</td><td>① 项目总结报告 ② PPT大纲 ③ GitHub推送+README</td><td>④ 检查5份实习材料 ⑤ 第4周周报</td><td>全部交付</td></tr>
-  <tr style="background:var(--accent-light);"><td>8/3-8/6</td><td colspan="2">缓冲：修复余留Bug、完善细节、润色实习报告</td><td>最终版</td></tr>
+  <tr><th>测试对象</th><th>建议用例</th><th>目标</th></tr>
+  <tr><td>OrderService</td><td>估价、创建订单、取消、支付、评价、再来一单</td><td>覆盖订单核心状态流转</td></tr>
+  <tr><td>DriverOrderController</td><td>接单、到达、开始、完成、重复接单</td><td>验证并发锁和状态校验</td></tr>
+  <tr><td>AdminManageController</td><td>dashboard、分页列表、司机审核、告警处理</td><td>确保后台真实联动不回退为静态数据</td></tr>
+  <tr><td>前端 E2E</td><td>登录、下单、后台查看</td><td>建议用 Playwright 或手工测试清单</td></tr>
 </table>
 
-<h3>每周汇报要点</h3>
+<h3>12.5 P2：产品扩展（可选）</h3>
 <table>
-  <tr><th>周次</th><th>汇报主题</th><th>核心技术成果</th><th>毕业要求</th></tr>
-  <tr><td>第1周</td><td>平台设计与AI架构</td><td>20表DDL、用户模块、AI客服、AI预测</td><td>10-1</td></tr>
-  <tr><td>第2周</td><td>AI核心算法实现</td><td>动态调价、智能调度、订单全生命周期、阶梯计价</td><td>11-1, 3-4</td></tr>
-  <tr><td>第3周</td><td>前端+实时通信+风控</td><td>Vue3三端、WebSocket、风控引擎、文旅融入</td><td>9-1, 6-1</td></tr>
-  <tr><td>第4周</td><td>系统集成与交付</td><td>全链路测试、AI洞察、文档</td><td>8-2, 10-1</td></tr>
+  <tr><th>方向</th><th>最小实现</th><th>价值</th></tr>
+  <tr><td>电子发票 MVP</td><td>已支付订单申请发票、后台查看/标记开票</td><td>补齐交易后服务闭环</td></tr>
+  <tr><td>班线系统 MVP</td><td>班线列表、班线详情、班线预订、我的班线订单</td><td>突出江南出行区别于普通网约车的区域业务特色</td></tr>
+  <tr><td>AI 运营洞察</td><td>后台输入问题，基于订单/司机/告警数据生成分析建议</td><td>让 AI 从概念亮点变成运营辅助工具</td></tr>
+  <tr><td>优惠券运营</td><td>后台发券、按用户/新客/满减条件筛选</td><td>增强平台运营能力</td></tr>
+</table>
+
+<h3>12.6 建议提交节奏</h3>
+<table>
+  <tr><th>提交</th><th>内容</th><th>必须验证</th></tr>
+  <tr><td>commit 1</td><td>后台分页、详情、车型定价</td><td>npm run build</td></tr>
+  <tr><td>commit 2</td><td>WebSocket 客户端和追踪页优化</td><td>手工验证行程追踪</td></tr>
+  <tr><td>commit 3</td><td>订单/后台/司机测试</td><td>mvn test</td></tr>
+  <tr><td>commit 4</td><td>文档、演示脚本、测试报告</td><td>README 步骤可复现</td></tr>
 </table>
 </section>
 
 <!-- ══ 12-A 实际交付 ══ -->
 <section id="s12a">
-<h2>十二-A、实际交付情况（截至 2026-06-26）</h2>
+<h2>十二-A、实际交付与接手状态（截至 2026-06-24）</h2>
 
-<h3>四周开发完成情况总览</h3>
+<h3>12-A.1 四周开发完成情况总览</h3>
 <table>
   <tr><th>周次</th><th>计划任务</th><th>状态</th><th>实际产出</th></tr>
   <tr><td><strong>Week 1</strong></td><td>基础搭建 + 用户模块 + AI客服</td><td style="color:var(--green)">✅ 完成</td><td>75源文件编译通过，8个API，5个Service，JWT认证全链路</td></tr>
   <tr><td><strong>Week 2</strong></td><td>订单核心 + AI调度 + 动态调价</td><td style="color:var(--green)">✅ 完成</td><td>+24源文件，13个API，阶梯计价+供需比调价+多因素调度+Redisson锁</td></tr>
-  <tr><td><strong>Week 3</strong></td><td>前端 + WebSocket + 风控 + 文旅融入</td><td style="color:var(--green)">✅ 完成</td><td>Vue3三端24页面，27条路由，5个API模块，1708模块5.42s构建</td></tr>
-  <tr><td><strong>Week 4</strong></td><td>集成测试 + 优化 + 文档 + 部署</td><td style="color:var(--green)">✅ 完成</td><td>IP限流+Redis缓存+11条SQL索引+5个集成测试+README+Git部署</td></tr>
+  <tr><td><strong>Week 3</strong></td><td>前端 + WebSocket + 风控 + 文旅融入</td><td style="color:var(--green)">✅ 完成</td><td>Vue3三端24页面，27条路由，地图组件、AI客服悬浮窗、WebSocket端点</td></tr>
+  <tr><td><strong>Week 4</strong></td><td>集成测试 + 优化 + 文档 + 部署</td><td style="color:var(--accent)">MVP 完成</td><td>IP限流+Redis缓存+11条SQL索引+5个用户服务测试；后台真实联动于 2026-06-24 补齐</td></tr>
 </table>
 
-<h3>最终交付统计</h3>
+<h3>12-A.2 当前真实完成度</h3>
 <table>
-  <tr><th>维度</th><th>Week 1</th><th>Week 2</th><th>Week 3</th><th>Week 4</th><th style="color:var(--accent)">总计</th></tr>
-  <tr><td>后端源文件</td><td>75</td><td>+24 = 99</td><td>—</td><td>+10 = 109</td><td style="color:var(--accent);font-weight:700">109</td></tr>
-  <tr><td>数据库表</td><td>21</td><td>—</td><td>—</td><td>—</td><td style="color:var(--accent);font-weight:700">21</td></tr>
-  <tr><td>API 接口</td><td>8</td><td>+13 = 21</td><td>—</td><td>+15 = 36</td><td style="color:var(--accent);font-weight:700">36</td></tr>
-  <tr><td>前端页面</td><td>—</td><td>—</td><td>24</td><td>—</td><td style="color:var(--accent);font-weight:700">24</td></tr>
-  <tr><td>WebSocket</td><td>—</td><td>—</td><td>2端点</td><td>—</td><td style="color:var(--accent);font-weight:700">2</td></tr>
-  <tr><td>SQL索引</td><td>—</td><td>—</td><td>—</td><td>11条</td><td style="color:var(--accent);font-weight:700">11</td></tr>
+  <tr><th>模块</th><th>完成度</th><th>当前说明</th><th>后续重点</th></tr>
+  <tr><td>乘客端</td><td style="color:var(--green)">高</td><td>登录、下单、订单、追踪、地址、优惠券、客服均可演示</td><td>体验细节、地图降级、异常提示</td></tr>
+  <tr><td>司机端</td><td style="color:var(--accent)">中高</td><td>登录、上线、附近订单、接单和状态流转具备基础能力</td><td>位置上报可靠性、认证资料、拒单/取消规则</td></tr>
+  <tr><td>管理后台</td><td style="color:var(--accent)">中高</td><td>2026-06-24 已由静态数据改为真实接口联动</td><td>分页、详情、搜索、导出、车型定价页面</td></tr>
+  <tr><td>后端服务</td><td style="color:var(--green)">高</td><td>用户、订单、司机、优惠券、后台、AI、风控、WebSocket 端点均存在</td><td>常量统一、更多测试、接口权限细分</td></tr>
+  <tr><td>AI 能力</td><td style="color:var(--accent)">中</td><td>客服可调用/降级，调价调度风控偏规则化</td><td>后台运营洞察和调度解释可视化</td></tr>
+  <tr><td>地图与实时</td><td style="color:var(--accent)">中</td><td>高德组件和本地地标坐标可用，WebSocket 服务端点存在</td><td>心跳、重连、轨迹、无 Key 降级</td></tr>
+  <tr><td>测试</td><td style="color:var(--accent)">中</td><td>用户服务测试通过，构建通过</td><td>补订单、司机、后台、前端 E2E</td></tr>
 </table>
 
-<h3>与计划对比</h3>
+<h3>12-A.3 2026-06-24 修复清单</h3>
 <table>
-  <tr><th>检查项</th><th>计划</th><th>实际</th><th>偏差说明</th></tr>
-  <tr><td>数据库表</td><td>20张</td><td style="color:var(--green)">21张</td><td>增加 t_demand_hotspot 作为MySQL表存储热点数据</td></tr>
-  <tr><td>API 接口</td><td>~50个</td><td style="color:var(--accent)">36个</td><td>MVP阶段聚焦核心功能，部分扩展接口降级为前端占位</td></tr>
-  <tr><td>前端页面</td><td>18个</td><td style="color:var(--green)">24个</td><td>增加了DriverEarnings、AdminAlerts、CouponCenter等细节页</td></tr>
-  <tr><td>包名</td><td>com.jiangnan.smarttravel</td><td style="color:var(--accent)">com.jiangnan.travel</td><td>实际开发中简化为 travel</td></tr>
-  <tr><td>AI引擎</td><td>5个</td><td style="color:var(--green)">5个</td><td>全部实现：客服+预测+调价+调度+风控</td></tr>
-  <tr><td>风控引擎</td><td>7级(R1-R7)</td><td style="color:var(--accent)">3级(R2+R4+R7)</td><td>按可降级计划，仅实现核心3级</td></tr>
-  <tr><td>电子发票</td><td>完整功能</td><td style="color:var(--accent)">按钮占位</td><td>按可降级计划处理</td></tr>
-  <tr><td>班线任务</td><td>完整功能</td><td style="color:var(--accent)">仅建表</td><td>按可降级计划处理</td></tr>
+  <tr><th>类别</th><th>文件</th><th>更新内容</th></tr>
+  <tr><td>前端构建</td><td>vite.config.js</td><td>改为 ESM 兼容 alias 写法，生产构建通过</td></tr>
+  <tr><td>后台登录</td><td>AdminLogin.vue / Login.vue</td><td>接入真实管理员登录接口，不再写假 token</td></tr>
+  <tr><td>后台 API</td><td>src/api/admin.js</td><td>补齐 dashboard、users、drivers、orders、alerts 等接口封装</td></tr>
+  <tr><td>后台页面</td><td>AdminDashboard/Users/Drivers/Orders/Alerts</td><td>移除静态数据，改为读取真实后端接口</td></tr>
+  <tr><td>登录过期</td><td>src/api/request.js</td><td>后台 401 跳回 /admin/login，并清理 adminInfo</td></tr>
+  <tr><td>统计修复</td><td>AdminManageController.java</td><td>今日收入统计使用已完成状态 status=4</td></tr>
+  <tr><td>后端测试</td><td>WebSocketConfig.java / UserServiceTest.java</td><td>测试环境关闭 WebSocket exporter，验证码测试避免限流残留</td></tr>
 </table>
 
-<h3>项目仓库与运行</h3>
+<h3>12-A.4 验证结果</h3>
+<table>
+  <tr><th>命令</th><th>结果</th><th>备注</th></tr>
+  <tr><td>cd jiangnan-travel-web && npm run build</td><td style="color:var(--green)">通过</td><td>构建成功；存在大 chunk 警告，不影响运行</td></tr>
+  <tr><td>cd jiangnan-travel && mvn test</td><td style="color:var(--green)">通过</td><td>5 个 UserServiceTest 全部通过</td></tr>
+</table>
+
+<h3>12-A.5 项目仓库与运行</h3>
 <pre>
 GitHub: <a href="https://github.com/l535304334/jiangnan-travel" target="_blank">https://github.com/l535304334/jiangnan-travel</a>
 后端:   cd jiangnan-travel && mvn spring-boot:run     → :8080
@@ -924,6 +954,16 @@ API文档: http://localhost:8080/doc.html
 测试:   cd jiangnan-travel && mvn test
 一键提交: 双击 commit.bat
 </pre>
+
+<h3>12-A.6 仍需明确的未完成项</h3>
+<table>
+  <tr><th>事项</th><th>当前状态</th><th>建议处理</th></tr>
+  <tr><td>电子发票</td><td>表结构/实体存在，前端仍为占位</td><td>P2 做申请发票和后台处理</td></tr>
+  <tr><td>班线系统</td><td>仅 DDL 建表</td><td>P2 做班线列表、预订、订单查询</td></tr>
+  <tr><td>WebSocket 生产化</td><td>服务端基础端点存在</td><td>P1 补心跳、重连、轨迹持久化</td></tr>
+  <tr><td>真实短信/支付</td><td>短信打印到终端，支付为模拟</td><td>真实上线前接 SDK 和支付网关</td></tr>
+  <tr><td>合规上线</td><td>当前为学术 MVP</td><td>真实运营需网约车平台、车辆、司机资质</td></tr>
+</table>
 </section>
 
 <!-- ══ 13 ══ -->
@@ -963,6 +1003,17 @@ API文档: http://localhost:8080/doc.html
 
 <h3>13.5 AI辅助编程记录约定</h3>
 <p>每周五下午最后30分钟记录当周AI辅助内容（DDL生成、代码补全、Prompt调试等），写入 <code>ai-programming-log.md</code>，实习报告中汇总引用。</p>
+
+<h3>13.6 下一位助手接手检查清单</h3>
+<table>
+  <tr><th>步骤</th><th>命令/动作</th><th>期望结果</th></tr>
+  <tr><td>1</td><td>阅读 <code>项目开发过程总结.md</code> 第十一至十三章</td><td>理解 2026-06-24 的修复、产品判断和优先级</td></tr>
+  <tr><td>2</td><td><code>cd jiangnan-travel && mvn test</code></td><td>5 个测试通过</td></tr>
+  <tr><td>3</td><td><code>cd jiangnan-travel-web && npm run build</code></td><td>Vite 构建通过；大 chunk 警告可暂不处理</td></tr>
+  <tr><td>4</td><td>启动 MySQL、Redis、后端、前端</td><td>8080 与 5173 均可访问</td></tr>
+  <tr><td>5</td><td>用 admin/admin123 登录 /admin/login</td><td>管理大屏、用户、司机、订单、告警均加载真实接口数据</td></tr>
+  <tr><td>6</td><td>按第十二章 P0 顺序开发</td><td>先完成后台分页/详情/状态口径统一，再做扩展功能</td></tr>
+</table>
 </section>
 
 </div><!-- .main -->
@@ -970,7 +1021,7 @@ API文档: http://localhost:8080/doc.html
 <!-- ═══ 页尾 ═══ -->
 <div class="end-block">
   <div class="end-card">
-    <p>本设计文档覆盖了<strong>需求分析、系统架构、21张数据库表、36个API接口、5大AI引擎、24个前端页面、UI品牌色系、文旅轻量融入、MVP优先级矩阵、4周20天+4天缓冲开发计划、收入模型、合规说明</strong>的全部内容。项目已完成四周开发并交付GitHub。</p>
+    <p>本设计文档覆盖了<strong>需求分析、系统架构、21张数据库表、36个API接口、5大AI引擎、24个前端页面、UI品牌色系、文旅轻量融入、MVP边界、产品可行性、真实交付状态、后续开发计划、收入模型、合规说明</strong>的全部内容。项目已完成学术演示 MVP，并在 2026-06-24 补齐管理后台真实接口联动与构建测试问题。</p>
     <div class="motto">不是做另一个滴滴，而是做一个属于江西的出行品牌<br><span>温润如玉 · 从容如水 · 信任如山</span></div>
   </div>
 </div>
