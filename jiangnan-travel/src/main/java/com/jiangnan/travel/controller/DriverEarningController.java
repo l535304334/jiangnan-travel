@@ -32,7 +32,7 @@ public class DriverEarningController {
         List<Order> todayCompletedOrders = orderMapper.selectList(
                 new LambdaQueryWrapper<Order>()
                         .eq(Order::getDriverId, driverId)
-                        .eq(Order::getStatus, 5)
+                        .eq(Order::getStatus, 4)
                         .apply("DATE(create_time) = CURDATE()"));
 
         long todayOrders = todayCompletedOrders.size();

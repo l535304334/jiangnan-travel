@@ -23,6 +23,17 @@
       </el-table-column>
       <el-table-column prop="time" label="时间" width="160" />
     </el-table>
+    <div class="pagination-wrap">
+      <el-pagination
+        v-model:current-page="pageInfo.current"
+        v-model:page-size="pageInfo.size"
+        :total="pageInfo.total"
+        layout="total, prev, pager, next, jumper"
+        background
+        small
+        @current-change="loadData"
+      />
+    </div>
   </div>
 </template>
 
@@ -39,6 +50,7 @@ const statusOptions = [
 ]
 
 const tableData = ref([])
+const pageInfo = ref({ current: 1, size: 20, total: 0 })
 const statusMap = {
   0: ['待接单', 'warning'],
   1: ['已接单', ''],
@@ -52,9 +64,10 @@ const statusMap = {
 const loadData = async () => {
   loading.value = true
   try {
-    const params = { page: 1, size: 20 }
+    const params = { page: pageInfo.value.current, size: pageInfo.value.size }
     if (statusFilter.value !== '') params.status = statusFilter.value
     const res = await adminApi.orders(params)
+    pageInfo.value.total = res.data.total
     tableData.value = (res.data?.records || []).map(item => {
       const [statusText, statusTag] = statusMap[item.status] || ['未知', 'info']
       return {
@@ -80,4 +93,5 @@ onMounted(loadData)
 <style scoped>
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .route-text { font-size: 0.85rem; }
+.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>

@@ -25,6 +25,17 @@
         </template>
       </el-table-column>
     </el-table>
+    <div class="pagination-wrap">
+      <el-pagination
+        v-model:current-page="pageInfo.current"
+        v-model:page-size="pageInfo.size"
+        :total="pageInfo.total"
+        layout="total, prev, pager, next, jumper"
+        background
+        small
+        @current-change="loadData"
+      />
+    </div>
   </div>
 </template>
 
@@ -35,6 +46,7 @@ import { adminApi } from '@/api/admin'
 
 const loading = ref(false)
 const tableData = ref([])
+const pageInfo = ref({ current: 1, size: 20, total: 0 })
 const levelMap = {
   1: ['低危', 'info'],
   2: ['中危', 'warning'],
@@ -44,7 +56,8 @@ const levelMap = {
 const loadData = async () => {
   loading.value = true
   try {
-    const res = await adminApi.alerts({ page: 1, size: 20 })
+    const res = await adminApi.alerts({ page: pageInfo.value.current, size: pageInfo.value.size })
+    pageInfo.value.total = res.data.total
     tableData.value = (res.data?.records || []).map(item => {
       const [levelText, levelTag] = levelMap[item.alertLevel] || ['提醒', 'info']
       return {
@@ -75,4 +88,5 @@ onMounted(loadData)
 
 <style scoped>
 .page-header { margin-bottom: 16px; }
+.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>

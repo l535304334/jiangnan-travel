@@ -66,4 +66,5 @@ onMounted(loadData)
 
 <style scoped>
 .page-header { margin-bottom: 16px; }
+.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>

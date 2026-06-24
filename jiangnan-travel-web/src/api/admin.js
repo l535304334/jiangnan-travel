@@ -27,5 +27,11 @@ export const adminApi = {
   },
   handleAlert(id, handleRemark = '后台已处理') {
     return request.put(`/admin/alerts/${id}/handle`, { handleRemark })
+  },
+  carTypes(params) {
+    return request.get('/admin/car-types', { params })
+  },
+  updateCarType(id, data) {
+    return request.put(`/admin/car-types/${id}`, data)
   }
 }
