@@ -2,12 +2,12 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_push_log")
-public class PushLog {
+public class PushLog extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -17,5 +17,4 @@ public class PushLog {
     private String pushType;
     private String pushChannel;
     private Integer status;
-    private LocalDateTime createTime;
 }

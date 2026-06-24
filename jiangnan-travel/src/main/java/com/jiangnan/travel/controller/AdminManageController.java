@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jiangnan.travel.common.Result;
 import com.jiangnan.travel.entity.*;
 import com.jiangnan.travel.mapper.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@Tag(name = "管理后台", description = "管理后台用户、司机、订单、风控管理")
 public class AdminManageController {
 
     private final UserMapper userMapper;
@@ -52,6 +55,7 @@ public class AdminManageController {
     }
 
     @GetMapping("/drivers")
+    @Operation(summary = "司机列表", description = "分页查询司机列表")
     public Result<?> listDrivers(@RequestParam(required = false) Integer verifyStatus,
                                   @RequestParam(defaultValue = "1") Integer page,
                                   @RequestParam(defaultValue = "10") Integer size,
@@ -99,6 +103,7 @@ public class AdminManageController {
     }
 
     @GetMapping("/alerts")
+    @Operation(summary = "告警列表", description = "分页查询风控告警")
     public Result<?> listAlerts(@RequestParam(required = false) Integer handled,
                                  @RequestParam(defaultValue = "1") Integer page,
                                  @RequestParam(defaultValue = "10") Integer size,
@@ -131,6 +136,7 @@ public class AdminManageController {
     }
 
     @GetMapping("/car-types")
+    @Operation(summary = "车型列表", description = "查询车型定价列表")
     public Result<?> listCarTypes(Authentication authentication) {
         List<CarType> carTypes = carTypeMapper.selectList(
                 new LambdaQueryWrapper<CarType>().orderByAsc(CarType::getId));
@@ -181,6 +187,7 @@ public class AdminManageController {
     }
 
     @GetMapping("/dashboard")
+    @Operation(summary = "数据大屏", description = "获取管理后台统计数据")
     public Result<?> dashboard(Authentication authentication) {
         long totalUsers = userMapper.selectCount(null);
 

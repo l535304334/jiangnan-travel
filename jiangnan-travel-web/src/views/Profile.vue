@@ -64,7 +64,9 @@ const handleSaveNickname = async () => {
       await userApi.updateProfile({ nickname: nicknameInput.value })
       userStore.setUserInfo({ ...userStore.userInfo, nickname: nicknameInput.value })
       ElMessage.success('昵称已更新')
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      ElMessage.error('昵称更新失败，请重试')
+    }
   }
 }
 

@@ -2,12 +2,12 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_city_quote")
-public class CityQuote {
+public class CityQuote extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -16,5 +16,4 @@ public class CityQuote {
     private String author;
     private Integer sort;
     private Integer status;
-    private LocalDateTime createTime;
 }

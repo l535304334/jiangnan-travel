@@ -66,10 +66,14 @@ const handlePay = async () => {
 }
 const handleCancel = async () => {
   try {
-    await ElMessageBox.prompt('请输入取消原因', '取消订单', { confirmButtonText: '确认' })
-    await orderApi.cancel(order.value.id, '用户取消')
+    const { value } = await ElMessageBox.prompt('请输入取消原因', '取消订单', { confirmButtonText: '确认' })
+    await orderApi.cancel(order.value.id, value || '用户取消')
     ElMessage.success('已取消'); order.value.status = 5; order.value.statusText = '已取消'
-  } catch (e) {}
+  } catch (e) {
+    if (e !== 'cancel') {
+      ElMessage.error('取消失败，请稍后重试')
+    }
+  }
 }
 const handleReview = () => router.push({ path: `/order/${order.value.id}/review` })
 const handleReorder = () => router.push({ path: '/order-create', query: { endAddress: order.value.endAddress } })

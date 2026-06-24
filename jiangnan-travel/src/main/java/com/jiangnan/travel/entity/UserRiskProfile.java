@@ -2,12 +2,12 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_user_risk_profile")
-public class UserRiskProfile {
+public class UserRiskProfile extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -17,5 +17,4 @@ public class UserRiskProfile {
     private Integer complaintCount;
     private Integer riskScore;
     private Integer riskLevel;
-    private LocalDateTime updateTime;
 }

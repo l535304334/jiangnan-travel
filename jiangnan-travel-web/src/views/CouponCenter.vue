@@ -59,7 +59,9 @@ onMounted(async () => {
     const [listRes, myRes] = await Promise.all([couponApi.list(), couponApi.myCoupons()])
     availableCoupons.value = listRes.data || []
     myCoupons.value = myRes.data || []
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    if (e?.message) ElMessage.error(e.message)
+  }
 })
 
 const handleClaim = async (couponId) => {
@@ -67,7 +69,9 @@ const handleClaim = async (couponId) => {
     await couponApi.claim(couponId)
     ElMessage.success('领取成功')
     availableCoupons.value = availableCoupons.value.filter(c => c.id !== couponId)
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    if (e?.message) ElMessage.error(e.message)
+  }
 }
 </script>
 

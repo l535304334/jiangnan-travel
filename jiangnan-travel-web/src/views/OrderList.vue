@@ -67,7 +67,7 @@ const fetchOrders = async () => {
     if (activeTab.value >= 0) params.status = activeTab.value
     const res = await orderApi.list(params)
     orders.value = res.data || []
-  } catch (e) { orders.value = [] }
+  } catch (e) { orders.value = []; ElMessage.error('订单加载失败') }
   loading.value = false
 }
 

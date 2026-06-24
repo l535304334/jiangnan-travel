@@ -5,6 +5,8 @@ import com.jiangnan.travel.entity.Driver;
 import com.jiangnan.travel.entity.Order;
 import com.jiangnan.travel.mapper.DriverMapper;
 import com.jiangnan.travel.mapper.OrderMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +19,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/driver")
 @RequiredArgsConstructor
+@Tag(name = "司机收入", description = "司机收入统计查询")
 public class DriverEarningController {
 
     private final OrderMapper orderMapper;
     private final DriverMapper driverMapper;
 
     @GetMapping("/earning")
+    @Operation(summary = "收入统计", description = "查询司机收入统计数据")
     public Result<Map<String, Object>> earning(@RequestParam Long driverId) {
         Driver driver = driverMapper.selectById(driverId);
         if (driver == null) {

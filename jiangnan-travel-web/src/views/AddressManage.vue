@@ -45,7 +45,9 @@ onMounted(async () => {
   try {
     const res = await userApi.getAddresses()
     addresses.value = res.data || []
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    if (e?.message) ElMessage.error(e.message)
+  }
 })
 
 const handleAdd = async () => {
@@ -56,7 +58,9 @@ const handleAdd = async () => {
     form.tag = ''
     form.address = ''
     ElMessage.success('添加成功')
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    if (e?.message) ElMessage.error(e.message)
+  }
 }
 
 const handleDelete = async (id) => {
@@ -65,7 +69,10 @@ const handleDelete = async (id) => {
     await userApi.deleteAddress(id)
     addresses.value = addresses.value.filter(a => a.id !== id)
     ElMessage.success('删除成功')
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    if (e === 'cancel') return
+    if (e?.message) ElMessage.error(e.message)
+  }
 }
 </script>
 

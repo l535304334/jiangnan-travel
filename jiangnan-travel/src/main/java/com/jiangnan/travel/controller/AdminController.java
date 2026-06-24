@@ -8,6 +8,8 @@ import com.jiangnan.travel.entity.Admin;
 import com.jiangnan.travel.mapper.AdminMapper;
 import com.jiangnan.travel.security.JwtUtil;
 import com.jiangnan.travel.vo.LoginVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@Tag(name = "管理员登录", description = "管理后台登录")
 public class AdminController {
 
     private final AdminMapper adminMapper;
@@ -24,6 +27,7 @@ public class AdminController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
+    @Operation(summary = "管理员登录", description = "管理后台账号密码登录")
     public Result<?> login(@RequestBody Map<String, String> body) {
         String username = body.get("username");
         String password = body.get("password");

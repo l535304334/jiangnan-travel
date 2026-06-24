@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { ElMessage } from 'element-plus'
 
 const routes = [
   {
@@ -45,6 +46,63 @@ const routes = [
   },
   { path: '/admin/login', name: 'AdminLogin', component: () => import('@/views/AdminLogin.vue'), meta: { title: '管理员登录' } }
 ]
+
+// 需要登录认证的路由名称列表
+const authRequiredRoutes = [
+  'OrderCreate', 'OrderList', 'OrderDetail', 'TripTracking',
+  'AddressManage', 'CouponCenter', 'Profile'
+]
+
+// 需要司机登录的路由名称列表
+const driverAuthRoutes = [
+  'DriverHome', 'DriverOrder', 'DriverEarnings', 'DriverProfile'
+]
+
+// 需要管理员登录的路由名称列表
+const adminAuthRoutes = [
+  'AdminDashboard', 'AdminUsers', 'AdminDrivers',
+  'AdminOrders', 'AdminAlerts', 'AdminCarTypes'
+]
+
+router.beforeEach((to, from, next) => {
+  // 设置页面标题
+  if (to.meta.title) {
+    document.title = `${to.meta.title} - 江南出行`
+  }
+
+  const token = localStorage.getItem('token')
+  const adminToken = localStorage.getItem('adminToken')
+  const driverToken = localStorage.getItem('driverToken')
+
+  // 管理员路由鉴权
+  if (adminAuthRoutes.includes(to.name)) {
+    if (!adminToken) {
+      ElMessage.warning('请先登录管理后台')
+      return next('/admin/login')
+    }
+    return next()
+  }
+
+  // 司机路由鉴权
+  if (driverAuthRoutes.includes(to.name)) {
+    if (!driverToken) {
+      ElMessage.warning('请先登录司机端')
+      return next('/driver/login')
+    }
+    return next()
+  }
+
+  // 乘客路由鉴权
+  if (authRequiredRoutes.includes(to.name)) {
+    if (!token) {
+      ElMessage.warning('请先登录')
+      return next('/login')
+    }
+    return next()
+  }
+
+  next()
+})
 
 const router = createRouter({
   history: createWebHistory(),

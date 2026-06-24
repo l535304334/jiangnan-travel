@@ -2,13 +2,14 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_user_address")
-public class UserAddress {
+public class UserAddress extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -17,13 +18,4 @@ public class UserAddress {
     private String address;
     private BigDecimal lat;
     private BigDecimal lng;
-
-    @TableLogic
-    private Integer deleted;
-
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
 }

@@ -2,13 +2,15 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_order")
-public class Order {
+public class Order extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -32,11 +34,9 @@ public class Order {
     private Integer status;
     private String cancelReason;
     private Integer isSafetyShare;
-    private LocalDateTime createTime;
     private LocalDateTime acceptTime;
     private LocalDateTime arriveTime;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private LocalDateTime cancelTime;
-    private LocalDateTime updateTime;
 }

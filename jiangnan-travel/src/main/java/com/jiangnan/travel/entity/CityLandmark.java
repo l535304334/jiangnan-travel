@@ -2,13 +2,14 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_city_landmark")
-public class CityLandmark {
+public class CityLandmark extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -20,5 +21,4 @@ public class CityLandmark {
     private String imageUrl;
     private Integer sort;
     private Integer status;
-    private LocalDateTime createTime;
 }

@@ -2,13 +2,15 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_demand_hotspot")
-public class DemandHotspot {
+public class DemandHotspot extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -17,5 +19,4 @@ public class DemandHotspot {
     private Integer radius;
     private Integer demandCount;
     private LocalDateTime snapshotTime;
-    private LocalDateTime createTime;
 }

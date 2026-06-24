@@ -27,6 +27,17 @@
         </template>
       </el-table-column>
     </el-table>
+    <div class="pagination-wrap">
+      <el-pagination
+        v-model:current-page="pageInfo.current"
+        v-model:page-size="pageInfo.size"
+        :total="pageInfo.total"
+        layout="total, prev, pager, next, jumper"
+        background
+        small
+        @current-change="loadData"
+      />
+    </div>
   </div>
 </template>
 
@@ -37,17 +48,23 @@ import { adminApi } from '@/api/admin'
 
 const loading = ref(false)
 const tableData = ref([])
+const pageInfo = ref({ current: 1, size: 20, total: 0 })
 
 const statusText = (status) => (status === 1 ? '启用' : status === 2 ? '冻结' : '禁用')
 
 const loadData = async () => {
   loading.value = true
   try {
-    const res = await adminApi.users({ page: 1, size: 20 })
-    tableData.value = (res.data?.records || []).map(item => ({
-      ...item,
-      statusText: statusText(item.status)
-    }))
+    const res = await adminApi.users({ page: pageInfo.value.current, size: pageInfo.value.size })
+    if (res.code === 200) {
+      pageInfo.value.total = res.data.total || 0
+      tableData.value = (res.data?.records || []).map(item => ({
+        ...item,
+        statusText: statusText(item.status)
+      }))
+    }
+  } catch (e) {
+    ElMessage.error('用户数据加载失败')
   } finally {
     loading.value = false
   }
@@ -55,10 +72,14 @@ const loadData = async () => {
 
 const toggleStatus = async (row) => {
   const nextStatus = row.status === 1 ? 0 : 1
-  await adminApi.updateUserStatus(row.id, nextStatus)
-  row.status = nextStatus
-  row.statusText = statusText(nextStatus)
-  ElMessage.success('状态已更新')
+  try {
+    await adminApi.updateUserStatus(row.id, nextStatus)
+    row.status = nextStatus
+    row.statusText = statusText(nextStatus)
+    ElMessage.success('状态已更新')
+  } catch (e) {
+    ElMessage.error('状态更新失败')
+  }
 }
 
 onMounted(loadData)
