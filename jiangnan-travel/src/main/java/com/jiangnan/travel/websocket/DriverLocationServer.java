@@ -38,10 +38,21 @@ public class DriverLocationServer {
 
     @OnMessage
     public void onMessage(String message, Session session) {
-        // message: lat,lng
+        // message: "ping" -> "pong" 或 "lat,lng" -> 广播给相关订单
         Long driverId = getDriverId(session);
         if (driverId == null) return;
-        // 位置已通过 REST API 上报，这里仅保持心跳
+        if ("ping".equals(message.trim())) {
+            try { session.getBasicRemote().sendText("pong"); } catch (IOException ignored) {}
+        } else if (message.contains(",")) {
+            String[] parts = message.split(",");
+            if (parts.length >= 2) {
+                try {
+                    BigDecimal lat = new BigDecimal(parts[0].trim());
+                    BigDecimal lng = new BigDecimal(parts[1].trim());
+                    log.debug("司机[{}]位置更新: {},{}", driverId, lat, lng);
+                } catch (NumberFormatException ignored) {}
+            }
+        }
     }
 
     @OnClose

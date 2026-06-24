@@ -227,7 +227,7 @@
 <h3>1.2 最终项目规格</h3>
 <div class="card-grid">
   <div class="card"><div class="number">21</div><div class="label">数据库表</div></div>
-  <div class="card"><div class="number">36</div><div class="label">API 接口</div></div>
+  <div class="card"><div class="number">42</div><div class="label">API 接口</div></div>
   <div class="card"><div class="number">5</div><div class="label">AI 智慧引擎</div></div>
   <div class="card"><div class="number">24</div><div class="label">前端页面</div></div>
   <div class="card"><div class="number">20</div><div class="label">工作日</div></div>
@@ -955,7 +955,19 @@ API文档: http://localhost:8080/doc.html
 一键提交: 双击 commit.bat
 </pre>
 
-<h3>12-A.6 仍需明确的未完成项</h3>
+<h3>12-A.6 2026-06-26 补充修复</h3>
+<table>
+  <tr><th>问题</th><th>修复</th></tr>
+  <tr><td>R2风控未生效</td><td>从仅日志警告改为真正阻止（1小时取消>5次→禁下单，抛BusinessException）</td></tr>
+  <tr><td>R4风控与设计不一致</td><td>从30分钟3单改为深夜(23-5)跨城安全提示，符合设计文档第3.5章</td></tr>
+  <tr><td>R7疲劳提醒缺失</td><td>行程>2小时自动生成RiskAlert告警</td></tr>
+  <tr><td>DriverEarningController统计错误</td><td>已完成订单状态值5→4，与t_order表状态定义一致</td></tr>
+  <tr><td>WebSocket无心跳</td><td>DriverLocationServer支持ping/pong心跳机制</td></tr>
+  <tr><td>管理后台无分页</td><td>全部5个admin页面添加el-pagination分页控件</td></tr>
+  <tr><td>管理后台无车型定价页面</td><td>新增AdminCarTypes.vue + 路由 + 侧栏导航 + adminApi.carTypes()</td></tr>
+</table>
+
+<h3>12-A.7 仍需明确的未完成项</h3>
 <table>
   <tr><th>事项</th><th>当前状态</th><th>建议处理</th></tr>
   <tr><td>电子发票</td><td>表结构/实体存在，前端仍为占位</td><td>P2 做申请发票和后台处理</td></tr>

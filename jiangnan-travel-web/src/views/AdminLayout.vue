@@ -38,7 +38,8 @@ const menus = [
   { path: '/admin/users', label: '用户管理', icon: User },
   { path: '/admin/drivers', label: '司机审核', icon: List },
   { path: '/admin/orders', label: '订单监控', icon: Document },
-  { path: '/admin/alerts', label: '风控告警', icon: Warning }
+  { path: '/admin/alerts', label: '风控告警', icon: Warning },
+  { path: '/admin/car-types', label: '定价管理', icon: Tickets }
 ]
 </script>
 

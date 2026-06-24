@@ -5,6 +5,36 @@
 
 ---
 
+## [fix: 管理后台全功能对接真实API - 管理后台7个页面从假数据迁移到真实接口调用，修复dashboard订单完成状态值、401跳转路径、WebSocket条件配置](0995d9e54a9300d4f5ec2c72a8acade987c4efd2) — 2026-06-24 14:12
+
+| 项目 | 详情 |
+|------|------|
+| **Commit** | `0995d9e` |
+| **日期** | 2026-06-24 14:12 |
+| **作者** | 赖睿轩 |
+| **变更** | +0 / ~16 / -0 |
+
+### 变更文件
+```
+  M  CHANGELOG.md
+  M  jiangnan-travel-web/src/api/admin.js
+  M  jiangnan-travel-web/src/api/request.js
+  M  jiangnan-travel-web/src/views/AdminAlerts.vue
+  M  jiangnan-travel-web/src/views/AdminDashboard.vue
+  M  jiangnan-travel-web/src/views/AdminDrivers.vue
+  M  jiangnan-travel-web/src/views/AdminLogin.vue
+  M  jiangnan-travel-web/src/views/AdminOrders.vue
+  M  jiangnan-travel-web/src/views/AdminUsers.vue
+  M  jiangnan-travel-web/src/views/Login.vue
+  M  jiangnan-travel-web/vite.config.js
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/controller/AdminManageController.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/websocket/WebSocketConfig.java
+  M  jiangnan-travel/src/test/java/com/jiangnan/travel/UserServiceTest.java
+  M  "346261237345215227345207272350241214346231272346205247346234215345212241345271263345217260_350256276350256241346226207346241243344270216345274200345217221350256241345210222.html"
+  M  "351241271347233256345274200345217221350277207347250213346200273347273223.md"
+```
+
+
 ## [docs: 添加项目开发过程总结文档 - 面向后续接手者的完整项目说明](f15323ae72c7b9a6a3c782dcf7b33147f2c68e2e) — 2026-06-24 01:04
 
 | 项目 | 详情 |

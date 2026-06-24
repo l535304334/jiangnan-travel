@@ -30,6 +30,17 @@
         </template>
       </el-table-column>
     </el-table>
+    <div class="pagination-wrap">
+      <el-pagination
+        v-model:current-page="pageInfo.current"
+        v-model:page-size="pageInfo.size"
+        :total="pageInfo.total"
+        layout="total, prev, pager, next, jumper"
+        background
+        small
+        @current-change="loadData"
+      />
+    </div>
   </div>
 </template>
 
@@ -40,13 +51,15 @@ import { adminApi } from '@/api/admin'
 
 const loading = ref(false)
 const tableData = ref([])
+const pageInfo = ref({ current: 1, size: 20, total: 0 })
 
 const verifyText = (status) => (status === 1 ? '已通过' : status === 2 ? '已拒绝' : '待审核')
 
 const loadData = async () => {
   loading.value = true
   try {
-    const res = await adminApi.drivers({ page: 1, size: 20 })
+    const res = await adminApi.drivers({ page: pageInfo.value.current, size: pageInfo.value.size })
+    pageInfo.value.total = res.data.total
     tableData.value = (res.data?.records || []).map(item => ({
       ...item,
       name: item.realName,
@@ -72,4 +85,5 @@ onMounted(loadData)
 
 <style scoped>
 .page-header { margin-bottom: 16px; }
+.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>

@@ -7,6 +7,7 @@ import com.jiangnan.travel.common.BusinessException;
 import com.jiangnan.travel.common.ErrorCode;
 import com.jiangnan.travel.dto.CreateOrderRequest;
 import com.jiangnan.travel.entity.*;
+import com.jiangnan.travel.entity.RiskAlert;
 import com.jiangnan.travel.mapper.*;
 import com.jiangnan.travel.service.OrderService;
 import com.jiangnan.travel.vo.OrderVO;
@@ -36,6 +37,7 @@ public class OrderServiceImpl implements OrderService {
     private final ReviewMapper reviewMapper;
     private final PaymentMapper paymentMapper;
     private final UserCouponMapper userCouponMapper;
+    private final RiskAlertMapper riskAlertMapper;
     private final PricingServiceImpl pricingService;
     private final RedissonClient redissonClient;
 
@@ -60,10 +62,11 @@ public class OrderServiceImpl implements OrderService {
         }
 
         try {
-            // 2. 风控R4：30分钟内最多3单
-            checkRiskR4(userId);
+            // 2. 风控R4：深夜跨城安全提示
+            checkRiskR4(userId, request);
 
-            // 3. 获取车型
+            // 3. 风控R2：取消频率限制
+            checkRiskR2(userId);
             Long carTypeId = request.getCarTypeId() != null ? request.getCarTypeId() : 1L;
             CarType carType = carTypeMapper.selectById(carTypeId);
             if (carType == null || carType.getStatus() == 0) {
@@ -230,6 +233,9 @@ public class OrderServiceImpl implements OrderService {
         order.setEndTime(LocalDateTime.now());
         orderMapper.updateById(order);
 
+        // R7 疲劳提醒：行程超过2小时
+        checkRiskR7(order);
+
         Driver driver = driverMapper.selectById(driverId);
         if (driver != null) {
             driver.setStatus(1);
@@ -277,23 +283,60 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /* ---- 风控 ---- */
-    private void checkRiskR4(Long userId) {
-        Long count = orderMapper.selectCount(
-                new LambdaQueryWrapper<Order>()
-                        .eq(Order::getUserId, userId)
-                        .ge(Order::getCreateTime, LocalDateTime.now().minusMinutes(30)));
-        if (count >= 3) throw new BusinessException(ErrorCode.RISK_ORDER_FREQUENCY);
+    /** R4 深夜(23-5)跨城 -> 安全提示 */
+    private void checkRiskR4(Long userId, CreateOrderRequest request) {
+        LocalDateTime now = LocalDateTime.now();
+        int hour = now.getHour();
+        if (hour >= 23 || hour < 5) {
+            String startCity = extractCity(request.getStartAddress());
+            String endCity = extractCity(request.getEndAddress());
+            if (startCity != null && endCity != null && !startCity.equals(endCity)) {
+                log.info("用户[{}]深夜跨城({}→{})，建议开启安全分享", userId, startCity, endCity);
+            }
+        }
     }
 
+    /** R2 同用户1小时取消>5次 -> 当日禁下单 */
     private void checkRiskR2(Long userId) {
         Long cancelCount = orderMapper.selectCount(
                 new LambdaQueryWrapper<Order>()
                         .eq(Order::getUserId, userId)
                         .eq(Order::getStatus, 5)
-                        .ge(Order::getCreateTime, LocalDateTime.now().minusDays(30)));
+                        .ge(Order::getCreateTime, LocalDateTime.now().minusHours(1)));
         if (cancelCount >= 5) {
-            log.warn("用户[{}]30天取消{}次，触发R2提醒", userId, cancelCount);
+            log.warn("用户[{}]1小时取消{}次，触发R2风控禁下单", userId, cancelCount);
+            throw new BusinessException(ErrorCode.RISK_ORDER_FREQUENCY);
         }
+    }
+
+    /** R7 司机行程>2小时未到达 -> 疲劳提醒 */
+    private void checkRiskR7(Order order) {
+        if (order.getStartTime() != null) {
+            long minutes = java.time.Duration.between(order.getStartTime(), LocalDateTime.now()).toMinutes();
+            if (minutes >= 120) {
+                log.warn("订单[{}]行程{}分钟>2小时，触发R7疲劳提醒", order.getOrderNo(), minutes);
+                RiskAlert alert = new RiskAlert();
+                alert.setUserId(order.getUserId());
+                alert.setOrderId(order.getId());
+                alert.setAlertLevel(2);
+                alert.setRuleCode("RISK-FATIGUE-007");
+                alert.setAlertDesc("司机行程已超过2小时，建议休息");
+                alert.setHandled(0);
+                riskAlertMapper.insert(alert);
+            }
+        }
+    }
+
+    private String extractCity(String address) {
+        if (address == null) return null;
+        if (address.contains("南昌")) return "南昌";
+        if (address.contains("赣州")) return "赣州";
+        if (address.contains("宁都")) return "宁都";
+        if (address.contains("九江")) return "九江";
+        if (address.contains("庐山")) return "庐山";
+        if (address.contains("井冈山")) return "井冈山";
+        if (address.contains("景德镇")) return "景德镇";
+        return null;
     }
 
     /* ---- 辅助 ---- */

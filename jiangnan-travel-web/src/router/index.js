@@ -39,7 +39,8 @@ const routes = [
       { path: 'users', name: 'AdminUsers', component: () => import('@/views/AdminUsers.vue'), meta: { title: '用户管理' } },
       { path: 'drivers', name: 'AdminDrivers', component: () => import('@/views/AdminDrivers.vue'), meta: { title: '司机审核' } },
       { path: 'orders', name: 'AdminOrders', component: () => import('@/views/AdminOrders.vue'), meta: { title: '订单监控' } },
-      { path: 'alerts', name: 'AdminAlerts', component: () => import('@/views/AdminAlerts.vue'), meta: { title: '风控告警' } }
+      { path: 'alerts', name: 'AdminAlerts', component: () => import('@/views/AdminAlerts.vue'), meta: { title: '风控告警' } },
+      { path: 'car-types', name: 'AdminCarTypes', component: () => import('@/views/AdminCarTypes.vue'), meta: { title: '定价管理' } }
     ]
   },
   { path: '/admin/login', name: 'AdminLogin', component: () => import('@/views/AdminLogin.vue'), meta: { title: '管理员登录' } }
