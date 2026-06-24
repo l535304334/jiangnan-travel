@@ -46,10 +46,18 @@ const tryInit = () => {
 }
 
 onMounted(() => {
-  window._AMapSecurityConfig = { securityJsCode: '01646b6ce6b541c2057afc03bb2ea17a' }
+  const amapKey = import.meta.env.VITE_AMAP_KEY
+  const securityCode = import.meta.env.VITE_AMAP_SECURITY_JS_CODE
+  if (!amapKey || !securityCode) {
+    console.warn('高德地图密钥未配置，请在 .env 文件中设置 VITE_AMAP_KEY 和 VITE_AMAP_SECURITY_JS_CODE')
+    failed.value = true
+    loading.value = false
+    return
+  }
+  window._AMapSecurityConfig = { securityJsCode: securityCode }
   if (window.AMap) { tryInit(); return }
   const script = document.createElement('script')
-  script.src = 'https://webapi.amap.com/maps?v=2.0&key=4b0b6a9db2b2a3f10ccfecd53afa7db9&callback=amapOnLoad'
+  script.src = `https://webapi.amap.com/maps?v=2.0&key=${amapKey}&callback=amapOnLoad`
   window.amapOnLoad = () => { tryInit(); if (intervalId) clearInterval(intervalId) }
   script.onerror = () => { failed.value = true; loading.value = false }
   document.head.appendChild(script)

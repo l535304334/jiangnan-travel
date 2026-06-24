@@ -2,13 +2,14 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_invoice")
-public class Invoice {
+public class Invoice extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -19,5 +20,4 @@ public class Invoice {
     private String taxNo;
     private BigDecimal amount;
     private Integer status;
-    private LocalDateTime createTime;
 }

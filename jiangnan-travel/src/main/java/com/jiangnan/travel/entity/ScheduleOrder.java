@@ -2,14 +2,15 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_schedule_order")
-public class ScheduleOrder {
+public class ScheduleOrder extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -19,5 +20,4 @@ public class ScheduleOrder {
     private Integer seatCount;
     private BigDecimal totalPrice;
     private Integer status;
-    private LocalDateTime createTime;
 }

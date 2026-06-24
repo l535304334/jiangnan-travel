@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jiangnan.travel.common.Result;
 import com.jiangnan.travel.entity.*;
 import com.jiangnan.travel.mapper.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "文旅数据", description = "文旅融合数据接口")
 public class AIDataController {
 
     private final DemandHotspotMapper demandHotspotMapper;
@@ -48,6 +51,7 @@ public class AIDataController {
     }
 
     @GetMapping("/api/common/city-quote")
+    @Operation(summary = "文化短句", description = "获取城市文化短句")
     public Result<?> cityQuotes() {
         List<CityQuote> quotes = cityQuoteMapper.selectList(
                 new LambdaQueryWrapper<CityQuote>()

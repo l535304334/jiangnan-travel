@@ -1,23 +1,26 @@
 package com.jiangnan.travel.controller;
 
 import com.jiangnan.travel.common.Result;
+import com.jiangnan.travel.dto.SafetyAlertRequest;
+import jakarta.validation.Valid;
 import com.jiangnan.travel.entity.Order;
 import com.jiangnan.travel.entity.RiskAlert;
 import com.jiangnan.travel.entity.UserRiskProfile;
 import com.jiangnan.travel.mapper.OrderMapper;
 import com.jiangnan.travel.mapper.RiskAlertMapper;
 import com.jiangnan.travel.mapper.UserRiskProfileMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/safety")
 @RequiredArgsConstructor
+@Tag(name = "安全风控", description = "用户安全预警和风险控制")
 public class SafetyController {
 
     private final RiskAlertMapper riskAlertMapper;
@@ -25,13 +28,9 @@ public class SafetyController {
     private final OrderMapper orderMapper;
 
     @PostMapping("/alert")
-    public Result<?> alert(@RequestBody Map<String, Object> body) {
-        Long orderId = body.get("orderId") != null
-                ? ((Number) body.get("orderId")).longValue() : null;
-        BigDecimal lat = body.get("lat") != null
-                ? new BigDecimal(body.get("lat").toString()) : null;
-        BigDecimal lng = body.get("lng") != null
-                ? new BigDecimal(body.get("lng").toString()) : null;
+    @Operation(summary = "安全预警", description = "提交安全预警信息")
+    public Result<?> alert(@Valid @RequestBody SafetyAlertRequest request) {
+        Long orderId = request.getOrderId();
 
         if (orderId == null) {
             return Result.fail("orderId不能为空");
@@ -46,7 +45,7 @@ public class SafetyController {
         alert.setOrderId(orderId);
         alert.setAlertLevel(1);
         alert.setTitle("安全预警");
-        alert.setDetail("位置 lat=" + lat + ", lng=" + lng);
+        alert.setDetail("位置 lat=" + request.getLat() + ", lng=" + request.getLng());
         alert.setHandled(0);
         alert.setCreateTime(LocalDateTime.now());
         riskAlertMapper.insert(alert);

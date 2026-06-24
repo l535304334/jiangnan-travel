@@ -59,25 +59,33 @@ const loadData = async () => {
   loading.value = true
   try {
     const res = await adminApi.drivers({ page: pageInfo.value.current, size: pageInfo.value.size })
-    pageInfo.value.total = res.data.total
-    tableData.value = (res.data?.records || []).map(item => ({
-      ...item,
-      name: item.realName,
-      plate: item.carPlate,
-      carType: item.carTypeId ? `车型${item.carTypeId}` : '-',
-      statusText: item.status === 1 ? '在线' : '离线',
-      verifyText: verifyText(item.verifyStatus)
-    }))
+    if (res.code === 200) {
+      pageInfo.value.total = res.data.total || 0
+      tableData.value = (res.data?.records || []).map(item => ({
+        ...item,
+        name: item.realName || '-',
+        plate: item.carPlate || '-',
+        carType: item.carTypeId ? `车型${item.carTypeId}` : '-',
+        statusText: item.status === 1 ? '在线' : '离线',
+        verifyText: verifyText(item.verifyStatus)
+      }))
+    }
+  } catch (e) {
+    ElMessage.error('司机数据加载失败')
   } finally {
     loading.value = false
   }
 }
 
 const audit = async (row, status) => {
-  await adminApi.verifyDriver(row.id, status)
-  row.verifyStatus = status
-  row.verifyText = verifyText(status)
-  ElMessage.success(status === 1 ? '已通过审核' : '已拒绝')
+  try {
+    await adminApi.verifyDriver(row.id, status)
+    row.verifyStatus = status
+    row.verifyText = verifyText(status)
+    ElMessage.success(status === 1 ? '已通过审核' : '已拒绝')
+  } catch (e) {
+    ElMessage.error('审核操作失败')
+  }
 }
 
 onMounted(loadData)

@@ -2,13 +2,15 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_payment")
-public class Payment {
+public class Payment extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -19,5 +21,4 @@ public class Payment {
     private String payNo;
     private Integer status;
     private LocalDateTime payTime;
-    private LocalDateTime createTime;
 }

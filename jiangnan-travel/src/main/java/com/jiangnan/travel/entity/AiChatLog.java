@@ -2,12 +2,12 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_ai_chat_log")
-public class AiChatLog {
+public class AiChatLog extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -16,5 +16,4 @@ public class AiChatLog {
     private String role;
     private String content;
     private Integer tokensUsed;
-    private LocalDateTime createTime;
 }

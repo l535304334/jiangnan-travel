@@ -2,12 +2,12 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_risk_alert")
-public class RiskAlert {
+public class RiskAlert extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -17,7 +17,7 @@ public class RiskAlert {
     private Integer alertLevel;
     private String title;
     private String detail;
+    private String alertDesc;
     private Integer handled;
     private String handleRemark;
-    private LocalDateTime createTime;
 }

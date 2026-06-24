@@ -2,12 +2,12 @@ package com.jiangnan.travel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("t_admin")
-public class Admin {
+public class Admin extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -16,5 +16,4 @@ public class Admin {
     private String realName;
     private String role;
     private Integer status;
-    private LocalDateTime createTime;
 }

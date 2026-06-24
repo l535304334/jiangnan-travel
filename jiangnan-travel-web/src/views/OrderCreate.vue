@@ -171,7 +171,9 @@ watch([startAddress, endAddress, carTypeId], () => {
       startAddress: startAddress.value, startLat: startLat.value, startLng: startLng.value,
       endAddress: endAddress.value, endLat: endLat.value, endLng: endLng.value,
       distance: dist, duration: dur, carTypeId: carTypeId.value
-    }).then(res => { if (res.code === 200) estimate.value = res.data }).catch(() => {})
+    }).then(res => { if (res.code === 200) estimate.value = res.data }).catch(() => {
+      console.warn('价格估算失败')
+    })
   }, 600)
 }, { immediate: false })
 

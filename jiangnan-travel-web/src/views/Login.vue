@@ -110,7 +110,9 @@ const sendCode = async () => {
     ElMessage.success('验证码已发送')
     countdown.value = 60
     const t = setInterval(() => { countdown.value--; if (countdown.value <= 0) clearInterval(t) }, 1000)
-  } catch (e) {}
+  } catch (e) {
+    ElMessage.error('验证码发送失败，请稍后重试')
+  }
   sending.value = false
 }
 

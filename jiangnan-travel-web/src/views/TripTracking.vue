@@ -73,7 +73,9 @@ onMounted(async () => {
       }
       activeStep.value = statusStepMap[res.data.statusText] || 0
     }
-  } catch (e) {}
+  } catch (e) {
+    ElMessage.error('订单详情加载失败')
+  }
 
   try {
     const res = await aiApi.getCityQuotes()
@@ -85,7 +87,9 @@ onMounted(async () => {
         }, 5000)
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('文化名言加载失败:', e)
+  }
 })
 
 onUnmounted(() => {

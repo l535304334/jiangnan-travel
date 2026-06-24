@@ -91,7 +91,9 @@ onMounted(async () => {
     if (r.code === 200) recommends.value = r.data || []
     if (l.code === 200) landmarks.value = l.data || []
     if (a.code === 200) savedAddresses.value = a.data || []
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    console.warn('首页数据加载失败:', e)
+  }
 })
 
 const goOrder = (dest) => {

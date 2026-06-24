@@ -1,5 +1,6 @@
 package com.jiangnan.travel.vo;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,20 +12,29 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "价格预估结果")
 public class EstimateVO {
 
-    private Integer distance;       // 米
-    private Integer duration;       // 秒
+    @Schema(description = "距离(米)")
+    private Integer distance;
+    @Schema(description = "时长(秒)")
+    private Integer duration;
 
-    private BigDecimal basePrice;   // 基础价格
-    private BigDecimal surgeFactor; // 动态加价系数
-    private BigDecimal surgeAmount; // 加价金额
+    @Schema(description = "基础价格")
+    private BigDecimal basePrice;
+    @Schema(description = "动态加价系数")
+    private BigDecimal surgeFactor;
+    @Schema(description = "加价金额")
+    private BigDecimal surgeAmount;
 
-    private BigDecimal couponDiscount; // 可用优惠券抵扣
-    private BigDecimal estimateTotal;  // 预估总价
+    @Schema(description = "可用优惠券抵扣")
+    private BigDecimal couponDiscount;
+    @Schema(description = "预估总价")
+    private BigDecimal estimateTotal;
 
-    private String carTypeName;     // 车型名称
+    @Schema(description = "车型名称")
+    private String carTypeName;
 
-    /* 阶梯计价明细 */
+    @Schema(description = "阶梯计价明细")
     private PriceDetailVO priceDetail;
 }
