@@ -34,6 +34,8 @@ public class RedisCacheConfig {
                         config.entryTtl(Duration.ofHours(12)))
                 .withCacheConfiguration("hotDestinations",
                         config.entryTtl(Duration.ofMinutes(30)))
+                .withCacheConfiguration("dashboard",
+                        config.entryTtl(Duration.ofMinutes(2)))
                 .build();
     }
 }

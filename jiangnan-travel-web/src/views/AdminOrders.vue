@@ -1,44 +1,47 @@
 <template>
-  <div class="admin-orders">
-    <div class="page-header">
+  <div class="admin-page">
+    <div class="admin-page-header">
       <h3>订单监控</h3>
       <el-select v-model="statusFilter" placeholder="状态筛选" clearable style="width: 140px" @change="loadData">
         <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
     </div>
-    <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading">
-      <el-table-column prop="orderNo" label="订单号" width="180" />
-      <el-table-column prop="user" label="用户" width="100" />
-      <el-table-column prop="driver" label="司机" width="100" />
-      <el-table-column label="行程" min-width="180">
-        <template #default="{ row }">
-          <span class="route-text">{{ row.start }} → {{ row.end }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="price" label="金额" width="80" />
-      <el-table-column prop="statusText" label="状态" width="90">
-        <template #default="{ row }">
-          <el-tag :type="row.statusTag" size="small">{{ row.statusText }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="time" label="时间" width="160" />
-    </el-table>
-    <div class="pagination-wrap">
-      <el-pagination
-        v-model:current-page="pageInfo.current"
-        v-model:page-size="pageInfo.size"
-        :total="pageInfo.total"
-        layout="total, prev, pager, next, jumper"
-        background
-        small
-        @current-change="loadData"
-      />
-    </div>
+    <el-card shadow="never" v-loading="loading">
+      <el-table :data="tableData" stripe :border="false" style="width: 100%">
+        <el-table-column prop="orderNo" label="订单号" width="180" />
+        <el-table-column prop="user" label="用户" width="100" />
+        <el-table-column prop="driver" label="司机" width="100" />
+        <el-table-column label="行程" min-width="180">
+          <template #default="{ row }">
+            <span class="route-text">{{ row.start }} → {{ row.end }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="price" label="金额" width="80" />
+        <el-table-column prop="statusText" label="状态" width="90">
+          <template #default="{ row }">
+            <el-tag :type="row.statusTag" size="small">{{ row.statusText }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="time" label="时间" width="160" />
+      </el-table>
+      <div class="admin-pagination-wrap">
+        <el-pagination
+          v-model:current-page="pageInfo.current"
+          v-model:page-size="pageInfo.size"
+          :total="pageInfo.total"
+          layout="total, prev, pager, next, jumper"
+          background
+          small
+          @current-change="loadData"
+        />
+      </div>
+    </el-card>
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import { adminApi } from '@/api/admin'
 
 const statusFilter = ref('')
@@ -82,7 +85,8 @@ const loadData = async () => {
         time: item.createTime
       }
     })
-  } finally {
+  } catch (e) { ElMessage.error('订单加载失败') }
+  finally {
     loading.value = false
   }
 }
@@ -91,7 +95,5 @@ onMounted(loadData)
 </script>
 
 <style scoped>
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .route-text { font-size: 0.85rem; }
-.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>

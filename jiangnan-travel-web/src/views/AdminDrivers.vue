@@ -1,46 +1,48 @@
 <template>
-  <div class="admin-drivers">
-    <div class="page-header">
+  <div class="admin-page">
+    <div class="admin-page-header">
       <h3>司机审核</h3>
     </div>
-    <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading">
-      <el-table-column prop="id" label="ID" width="60" />
-      <el-table-column prop="name" label="姓名" width="100" />
-      <el-table-column prop="plate" label="车牌号" width="120" />
-      <el-table-column prop="carType" label="车型" width="100" />
-      <el-table-column prop="statusText" label="状态" width="80">
-        <template #default="{ row }">
-          <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
-            {{ row.statusText }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="verifyText" label="审核状态" width="100">
-        <template #default="{ row }">
-          <el-tag :type="row.verifyStatus === 1 ? 'success' : row.verifyStatus === 2 ? 'danger' : 'warning'" size="small">
-            {{ row.verifyText }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="160">
-        <template #default="{ row }">
-          <el-button v-if="row.verifyStatus === 0" type="success" size="small" @click="audit(row, 1)">通过</el-button>
-          <el-button v-if="row.verifyStatus === 0" type="danger" size="small" @click="audit(row, 2)">拒绝</el-button>
-          <span v-else>---</span>
-        </template>
-      </el-table-column>
-    </el-table>
-    <div class="pagination-wrap">
-      <el-pagination
-        v-model:current-page="pageInfo.current"
-        v-model:page-size="pageInfo.size"
-        :total="pageInfo.total"
-        layout="total, prev, pager, next, jumper"
-        background
-        small
-        @current-change="loadData"
-      />
-    </div>
+    <el-card shadow="never" v-loading="loading">
+      <el-table :data="tableData" stripe :border="false" style="width: 100%">
+        <el-table-column prop="id" label="ID" width="60" />
+        <el-table-column prop="name" label="姓名" width="100" />
+        <el-table-column prop="plate" label="车牌号" width="120" />
+        <el-table-column prop="carType" label="车型" width="100" />
+        <el-table-column prop="statusText" label="状态" width="80">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+              {{ row.statusText }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="verifyText" label="审核状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.verifyStatus === 1 ? 'success' : row.verifyStatus === 2 ? 'danger' : 'warning'" size="small">
+              {{ row.verifyText }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="160">
+          <template #default="{ row }">
+            <el-button v-if="row.verifyStatus === 0" type="success" size="small" @click="audit(row, 1)">通过</el-button>
+            <el-button v-if="row.verifyStatus === 0" type="danger" size="small" @click="audit(row, 2)">拒绝</el-button>
+            <span v-else>---</span>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="admin-pagination-wrap">
+        <el-pagination
+          v-model:current-page="pageInfo.current"
+          v-model:page-size="pageInfo.size"
+          :total="pageInfo.total"
+          layout="total, prev, pager, next, jumper"
+          background
+          small
+          @current-change="loadData"
+        />
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -92,6 +94,4 @@ onMounted(loadData)
 </script>
 
 <style scoped>
-.page-header { margin-bottom: 16px; }
-.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>

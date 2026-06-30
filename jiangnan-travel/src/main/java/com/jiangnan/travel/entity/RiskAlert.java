@@ -17,7 +17,6 @@ public class RiskAlert extends BaseEntity {
     private Integer alertLevel;
     private String title;
     private String detail;
-    private String alertDesc;
     private Integer handled;
     private String handleRemark;
 }

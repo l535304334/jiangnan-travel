@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 @Schema(description = "AI对话响应")
 public class ChatVO {
 
-    @Schema(description = "AI回复内容")
+    @Schema(description = "AI回复内容", example = "今天无锡天气晴朗，气温15-22℃。")
     private String reply;
-    @Schema(description = "会话ID")
+    @Schema(description = "会话ID", example = "session_001")
     private String sessionId;
-    @Schema(description = "消耗的token数")
+    @Schema(description = "消耗的token数", example = "150")
     private Long tokensUsed;
 }

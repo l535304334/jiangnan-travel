@@ -1,6 +1,7 @@
 package com.jiangnan.travel.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jiangnan.travel.common.BusinessException;
 import com.jiangnan.travel.common.ErrorCode;
 import com.jiangnan.travel.dto.LoginRequest;
@@ -11,13 +12,16 @@ import com.jiangnan.travel.security.JwtUtil;
 import com.jiangnan.travel.service.UserService;
 import com.jiangnan.travel.vo.LoginVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -44,7 +48,7 @@ public class UserServiceImpl implements UserService {
         redisTemplate.opsForValue().set(SMS_PREFIX + phone, code, SMS_CODE_EXPIRE, TimeUnit.MINUTES);
         redisTemplate.opsForValue().set(rateLimitKey, "1", 60, TimeUnit.SECONDS);
         // TODO: 接入真实短信服务，当前仅打印日志
-        System.out.println("=== 验证码 [" + phone + "]: " + code + " ===");
+        log.info("验证码 [{}]: {}", phone, code);
     }
 
     @Override
@@ -78,7 +82,7 @@ public class UserServiceImpl implements UserService {
         userMapper.updateById(user);
 
         // 生成JWT
-        String token = jwtUtil.generateToken(user.getId(), user.getPhone());
+        String token = jwtUtil.generateToken(user.getId(), user.getPhone(), "USER");
 
         return LoginVO.builder()
                 .token(token)
@@ -103,12 +107,12 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(ErrorCode.RISK_ACCOUNT_FROZEN);
         }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BusinessException(ErrorCode.USER_PASSWORD_ERROR);
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "用户名或密码错误");
         }
         user.setLastLoginTime(LocalDateTime.now());
         userMapper.updateById(user);
 
-        String token = jwtUtil.generateToken(user.getId(), user.getPhone());
+        String token = jwtUtil.generateToken(user.getId(), user.getPhone(), "USER");
         return LoginVO.builder()
                 .token(token)
                 .userId(user.getId())
@@ -119,6 +123,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public LoginVO register(RegisterRequest request) {
         // 验证码校验
         String cachedCode = redisTemplate.opsForValue().get(SMS_PREFIX + request.getPhone());
@@ -150,7 +155,7 @@ public class UserServiceImpl implements UserService {
         couponService.grantNewUserCoupons(user.getId());
 
         // 生成JWT
-        String token = jwtUtil.generateToken(user.getId(), user.getPhone());
+        String token = jwtUtil.generateToken(user.getId(), user.getPhone(), "USER");
 
         return LoginVO.builder()
                 .token(token)
@@ -172,7 +177,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateProfile(Long userId, String nickname, String avatar) {
+    public User updateProfile(Long userId, String nickname, String avatar, String phone) {
         User user = userMapper.selectById(userId);
         if (user == null) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
@@ -183,8 +188,52 @@ public class UserServiceImpl implements UserService {
         if (avatar != null) {
             user.setAvatar(avatar);
         }
+        if (phone != null) {
+            // 检查手机号是否已被其他用户绑定
+            User existing = userMapper.selectOne(
+                    new LambdaQueryWrapper<User>().eq(User::getPhone, phone).ne(User::getId, userId));
+            if (existing != null) {
+                throw new BusinessException(ErrorCode.USER_PHONE_EXISTS);
+            }
+            user.setPhone(phone);
+        }
         userMapper.updateById(user);
         user.setPassword(null);
         return user;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updatePassword(Long userId, String oldPassword, String newPassword) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new BusinessException(ErrorCode.USER_PASSWORD_ERROR);
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userMapper.updateById(user);
+    }
+
+    @Override
+    public Page<User> listUsers(int page, int size) {
+        return userMapper.selectPage(new Page<>(page, size),
+                new LambdaQueryWrapper<User>().orderByDesc(User::getCreateTime));
+    }
+
+    @Override
+    public void updateUserStatus(Long id, Integer status) {
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+        user.setStatus(status);
+        userMapper.updateById(user);
+    }
+
+    @Override
+    public long countUsers() {
+        return userMapper.selectCount(null);
     }
 }

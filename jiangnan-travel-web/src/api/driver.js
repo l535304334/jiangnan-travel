@@ -7,28 +7,42 @@ export const driverApi = {
   register(data) {
     return request.post('/driver/register', data)
   },
-  updateStatus(driverId, status) {
-    return request.put('/driver/status', { driverId, status })
+  updateStatus(status) {
+    return request.put('/driver/status', { status })
   },
-  updateLocation(driverId, lat, lng) {
-    return request.put('/driver/location', { driverId, lat, lng })
+  updateLocation(lat, lng) {
+    return request.put('/driver/location', { lat, lng })
   },
-  getProfile(driverId) {
-    return request.get('/driver/profile', { params: { driverId } })
+  getProfile() {
+    return request.get('/driver/profile')
   },
-  nearbyOrders(orderId, limit = 5) {
-    return request.get('/driver/order/nearby', { params: { orderId, limit } })
+  // 收入
+  earning() {
+    return request.get('/driver/earning')
   },
-  acceptOrder(id, driverId) {
-    return request.post(`/driver/order/${id}/accept`, { driverId })
+  weeklyEarning() {
+    return request.get('/driver/earning/weekly')
   },
-  arriveOrder(id, driverId) {
-    return request.put(`/driver/order/${id}/arrive`, { driverId })
+  // 订单
+  nearbyOrders(lat, lng, limit = 20) {
+    return request.get('/driver/order/nearby', { params: { lat, lng, limit } })
   },
-  startTrip(id, driverId) {
-    return request.put(`/driver/order/${id}/start`, { driverId })
+  pendingOrders() {
+    return request.get('/driver/order/pending')
   },
-  completeTrip(id, driverId) {
-    return request.put(`/driver/order/${id}/complete`, { driverId })
+  orderHistory(status = 4, page = 1, pageSize = 20) {
+    return request.get('/driver/order/history', { params: { status, page, pageSize } })
+  },
+  acceptOrder(id) {
+    return request.post(`/driver/order/${id}/accept`)
+  },
+  arriveOrder(id) {
+    return request.put(`/driver/order/${id}/arrive`)
+  },
+  startTrip(id) {
+    return request.put(`/driver/order/${id}/start`)
+  },
+  completeTrip(id) {
+    return request.put(`/driver/order/${id}/complete`)
   }
 }

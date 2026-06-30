@@ -5,11 +5,12 @@ import com.jiangnan.travel.entity.CityLandmark;
 import com.jiangnan.travel.mapper.CityLandmarkMapper;
 import com.jiangnan.travel.service.CityLandmarkService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CityLandmarkServiceImpl implements CityLandmarkService {

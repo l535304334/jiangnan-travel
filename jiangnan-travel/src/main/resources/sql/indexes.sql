@@ -10,6 +10,7 @@ ALTER TABLE t_order ADD INDEX idx_user_status_time (user_id, status, create_time
 ALTER TABLE t_order ADD INDEX idx_driver_status (driver_id, status);
 ALTER TABLE t_order ADD INDEX idx_status_create (status, create_time);
 ALTER TABLE t_order ADD INDEX idx_user_create (user_id, create_time);
+ALTER TABLE t_order ADD INDEX idx_order_stats (create_time, status, final_price); -- 管理员仪表盘近7日统计覆盖索引
 
 -- 2. 司机表地理查询索引（调度引擎核心）
 ALTER TABLE t_driver ADD INDEX idx_status_location (status, lat, lng);

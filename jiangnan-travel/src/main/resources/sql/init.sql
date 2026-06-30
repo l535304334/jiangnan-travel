@@ -268,6 +268,7 @@ CREATE TABLE t_user_risk_profile (
     complaint_count     INT             DEFAULT 0                   COMMENT '近30天被投诉次数',
     risk_score          INT             DEFAULT 0                   COMMENT '风险评分 0-100',
     risk_level          TINYINT         DEFAULT 0                   COMMENT '0安全 1关注 2风险 3高危',
+    create_time         DATETIME        DEFAULT CURRENT_TIMESTAMP     COMMENT '创建时间',
     update_time         DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     INDEX idx_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户风险画像';
@@ -287,10 +288,39 @@ CREATE TABLE t_demand_hotspot (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='需求热力图快照（Redis为主，MySQL为历史备份）';
 
 -- =====================================================
--- 三、文旅表（2张）
+-- 三、活动/文旅/VIP表（6张）
 -- =====================================================
 
--- 17. 城市地标
+-- 17. 活动
+DROP TABLE IF EXISTS t_campaign;
+CREATE TABLE t_campaign (
+    id              BIGINT          PRIMARY KEY AUTO_INCREMENT  COMMENT '活动ID',
+    name            VARCHAR(100)    NOT NULL                    COMMENT '活动名称',
+    description     TEXT                                        COMMENT '活动描述',
+    banner_url      VARCHAR(255)                                COMMENT '活动banner图',
+    start_time      DATETIME        NOT NULL                    COMMENT '开始时间',
+    end_time        DATETIME        NOT NULL                    COMMENT '结束时间',
+    type            TINYINT         DEFAULT 0                   COMMENT '0通用 1新用户 2限时',
+    status          TINYINT         DEFAULT 0                   COMMENT '0草稿 1启用 2已结束',
+    create_time     DATETIME        DEFAULT CURRENT_TIMESTAMP   COMMENT '创建时间',
+    update_time     DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted         TINYINT         DEFAULT 0                   COMMENT '逻辑删除',
+    INDEX idx_status (status),
+    INDEX idx_time (start_time, end_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='活动表';
+
+-- 18. 活动优惠券关联
+DROP TABLE IF EXISTS t_campaign_coupon;
+CREATE TABLE t_campaign_coupon (
+    id              BIGINT          PRIMARY KEY AUTO_INCREMENT  COMMENT '记录ID',
+    campaign_id     BIGINT          NOT NULL                    COMMENT '活动ID',
+    coupon_id       BIGINT          NOT NULL                    COMMENT '优惠券ID',
+    create_time     DATETIME        DEFAULT CURRENT_TIMESTAMP   COMMENT '创建时间',
+    INDEX idx_campaign (campaign_id),
+    INDEX idx_coupon (coupon_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='活动优惠券关联表';
+
+-- 19. 城市地标
 DROP TABLE IF EXISTS t_city_landmark;
 CREATE TABLE t_city_landmark (
     id              BIGINT          PRIMARY KEY AUTO_INCREMENT  COMMENT '地标ID',
@@ -306,7 +336,43 @@ CREATE TABLE t_city_landmark (
     INDEX idx_city (city)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='城市地标';
 
--- 18. 城市寄语
+-- 19. VIP等级
+DROP TABLE IF EXISTS t_vip_level;
+CREATE TABLE t_vip_level (
+    id              BIGINT          PRIMARY KEY AUTO_INCREMENT  COMMENT '等级ID',
+    name            VARCHAR(20)     NOT NULL                    COMMENT '等级名称 青铜/白银/黄金/铂金/钻石',
+    level           INT             NOT NULL UNIQUE             COMMENT '等级数字 1-5',
+    discount        DECIMAL(4,2)    NOT NULL DEFAULT 1.00       COMMENT '折扣率 0.95=95折',
+    min_spend       DECIMAL(10,2)   DEFAULT 0.00                COMMENT '累计消费门槛',
+    monthly_fee     DECIMAL(8,2)    DEFAULT 0.00                COMMENT '月费',
+    yearly_fee      DECIMAL(8,2)    DEFAULT 0.00                COMMENT '年费',
+    icon            VARCHAR(255)    DEFAULT ''                   COMMENT '等级图标URL',
+    status          TINYINT         DEFAULT 1                   COMMENT '0禁用 1启用',
+    deleted         TINYINT         DEFAULT 0                   COMMENT '逻辑删除',
+    create_time     DATETIME        DEFAULT CURRENT_TIMESTAMP   COMMENT '创建时间',
+    update_time     DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_level (level)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='VIP等级表';
+
+-- 20. 用户VIP记录
+DROP TABLE IF EXISTS t_user_vip;
+CREATE TABLE t_user_vip (
+    id              BIGINT          PRIMARY KEY AUTO_INCREMENT  COMMENT '记录ID',
+    user_id         BIGINT          NOT NULL                    COMMENT '用户ID',
+    vip_level_id    BIGINT          NOT NULL                    COMMENT 'VIP等级ID',
+    fee_type        TINYINT         DEFAULT 0                   COMMENT '0月费 1年费',
+    start_time      DATETIME        NOT NULL                    COMMENT '生效时间',
+    end_time        DATETIME        NOT NULL                    COMMENT '到期时间',
+    status          TINYINT         DEFAULT 1                   COMMENT '0已过期 1生效中',
+    deleted         TINYINT         DEFAULT 0                   COMMENT '逻辑删除',
+    create_time     DATETIME        DEFAULT CURRENT_TIMESTAMP   COMMENT '创建时间',
+    update_time     DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_user (user_id),
+    INDEX idx_level (vip_level_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户VIP记录';
+
+-- 22. 城市寄语
 DROP TABLE IF EXISTS t_city_quote;
 CREATE TABLE t_city_quote (
     id              BIGINT          PRIMARY KEY AUTO_INCREMENT  COMMENT '寄语ID',
@@ -369,6 +435,37 @@ CREATE TABLE t_push_log (
     INDEX idx_user (user_id),
     INDEX idx_type (push_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='推送日志';
+
+-- 22. 城际班线
+DROP TABLE IF EXISTS t_bus_line;
+CREATE TABLE t_bus_line (
+    id              BIGINT          PRIMARY KEY AUTO_INCREMENT  COMMENT '班线ID',
+    line_name       VARCHAR(100)    NOT NULL                    COMMENT '班线名称 如"南昌→九江"',
+    start_city      VARCHAR(30)     NOT NULL                    COMMENT '出发城市',
+    end_city        VARCHAR(30)     NOT NULL                    COMMENT '到达城市',
+    bus_type        VARCHAR(20)     DEFAULT 'regular'           COMMENT 'regular豪华大巴/express快线/商务',
+    duration        INT             NOT NULL                    COMMENT '预计时长(分钟)',
+    price           DECIMAL(10,2)   NOT NULL                    COMMENT '标准票价',
+    distance        INT             DEFAULT 0                   COMMENT '里程(公里)',
+    status          TINYINT         DEFAULT 1                   COMMENT '1启用 0停运',
+    create_time     DATETIME        DEFAULT CURRENT_TIMESTAMP   COMMENT '创建时间',
+    INDEX idx_cities (start_city, end_city)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='城际班线';
+
+-- 23. 班次时刻表
+DROP TABLE IF EXISTS t_bus_schedule;
+CREATE TABLE t_bus_schedule (
+    id              BIGINT          PRIMARY KEY AUTO_INCREMENT  COMMENT '班次ID',
+    line_id         BIGINT          NOT NULL                    COMMENT '班线ID',
+    depart_time     TIME            NOT NULL                    COMMENT '发车时间',
+    arrive_time     TIME            NOT NULL                    COMMENT '到达时间',
+    ticket_count    INT             DEFAULT 45                  COMMENT '总票数',
+    remaining       INT             DEFAULT 45                  COMMENT '余票',
+    status          TINYINT         DEFAULT 1                   COMMENT '1运营 0停运',
+    create_time     DATETIME        DEFAULT CURRENT_TIMESTAMP   COMMENT '创建时间',
+    INDEX idx_line (line_id),
+    CONSTRAINT fk_bus_line FOREIGN KEY (line_id) REFERENCES t_bus_line(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='班次时刻表';
 
 -- =====================================================
 -- 五、种子数据

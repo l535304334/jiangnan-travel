@@ -22,11 +22,12 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(Long userId, String phone) {
+    public String generateToken(Long userId, String phone, String role) {
         Date now = new Date();
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("phone", phone)
+                .claim("role", role)
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + expiration))
                 .signWith(getKey())
@@ -43,6 +44,14 @@ public class JwtUtil {
 
     public Long getUserId(String token) {
         return Long.parseLong(parseToken(token).getSubject());
+    }
+
+    public String getRole(String token) {
+        return parseToken(token).get("role", String.class);
+    }
+
+    public String getRole(Claims claims) {
+        return claims.get("role", String.class);
     }
 
     public boolean validateToken(String token) {

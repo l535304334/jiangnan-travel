@@ -9,12 +9,14 @@ import com.jiangnan.travel.mapper.DriverMapper;
 import com.jiangnan.travel.mapper.OrderMapper;
 import com.jiangnan.travel.service.DispatchService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DispatchServiceImpl implements DispatchService {

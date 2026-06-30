@@ -10,12 +10,18 @@ import com.jiangnan.travel.mapper.CouponMapper;
 import com.jiangnan.travel.mapper.UserCouponMapper;
 import com.jiangnan.travel.mapper.UserMapper;
 import com.jiangnan.travel.service.CouponService;
+import com.jiangnan.travel.vo.UserCouponVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CouponServiceImpl implements CouponService {
@@ -31,14 +37,30 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
-    public List<UserCoupon> listUserCoupons(Long userId) {
-        return userCouponMapper.selectList(
+    public List<UserCouponVO> listUserCoupons(Long userId) {
+        List<UserCoupon> list = userCouponMapper.selectList(
                 new LambdaQueryWrapper<UserCoupon>()
                         .eq(UserCoupon::getUserId, userId)
                         .orderByDesc(UserCoupon::getCreateTime));
+        return list.stream().map(uc -> {
+            Coupon coupon = couponMapper.selectById(uc.getCouponId());
+            return UserCouponVO.builder()
+                    .id(uc.getId())
+                    .userId(uc.getUserId())
+                    .couponId(uc.getCouponId())
+                    .status(uc.getStatus())
+                    .expireTime(uc.getExpireTime())
+                    .useOrderId(uc.getUseOrderId())
+                    .name(coupon != null ? coupon.getName() : "")
+                    .threshold(coupon != null ? coupon.getThreshold() : BigDecimal.ZERO)
+                    .discount(coupon != null ? coupon.getDiscount() : BigDecimal.ZERO)
+                    .validDays(coupon != null ? coupon.getValidDays() : 0)
+                    .build();
+        }).collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void claim(Long userId, Long couponId) {
         Coupon coupon = couponMapper.selectById(couponId);
         if (coupon == null || coupon.getStatus() == 0) {
@@ -51,7 +73,7 @@ public class CouponServiceImpl implements CouponService {
                         .eq(UserCoupon::getUserId, userId)
                         .eq(UserCoupon::getCouponId, couponId));
         if (count > 0) {
-            throw new BusinessException(3005, "已领取过该优惠券");
+            throw new BusinessException(ErrorCode.COUPON_ALREADY_CLAIMED);
         }
 
         UserCoupon uc = new UserCoupon();

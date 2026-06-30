@@ -1,13 +1,13 @@
 <template>
-  <div class="order-list">
-    <div class="tabs">
+  <div class="order-list app-page">
+    <div class="tabs app-card">
       <span v-for="tab in tabs" :key="tab.key" class="tab-item"
             :class="{ active: activeTab === tab.key }"
             @click="activeTab = tab.key; fetchOrders()">{{ tab.label }}</span>
     </div>
 
-    <div class="order-cards">
-      <div class="order-card" v-for="item in filteredOrders" :key="item.id"
+    <TransitionGroup name="list-fade" tag="div" class="order-cards" v-loading="loading">
+      <div class="order-card app-card" v-for="item in filteredOrders" :key="item.id"
            @click="$router.push(`/order/${item.id}`)">
         <div class="order-top">
           <span class="order-no">{{ item.orderNo }}</span>
@@ -24,13 +24,14 @@
         </div>
       </div>
       <el-empty v-if="filteredOrders.length === 0 && !loading" description="暂无订单" />
-    </div>
+    </TransitionGroup>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ArrowRight } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { orderApi } from '@/api/order'
 
 const activeTab = ref(0)
@@ -75,10 +76,10 @@ onMounted(fetchOrders)
 </script>
 
 <style scoped>
-.tabs { display: flex; background: #fff; border-radius: var(--radius-md); overflow-x: auto; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+.tabs { display: flex; overflow-x: auto; margin-bottom: 12px; padding: 4px; }
 .tab-item { flex-shrink: 0; padding: 10px 14px; font-size: 0.82rem; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
 .tab-item.active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 600; }
-.order-card { background: #fff; border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow-sm); cursor: pointer; }
+.order-card { padding: 14px; margin-bottom: 10px; cursor: pointer; }
 .order-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .order-no { font-size: 0.8rem; color: var(--color-text-muted); }
 .order-route { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; margin-bottom: 8px; }

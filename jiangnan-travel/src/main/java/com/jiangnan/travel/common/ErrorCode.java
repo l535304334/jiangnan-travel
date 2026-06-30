@@ -42,6 +42,9 @@ public enum ErrorCode {
     AI_SERVICE_ERROR(5001, "AI服务暂时不可用"),
     AI_QUOTA_EXCEEDED(5002, "AI调用次数超限"),
 
+    // 优惠券/活动模块 5100-5199
+    COUPON_ALREADY_CLAIMED(5101, "已领取过该优惠券"),
+
     // 支付模块 6000-6999
     PAY_FAILED(6001, "支付失败"),
     PAY_AMOUNT_MISMATCH(6002, "支付金额不匹配"),

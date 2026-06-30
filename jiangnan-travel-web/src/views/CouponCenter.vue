@@ -1,6 +1,6 @@
 <template>
-  <div class="coupon-center">
-    <div class="tabs">
+  <div class="coupon-center app-page">
+    <div class="tabs app-card">
       <span
         v-for="tab in tabs"
         :key="tab.key"
@@ -10,23 +10,24 @@
       >{{ tab.label }}</span>
     </div>
 
-    <div class="section" v-if="activeTab === 'available'">
-      <h4>可领取优惠券</h4>
-      <div class="coupon-card" v-for="item in availableCoupons" :key="item.id">
+    <div class="section app-section" v-if="activeTab === 'available'">
+      <h4 class="app-section-title">可领取优惠券</h4>
+      <div class="coupon-card app-card" v-for="item in availableCoupons" :key="item.id">
         <div class="coupon-left">
-          <div class="coupon-amount">¥{{ item.amount }}</div>
-          <div class="coupon-condition">满{{ item.minAmount }}可用</div>
+          <div class="coupon-amount">¥{{ item.discount }}</div>
+          <div class="coupon-condition">满{{ item.threshold }}可用</div>
         </div>
         <div class="coupon-right">
           <div class="coupon-name">{{ item.name }}</div>
-          <div class="coupon-expire">有效期至 {{ item.expireDate }}</div>
-          <el-button size="small" type="primary" @click="handleClaim(item.id)">立即领取</el-button>
+          <div class="coupon-expire">{{ item.validDays ? `有效期${item.validDays}天` : '不限有效期' }}</div>
+          <el-button v-if="claimedCouponIds.has(item.id)" size="small" disabled>已领取</el-button>
+          <el-button v-else size="small" type="primary" @click="handleClaim(item.id)">立即领取</el-button>
         </div>
       </div>
     </div>
 
-    <div class="section" v-if="activeTab === 'used' || activeTab === 'expired'">
-      <div class="my-coupon" v-for="item in filteredMyCoupons" :key="item.id">
+    <div class="section app-section" v-if="activeTab === 'used' || activeTab === 'expired'">
+      <div class="my-coupon app-card" v-for="item in filteredMyCoupons" :key="item.id">
         <span class="my-coupon-name">{{ item.name }}</span>
         <span class="my-coupon-amount">¥{{ item.amount }}</span>
       </div>
@@ -49,6 +50,15 @@ const tabs = [
   { key: 'used', label: '已使用' },
   { key: 'expired', label: '已过期' }
 ]
+
+const claimedCouponIds = computed(() => {
+  const ids = new Set()
+  myCoupons.value.forEach(c => {
+    if (c.couponId) ids.add(c.couponId)
+    if (c.id) ids.add(c.id)
+  })
+  return ids
+})
 
 const filteredMyCoupons = computed(() => {
   return myCoupons.value.filter(c => c.status === activeTab.value)
@@ -78,10 +88,8 @@ const handleClaim = async (couponId) => {
 <style scoped>
 .tabs {
   display: flex;
-  background: #fff;
-  border-radius: var(--radius-md);
   margin-bottom: 16px;
-  box-shadow: var(--shadow-sm);
+  padding: 4px;
 }
 .tab-item {
   flex: 1;
@@ -98,15 +106,8 @@ const handleClaim = async (couponId) => {
   border-bottom-color: var(--color-primary);
   font-weight: 600;
 }
-.section h4 {
-  font-size: 0.95rem;
-  margin-bottom: 10px;
-}
 .coupon-card {
-  background: #fff;
-  border-radius: var(--radius-md);
   margin-bottom: 10px;
-  box-shadow: var(--shadow-sm);
   display: flex;
   overflow: hidden;
 }
@@ -144,11 +145,6 @@ const handleClaim = async (couponId) => {
   color: var(--color-text-muted);
 }
 .my-coupon {
-  background: #fff;
-  border-radius: var(--radius-md);
-  padding: 14px;
-  margin-bottom: 8px;
-  box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
   align-items: center;

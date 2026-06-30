@@ -14,6 +14,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Component
 @ServerEndpoint("/ws/driver-location")
+/**
+ * WebSocket 端点由容器管理实例（非 Spring），
+ * 因此使用静态 setter 注入（@Autowired 异常豁免）。
+ * 参考：PROJECT_RULES.md 3.4
+ */
 public class DriverLocationServer {
 
     private static JwtUtil jwtUtil;
@@ -38,18 +43,24 @@ public class DriverLocationServer {
 
     @OnMessage
     public void onMessage(String message, Session session) {
-        // message: "ping" -> "pong" 或 "lat,lng" -> 广播给相关订单
+        // message: "ping" -> "pong" 或 "orderId,lat,lng" -> 转发给订单订阅者
         Long driverId = getDriverId(session);
         if (driverId == null) return;
-        if ("ping".equals(message.trim())) {
+        String trimmed = message.trim();
+        if ("ping".equals(trimmed)) {
             try { session.getBasicRemote().sendText("pong"); } catch (IOException ignored) {}
-        } else if (message.contains(",")) {
-            String[] parts = message.split(",");
-            if (parts.length >= 2) {
+        } else if (trimmed.contains(",")) {
+            String[] parts = trimmed.split(",");
+            if (parts.length >= 3) {
                 try {
-                    BigDecimal lat = new BigDecimal(parts[0].trim());
-                    BigDecimal lng = new BigDecimal(parts[1].trim());
-                    log.debug("司机[{}]位置更新: {},{}", driverId, lat, lng);
+                    Long orderId = Long.parseLong(parts[0].trim());
+                    BigDecimal lat = new BigDecimal(parts[1].trim());
+                    BigDecimal lng = new BigDecimal(parts[2].trim());
+                    String json = String.format(
+                        "{\"type\":\"DRIVER_LOCATION\",\"orderId\":%d,\"lat\":%s,\"lng\":%s}",
+                        orderId, lat.toPlainString(), lng.toPlainString()
+                    );
+                    OrderTrackingServer.pushOrderUpdate(orderId, json);
                 } catch (NumberFormatException ignored) {}
             }
         }

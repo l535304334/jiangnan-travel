@@ -14,6 +14,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Component
 @ServerEndpoint("/ws/order/{orderId}")
+/**
+ * WebSocket 端点由容器管理实例（非 Spring），
+ * 因此使用静态 setter 注入（@Autowired 异常豁免）。
+ * 参考：PROJECT_RULES.md 3.4
+ */
 public class OrderTrackingServer {
 
     private static JwtUtil jwtUtil;

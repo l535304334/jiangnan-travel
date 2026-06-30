@@ -1,43 +1,45 @@
 <template>
-  <div class="admin-users">
-    <div class="page-header">
+  <div class="admin-page">
+    <div class="admin-page-header">
       <h3>用户管理</h3>
     </div>
-    <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading">
-      <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="phone" label="手机号" width="140" />
-      <el-table-column prop="nickname" label="昵称" />
-      <el-table-column prop="statusText" label="状态" width="100">
-        <template #default="{ row }">
-          <el-tag :type="row.status === 1 ? 'success' : 'danger'" size="small">
-            {{ row.statusText }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="createTime" label="注册时间" width="180" />
-      <el-table-column label="操作" width="100">
-        <template #default="{ row }">
-          <el-button
-            size="small"
-            :type="row.status === 1 ? 'warning' : 'success'"
-            @click="toggleStatus(row)"
-          >
-            {{ row.status === 1 ? '禁用' : '启用' }}
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <div class="pagination-wrap">
-      <el-pagination
-        v-model:current-page="pageInfo.current"
-        v-model:page-size="pageInfo.size"
-        :total="pageInfo.total"
-        layout="total, prev, pager, next, jumper"
-        background
-        small
-        @current-change="loadData"
-      />
-    </div>
+    <el-card shadow="never" v-loading="loading">
+      <el-table :data="tableData" stripe :border="false" style="width: 100%">
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="phone" label="手机号" width="140" />
+        <el-table-column prop="nickname" label="昵称" />
+        <el-table-column prop="statusText" label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'danger'" size="small">
+              {{ row.statusText }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="注册时间" width="180" />
+        <el-table-column label="操作" width="100">
+          <template #default="{ row }">
+            <el-button
+              size="small"
+              :type="row.status === 1 ? 'warning' : 'success'"
+              @click="toggleStatus(row)"
+            >
+              {{ row.status === 1 ? '禁用' : '启用' }}
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="admin-pagination-wrap">
+        <el-pagination
+          v-model:current-page="pageInfo.current"
+          v-model:page-size="pageInfo.size"
+          :total="pageInfo.total"
+          layout="total, prev, pager, next, jumper"
+          background
+          small
+          @current-change="loadData"
+        />
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -86,6 +88,4 @@ onMounted(loadData)
 </script>
 
 <style scoped>
-.page-header { margin-bottom: 16px; }
-.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>

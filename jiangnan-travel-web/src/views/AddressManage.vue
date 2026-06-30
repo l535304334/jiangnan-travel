@@ -1,18 +1,18 @@
 <template>
-  <div class="address-manage">
+  <div class="address-manage app-page">
     <div class="address-header">
-      <h3>我的地址</h3>
+      <h3 class="app-section-title">我的地址</h3>
       <el-button type="primary" size="small" :icon="Plus" @click="showDialog = true">添加地址</el-button>
     </div>
 
-    <div class="address-list">
-      <div class="address-card" v-for="item in addresses" :key="item.id">
+    <TransitionGroup name="list-fade" tag="div" class="address-list">
+      <div class="address-card app-card" v-for="item in addresses" :key="item.id">
         <div class="address-tag">{{ item.tag }}</div>
         <div class="address-detail">{{ item.address }}</div>
         <el-button type="danger" link size="small" :icon="Delete" @click="handleDelete(item.id)" />
       </div>
       <el-empty v-if="!addresses.length" description="暂无收藏地址" />
-    </div>
+    </TransitionGroup>
 
     <el-dialog v-model="showDialog" title="添加地址" width="90%">
       <el-form :model="form" label-position="top">
@@ -83,15 +83,7 @@ const handleDelete = async (id) => {
   align-items: center;
   margin-bottom: 16px;
 }
-.address-header h3 {
-  font-size: 1.05rem;
-}
 .address-card {
-  background: #fff;
-  border-radius: var(--radius-md);
-  padding: 14px;
-  margin-bottom: 10px;
-  box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   gap: 12px;

@@ -2,16 +2,35 @@
   <div class="driver-layout">
     <header class="driver-header">
       <h2>江南出行·司机端</h2>
-      <el-switch
-        v-model="isOnline"
-        :active-text="isOnline ? '在线' : '离线'"
-        :active-value="1"
-        :inactive-value="0"
-        @change="handleStatusChange"
-      />
+      <div class="header-right">
+        <el-switch
+          v-model="isOnline"
+          :active-text="isOnline ? '在线' : '离线'"
+          :active-value="1"
+          :inactive-value="0"
+          @change="handleStatusChange"
+        />
+        <el-dropdown trigger="click" @command="handleHeaderCommand">
+          <div class="header-user">
+            <div class="header-avatar">
+              <CdnAvatar type="driver" :size="28" icon="UserFilled" />
+            </div>
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="switch">切换账号</el-dropdown-item>
+              <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </div>
     </header>
     <main class="driver-main">
-      <router-view />
+      <router-view v-slot="{ Component, route }">
+        <transition name="page-fade" mode="out-in">
+          <component :is="Component" :key="route.path" />
+        </transition>
+      </router-view>
     </main>
     <nav class="driver-tabs">
       <div
@@ -29,10 +48,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { driverApi } from '@/api/driver'
+import { useUserStore } from '@/stores/user'
 import { HomeFilled, Money, UserFilled } from '@element-plus/icons-vue'
+import CdnAvatar from '@/components/CdnAvatar.vue'
 
+const router = useRouter()
+const userStore = useUserStore()
 const isOnline = ref(1)
 
 const tabs = [
@@ -41,15 +65,15 @@ const tabs = [
   { path: '/driver/profile', label: '我的', icon: UserFilled }
 ]
 
-const driverId = computed(() => {
-  const info = JSON.parse(localStorage.getItem('driverInfo') || '{}')
-  return info.id || 0
-})
-
 const handleStatusChange = async (val) => {
   try {
-    await driverApi.updateStatus(driverId.value, val)
+    await driverApi.updateStatus(val)
   } catch {}
+}
+
+const handleHeaderCommand = (command) => {
+  userStore.logout()
+  router.push('/driver/login')
 }
 </script>
 
@@ -68,17 +92,26 @@ const handleStatusChange = async (val) => {
   background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
   color: #fff;
 }
-.driver-header h2 { font-size: 1.1rem; font-weight: 700; }
+.driver-header h2 { font-size: var(--font-size-h3); font-weight: 700; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.header-user { cursor: pointer; }
+.header-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+}
 .driver-main { padding: 12px 16px; }
 .driver-tabs {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
   height: 60px; display: flex;
   background: #fff; border-top: 1px solid var(--color-border);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 .tab-item {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   color: var(--color-text-muted); font-size: 0.7rem; cursor: pointer;
+  transition: color 0.2s;
 }
 .tab-item.active { color: var(--color-primary); }
 .tab-item span { margin-top: 2px; }

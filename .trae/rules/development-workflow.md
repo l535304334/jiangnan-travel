@@ -1,73 +1,74 @@
-# 开发工作流规则
+# 开发工作流规则（摘要）
 
-本项目始终遵循 **Spec Driven Development** 工作流。所有开发任务必须按以下顺序执行：
+> 本文件是 [constitution.md](./constitution.md) 的摘要版本。  
+> 完整规则、优先级、更新提醒义务请查阅 **项目宪法（Project Constitution）**。
 
-## 核心流程
+---
 
-① **分析需求** → ② **编写 Spec** → ③ **拆分 Task** → ④ **设计数据库** → ⑤ **设计 API** → ⑥ **每次只完成一个 Task** → ⑦ **Code Review** → ⑧ **自动生成测试** → ⑨ **Refactor（如有需要）** → ⑩ **更新文档**
+## 宪法文件
 
-## 详细步骤
+本项目由以下 5 个文件组成"**项目宪法（Project Constitution）**"，每次开发任务必须遵守：
 
-### 步骤 1: 分析需求
-- 使用 `brainstorming` Skill 进行需求分析
-- 通过 Socratic 式提问澄清模糊需求
-- 记录需求分析结果
+| 优先级 | 文件 |
+|---|---|
+| **P0（最高）** | [AGENTS.md](../../AGENTS.md) — AI 代理总入口 |
+| **P0** | [EXECUTION_MODE.md](../../EXECUTION_MODE.md) — 执行模式定义 |
+| **P1** | [PROJECT_RULES.md](../../PROJECT_RULES.md) — 编码规范 |
+| **P2** | [ARCHITECTURE.md](../../ARCHITECTURE.md) — 架构文档 |
+| **P3** | [AI_WORKFLOW.md](../../AI_WORKFLOW.md) — Skill + MCP 工作流 |
 
-### 步骤 2: 编写 Spec
-- 使用 `writing-plans` Skill 编写详细的实现计划
-- 包含功能描述、输入输出、边界条件
-- 保存在 `docs/spec/` 目录
+优先级：`AGENTS.md == EXECUTION_MODE.md > PROJECT_RULES.md > ARCHITECTURE.md > AI_WORKFLOW.md`
 
-### 步骤 3: 拆分 Task
-- 使用 `subagent-driven-development` 将大任务拆分为小任务
-- 每个 Task 的粒度控制在 2-5 分钟
-- 每个 Task 包含完整代码和验证步骤
+---
 
-### 步骤 4: 设计数据库
-- 使用 `database-design` Skill 进行数据库设计
-- 遵循 MyBatis-Plus 规范
-- 考虑索引和性能优化
+## 默认执行模式
 
-### 步骤 5: 设计 API
-- 使用 `rest-api-design` Skill 进行 API 设计
-- 遵循 RESTful 规范
-- 使用 `auth0-springboot-api` 确保 Spring Security 配置正确
+**本项目默认处于 [EXECUTION_MODE.md](../../EXECUTION_MODE.md) 定义的执行模式。**
 
-### 步骤 6: 逐个完成 Task
-- 每次只完成一个 Task
-- 使用 `test-driven-development` 先写测试
-- RED → GREEN → REFACTOR 循环
-- 完成后立即进行 Code Review
+收到开发指令时，AI 自动执行：
+1. 加载所有项目规范与设计文档
+2. 扫描项目当前状态
+3. 定位当前应开发的 Task
+4. 分析影响范围与依赖关系
+5. 检查是否存在设计冲突
+6. 执行 Task（数据库设计 → API 设计 → TDD → 编码 → 编译检查 → 测试 → Review → 重构 → 文档同步）
+7. 输出开发报告
+8. 等待用户确认后继续下一项
 
-### 步骤 7: Code Review
-- 使用 `code-review-testing` 进行代码审查
-- 检查安全性、性能、正确性、可维护性
-- 严重问题必须修复才能继续
+> 详细执行流程、Task 推进规则、开发纪律、停止条件、汇报规范 → 参见 `EXECUTION_MODE.md`
 
-### 步骤 8: 测试
-- 使用 `test-driven-development` 确保测试覆盖率
-- Java 后端使用 JUnit + Mockito
-- Vue 前端使用 Vitest
+---
 
-### 步骤 9: Refactor
-- 使用 `code-refactoring` Skill 进行重构
-- 遵循 SOLID 原则
-- 重构后重新运行所有测试
+## 核心工作流（8 阶段）
 
-### 步骤 10: 文档
-- 使用 `documentation` Skill 更新项目文档
-- 更新 API 文档、README、数据库设计文档
+```
+需求分析 → Spec → 用户确认 → Task 拆分 → 逐个 Task(测试→编码→Review) → 文档 → Git 提交
+```
 
-## 技术栈参考
-- 后端: Spring Boot 3.2.x + MyBatis-Plus 3.5.7 + MySQL 8.0 + Redis + Redisson
-- 安全: Spring Security + JWT (jjwt 0.12)
-- 前端: Vue 3 + Vite 5 + Element Plus 2.x + Pinia
-- AI: DeepSeek API
-- 地图: 高德 JS API 2.0
+| 阶段 | 使用的 Skill | 调用的 MCP |
+|---|---|---|
+| ① 需求分析 | `brainstorming` | Sequential Thinking（可选） |
+| ② 编写 Spec | `spec-driven-development` | MySQL（确认表结构） |
+| ③ Task 拆分 | `planning-and-task-breakdown` | — |
+| ④ 数据库设计 | `database-design` | MySQL（describe_table, inspect_schema） |
+| ⑤ API 设计 | `rest-api-design` | Sequential Thinking（可选） |
+| ⑥ 增量开发 | `test-driven-development` + `java-architect` / `web-dev` | MySQL / Playwright |
+| ⑦ Code Review | `code-review-and-quality` | Git（git_diff） |
+| ⑧ 文档 + 提交 | `documentation-and-adrs` + `git-workflow-and-versioning` | Git（全流程） |
+
+---
 
 ## 禁止行为
-- 不要在需求未确认前写代码
-- 不要一次完成多个 Task 而不经过 Review
-- 不要跳过测试
-- 不要生成占位符或 TODO 代码
-- 不要一次性生成整个项目
+
+- ❌ 跳到需求分析直接编码
+- ❌ 跳过 Spec 直接编码
+- ❌ 一次性生成整个项目
+- ❌ 未经 Review 提交 Git
+- ❌ 需求不明确时猜测实现
+- ❌ 生成 TODO / 占位符代码
+- ❌ 跳过测试
+
+---
+
+> 详细规则、冲突裁决、更新提醒义务请参考 [constitution.md](./constitution.md)。  
+> 详细 Skill + MCP 调用矩阵请参考 [AI_WORKFLOW.md](../../AI_WORKFLOW.md)。

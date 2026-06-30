@@ -11,15 +11,18 @@ import com.jiangnan.travel.mapper.CarTypeMapper;
 import com.jiangnan.travel.mapper.CouponMapper;
 import com.jiangnan.travel.mapper.UserCouponMapper;
 import com.jiangnan.travel.service.PricingService;
+import com.jiangnan.travel.service.VipService;
 import com.jiangnan.travel.vo.EstimateVO;
 import com.jiangnan.travel.vo.PriceDetailVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PricingServiceImpl implements PricingService {
@@ -27,11 +30,22 @@ public class PricingServiceImpl implements PricingService {
     private final CarTypeMapper carTypeMapper;
     private final CouponMapper couponMapper;
     private final UserCouponMapper userCouponMapper;
+    private final VipService vipService;
 
     @Override
     public EstimateVO estimate(EstimateRequest request) {
-        // 获取车型
-        Long carTypeId = request.getCarTypeId() != null ? request.getCarTypeId() : 1L;
+        // 获取行程类型
+        Integer tripType = request.getTripType() != null ? request.getTripType() : 0;
+
+        // 根据行程类型推荐车型
+        Long carTypeId = request.getCarTypeId();
+        if (carTypeId == null) {
+            if (tripType == 1) {
+                carTypeId = 4L; // 长途推荐车型ID=4
+            } else {
+                carTypeId = 1L; // 短途默认车型ID=1
+            }
+        }
         CarType carType = carTypeMapper.selectById(carTypeId);
         if (carType == null || carType.getStatus() == 0) {
             throw new BusinessException(ErrorCode.ORDER_CAR_TYPE_INVALID);
@@ -53,12 +67,34 @@ public class PricingServiceImpl implements PricingService {
 
         // 过路费默认为0
         detail.setTollFee(BigDecimal.ZERO);
-        detail.setCouponDiscount(BigDecimal.ZERO);
+
+        // 计算优惠券折扣（couponId 为用户券 UserCoupon.id，与用户身份绑定）
+        BigDecimal couponDiscount = BigDecimal.ZERO;
+        if (request.getCouponId() != null && request.getUserId() != null) {
+            couponDiscount = calcCouponDiscount(request.getCouponId(), request.getUserId(), detail.getSubtotal());
+        }
+        detail.setCouponDiscount(couponDiscount);
+
+        // VIP折扣
+        BigDecimal vipDiscount = vipService.getVipDiscount(request.getUserId());
+        BigDecimal vipDiscountAmount = BigDecimal.ZERO;
+        if (vipDiscount.compareTo(BigDecimal.ONE) < 0) {
+            BigDecimal afterCoupon = detail.getSubtotal().add(surgeAmount).subtract(couponDiscount);
+            vipDiscountAmount = afterCoupon.multiply(BigDecimal.ONE.subtract(vipDiscount))
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+        detail.setVipDiscount(vipDiscount);
+        detail.setVipDiscountAmount(vipDiscountAmount);
 
         // 最终价格
         BigDecimal total = detail.getSubtotal().add(surgeAmount)
+                .subtract(couponDiscount)
+                .subtract(vipDiscountAmount)
                 .setScale(2, RoundingMode.HALF_UP);
         detail.setTotalPrice(total);
+
+        // 行程类型名称
+        String tripTypeName = tripType == 1 ? "长途出行" : "短途出行";
 
         return EstimateVO.builder()
                 .distance(distMeters)
@@ -66,10 +102,12 @@ public class PricingServiceImpl implements PricingService {
                 .basePrice(detail.getSubtotal())
                 .surgeFactor(surgeFactor)
                 .surgeAmount(surgeAmount)
-                .couponDiscount(BigDecimal.ZERO)
+                .couponDiscount(couponDiscount)
                 .estimateTotal(total)
                 .carTypeName(carType.getName())
                 .priceDetail(detail)
+                .tripType(tripType)
+                .tripTypeName(tripTypeName)
                 .build();
     }
 

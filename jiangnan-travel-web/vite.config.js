@@ -9,6 +9,17 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+  build: {
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'echarts-vendor': ['echarts'],
+          'element-plus-vendor': ['element-plus', '@element-plus/icons-vue']
+        }
+      }
+    }
+  },
   server: {
     port: 5173,
     proxy: {

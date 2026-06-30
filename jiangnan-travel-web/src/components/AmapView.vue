@@ -20,8 +20,12 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 const props = defineProps({
   center: { type: Array, default: () => [115.8759, 28.6842] },
   markers: { type: Array, default: () => [] },
-  zoom: { type: Number, default: 14 }
+  zoom: { type: Number, default: 14 },
+  // 路线坐标数组 [{lng,lat}, ...]
+  path: { type: Array, default: () => [] }
 })
+
+const emit = defineEmits(['map-click'])
 
 const mapContainer = ref(null)
 const loading = ref(true)
@@ -36,6 +40,9 @@ const tryInit = () => {
     if (!mapContainer.value || map) return
     map = new window.AMap.Map(mapContainer.value, {
       center: props.center, zoom: props.zoom, resizeEnable: true
+    })
+    map.on('click', (e) => {
+      emit('map-click', { lng: e.lnglat.getLng(), lat: e.lnglat.getLat() })
     })
     failed.value = false
     renderMarkers()
@@ -64,7 +71,7 @@ onMounted(() => {
   intervalId = setInterval(tryInit, 2000)
 })
 
-watch(() => props.markers, () => { if (map) renderMarkers() }, { deep: true })
+watch(() => [props.markers, props.path], () => { if (map) renderMarkers() }, { deep: true })
 watch(() => props.center, (v) => { if (map) map.setCenter(v) })
 
 const renderMarkers = () => {
@@ -75,6 +82,19 @@ const renderMarkers = () => {
       new window.AMap.Marker({ position: [m.lng, m.lat], title: m.title || '', map })
     }
   })
+  // 绘制路线
+  if (props.path.length >= 2) {
+    const pathCoords = props.path.map(p => [p.lng, p.lat])
+    new window.AMap.Polyline({
+      path: pathCoords,
+      strokeColor: '#2D8A6E',
+      strokeWeight: 4,
+      strokeOpacity: 0.8,
+      lineJoin: 'round',
+      map
+    })
+    map.setFitView(null, false, [40, 40, 40, 40])
+  }
 }
 
 onUnmounted(() => { if (intervalId) clearInterval(intervalId); if (map) { map.destroy(); map = null } })

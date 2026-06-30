@@ -19,6 +19,9 @@ export const userApi = {
   updateProfile(data) {
     return request.put('/user/profile', data)
   },
+  changePassword(data) {
+    return request.put('/user/password', data)
+  },
   getAddresses() {
     return request.get('/user/address')
   },

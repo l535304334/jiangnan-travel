@@ -9,9 +9,9 @@ import lombok.Data;
 public class ChatRequest {
 
     @NotBlank(message = "消息不能为空")
-    @Schema(description = "用户消息内容")
+    @Schema(description = "用户消息内容", example = "今天天气怎么样？")
     private String message;
 
-    @Schema(description = "会话ID，用于多轮对话")
+    @Schema(description = "会话ID，用于多轮对话", example = "session_001")
     private String sessionId;
 }

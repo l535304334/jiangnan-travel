@@ -1,0 +1,99 @@
+version: "3.8"
+
+services:
+  # ========================================
+  # MySQL 8.0 数据库
+  # ========================================
+  mysql:
+    image: mysql:8.0
+    container_name: jiangnan-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: Lai20050802@
+      MYSQL_DATABASE: smart_travel
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ../jiangnan-travel/src/main/resources/sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ../jiangnan-travel/src/main/resources/sql/seed_data.sql:/docker-entrypoint-initdb.d/02-seed_data.sql
+      - ../jiangnan-travel/src/main/resources/sql/test_accounts.sql:/docker-entrypoint-initdb.d/03-test_accounts.sql
+      - ../jiangnan-travel/src/main/resources/sql/migration_optimize.sql:/docker-entrypoint-initdb.d/04-migration_optimize.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jiangnan-net
+
+  # ========================================
+  # Redis 缓存
+  # ========================================
+  redis:
+    image: redis:7-alpine
+    container_name: jiangnan-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jiangnan-net
+
+  # ========================================
+  # Spring Boot 后端
+  # ========================================
+  backend:
+    build:
+      context: ./backend
+    image: jiangnan-backend:latest
+    container_name: jiangnan-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: smart_travel
+      DB_USER: root
+      DB_PASS: Lai20050802@
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - jiangnan-net
+
+  # ========================================
+  # Nginx 前端
+  # ========================================
+  frontend:
+    build:
+      context: ./frontend
+    image: jiangnan-frontend:latest
+    container_name: jiangnan-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - jiangnan-net
+
+volumes:
+  mysql-data:
+  redis-data:
+
+networks:
+  jiangnan-net:
+    driver: bridge

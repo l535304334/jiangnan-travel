@@ -1,6 +1,9 @@
 import request from './request'
 
 export const orderApi = {
+  routePlan(originLng, originLat, destLng, destLat) {
+    return request.get('/route/plan', { params: { originLng, originLat, destLng, destLat } })
+  },
   estimate(data) {
     return request.post('/order/estimate', data)
   },

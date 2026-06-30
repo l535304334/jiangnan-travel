@@ -20,6 +20,10 @@ export const useUserStore = defineStore('user', () => {
     userInfo.value = null
     localStorage.removeItem('token')
     localStorage.removeItem('userInfo')
+    localStorage.removeItem('adminToken')
+    localStorage.removeItem('adminInfo')
+    localStorage.removeItem('driverToken')
+    localStorage.removeItem('driverInfo')
   }
 
   return { token, userInfo, setToken, setUserInfo, logout }

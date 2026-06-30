@@ -1,5 +1,6 @@
 package com.jiangnan.travel.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jiangnan.travel.dto.ChatRequest;
 import com.jiangnan.travel.entity.AiChatLog;
 import com.jiangnan.travel.entity.CityLandmark;
@@ -11,14 +12,18 @@ import com.jiangnan.travel.service.AiChatService;
 import com.jiangnan.travel.vo.ChatVO;
 import com.openai.client.OpenAIClient;
 import com.openai.models.ChatCompletion;
+import com.openai.models.ChatCompletionAssistantMessageParam;
 import com.openai.models.ChatCompletionCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -43,14 +48,8 @@ public class AiChatServiceImpl implements AiChatService {
         // 构建系统提示词（含文旅知识）
         String systemPrompt = buildSystemPrompt();
 
-        // 调用 DeepSeek
-        ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
-                .model(model)
-                .addSystemMessage(systemPrompt)
-                .addUserMessage(request.getMessage())
-                .maxTokens(1024)
-                .temperature(0.7)
-                .build();
+        // 构建带多轮上下文的对话参数
+        ChatCompletionCreateParams params = buildChatParams(sessionId, systemPrompt, request.getMessage());
 
         String reply;
         long tokensUsed;
@@ -74,13 +73,140 @@ public class AiChatServiceImpl implements AiChatService {
                 .build();
     }
 
+    @Override
+    public SseEmitter chatStream(ChatRequest request, Long userId) {
+        String sessionId = request.getSessionId() != null ? request.getSessionId() : UUID.randomUUID().toString();
+
+        // 保存用户消息
+        saveLog(userId, sessionId, "user", request.getMessage());
+
+        SseEmitter emitter = new SseEmitter(60000L);
+
+        // 构建系统提示词（含文旅知识）
+        String systemPrompt = buildSystemPrompt();
+
+        // 构建带多轮上下文的对话参数
+        ChatCompletionCreateParams params = buildChatParams(sessionId, systemPrompt, request.getMessage());
+
+        // 使用 CompletableFuture 异步推送流式数据
+        CompletableFuture.runAsync(() -> {
+            StringBuilder fullReply = new StringBuilder();
+            try {
+                deepSeekClient.chat().completions().createStreaming(params)
+                        .stream()
+                        .forEach(chunk -> {
+                            String delta = chunk.choices().get(0).delta().content().orElse("");
+                            if (!delta.isEmpty()) {
+                                fullReply.append(delta);
+                                try {
+                                    emitter.send(SseEmitter.event().name("delta").data(delta));
+                                } catch (IOException e) {
+                                    throw new RuntimeException("SSE send error", e);
+                                }
+                            }
+                        });
+
+                // 发送完成事件
+                emitter.send(SseEmitter.event().name("done").data("[DONE]"));
+                emitter.complete();
+            } catch (Exception e) {
+                log.error("DeepSeek 流式调用失败", e);
+                String fallback = getFallbackReply(request.getMessage());
+                try {
+                    emitter.send(SseEmitter.event().name("delta").data(fallback));
+                    emitter.send(SseEmitter.event().name("done").data("[DONE]"));
+                    emitter.complete();
+                    fullReply.append(fallback);
+                } catch (IOException ex) {
+                    emitter.completeWithError(ex);
+                }
+            }
+
+            // 保存AI回复
+            saveLog(userId, sessionId, "assistant", fullReply.toString());
+        });
+
+        return emitter;
+    }
+
+    @Override
+    public List<String> getSessions(Long userId) {
+        // 查询该用户的去重 sessionId 列表，按最后消息时间倒序
+        List<AiChatLog> logs = aiChatLogMapper.selectList(
+                new LambdaQueryWrapper<AiChatLog>()
+                        .eq(userId != null, AiChatLog::getUserId, userId)
+                        .select(AiChatLog::getSessionId)
+                        .groupBy(AiChatLog::getSessionId)
+                        .orderByDesc(AiChatLog::getCreateTime));
+        return logs.stream()
+                .map(AiChatLog::getSessionId)
+                .distinct()
+                .toList();
+    }
+
+    @Override
+    public List<AiChatLog> getSessionMessages(String sessionId) {
+        return aiChatLogMapper.selectList(
+                new LambdaQueryWrapper<AiChatLog>()
+                        .eq(AiChatLog::getSessionId, sessionId)
+                        .orderByAsc(AiChatLog::getCreateTime));
+    }
+
+    /**
+     * 构建带多轮上下文的对话参数
+     * 从数据库加载同 session 的历史消息作为上下文
+     */
+    private ChatCompletionCreateParams buildChatParams(String sessionId, String systemPrompt, String userMessage) {
+        var builder = ChatCompletionCreateParams.builder()
+                .model(model)
+                .maxTokens(1024)
+                .temperature(0.7);
+
+        // 1. 添加系统提示词
+        builder.addSystemMessage(systemPrompt);
+
+        // 2. 加载历史消息（按时间正序，取最近20条）
+        List<AiChatLog> history = aiChatLogMapper.selectList(
+                new LambdaQueryWrapper<AiChatLog>()
+                        .eq(AiChatLog::getSessionId, sessionId)
+                        .orderByAsc(AiChatLog::getCreateTime));
+
+        // 跳过刚保存的当前用户消息（最后一条），取前面最多20条
+        int historySize = history.size();
+        int startIdx = Math.max(0, historySize - 21); // 21 = 20条历史 + 1条当前
+        for (int i = startIdx; i < historySize - 1; i++) {
+            AiChatLog log = history.get(i);
+            if ("user".equals(log.getRole())) {
+                builder.addUserMessage(log.getContent());
+            } else if ("assistant".equals(log.getRole())) {
+                builder.addMessage(ChatCompletionAssistantMessageParam.builder().content(log.getContent()).build());
+            }
+        }
+
+        // 3. 添加当前用户消息
+        builder.addUserMessage(userMessage);
+
+        return builder.build();
+    }
+
     private String buildSystemPrompt() {
         StringBuilder sb = new StringBuilder();
-        sb.append("你是「江南出行」智慧服务平台的AI客服助手。");
-        sb.append("你的职责是：帮助用户解决网约车相关问题（下单、计价、优惠券、行程安全等），");
-        sb.append("同时适当介绍江西省的文旅特色。");
-        sb.append("请用亲切友好的语气回复，回复长度控制在200字以内。\n\n");
-        sb.append("江西省文旅知识：\n");
+        sb.append("你叫江小游，是「江南出行」智慧服务平台的出行助手。");
+        sb.append("\"江\"取自江西与江南，\"小游\"意为伴你悠然出行。\n\n");
+        sb.append("你的角色定位：\n");
+        sb.append("- 你是一个温暖亲切、知识丰富的出行导游助手\n");
+        sb.append("- 你既能解决出行问题，又能介绍江西风土人情\n");
+        sb.append("- 你了解江西每个城市的历史文化和特色美食\n\n");
+        sb.append("你的核心能力：\n");
+        sb.append("1. 出行服务：帮助用户下单、查价、查路线、解答优惠券和安全问题\n");
+        sb.append("2. 文旅推荐：根据用户兴趣推荐江西景点，讲景点背后的故事\n");
+        sb.append("3. 闲聊互动：可以聊江西美食、历史、民俗\n\n");
+        sb.append("回答风格：\n");
+        sb.append("- 用温暖亲切的语气，像朋友一样交流\n");
+        sb.append("- 回答问题简洁清晰（200字以内），可以适当反问引导对话\n");
+        sb.append("- 当用户问江西景点时，先给出有画面感的描述，再补充文化背景\n");
+        sb.append("- 如果不知道答案，诚实说不知道，不要编造\n\n");
+        sb.append("江西省文旅知识（动态加载）：\n");
 
         // 加载地标
         List<CityLandmark> landmarks = cityLandmarkMapper.selectList(null);

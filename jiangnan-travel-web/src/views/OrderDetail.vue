@@ -1,10 +1,10 @@
 <template>
-  <div class="order-detail">
+  <div class="order-detail app-page">
     <div class="map-area">
-      <AmapView :center="mapCenter" :markers="mapMarkers" :zoom="14" style="height:200px" />
+      <AmapView :center="mapCenter" :markers="mapMarkers" :path="mapPath" :zoom="14" style="height:200px" />
     </div>
 
-    <div class="info-card" v-if="order">
+    <div class="info-card app-card" v-if="order">
       <div class="status-row">
         <span>订单状态</span>
         <el-tag :type="statusTagType">{{ order.statusText }}</el-tag>
@@ -21,16 +21,17 @@
     </div>
 
     <div class="actions">
-      <el-button v-if="order && order.status === 4" type="primary" @click="handlePay">模拟支付</el-button>
+      <el-button v-if="order && order.status === 4" type="primary" @click="handlePay">去支付</el-button>
+      <el-button v-if="order && order.status === 4" plain @click="handleInvoice">申请发票</el-button>
       <el-button v-if="order && (order.status === 0 || order.status === 1)" type="danger" plain @click="handleCancel">取消订单</el-button>
       <el-button v-if="order && order.status === 4" @click="handleReview">评价</el-button>
-      <el-button v-if="order" plain @click="handleReorder">再来一单</el-button>
+      <el-button v-if="order && (order.status === 4 || order.status === 5)" plain @click="handleReorder">再来一单</el-button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { orderApi } from '@/api/order'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -39,6 +40,8 @@ import AmapView from '@/components/AmapView.vue'
 const route = useRoute()
 const router = useRouter()
 const order = ref(null)
+const loading = ref(true)
+const selectedReason = ref('')
 
 const mapCenter = computed(() => {
   if (order.value?.startLng) return [order.value.startLng, order.value.startLat]
@@ -49,6 +52,13 @@ const mapMarkers = computed(() => {
   return [
     { lng: order.value.startLng, lat: order.value.startLat, title: order.value.startAddress },
     { lng: order.value.endLng, lat: order.value.endLat, title: order.value.endAddress }
+  ]
+})
+const mapPath = computed(() => {
+  if (!order.value?.startLng) return []
+  return [
+    { lng: order.value.startLng, lat: order.value.startLat },
+    { lng: order.value.endLng, lat: order.value.endLat }
   ]
 })
 const statusTagType = computed(() => {
@@ -62,15 +72,53 @@ onMounted(async () => {
 })
 
 const handlePay = async () => {
-  try { await orderApi.pay(order.value.id); ElMessage.success('支付成功'); order.value.status = 4 } catch (e) {}
+  router.push(`/payment/${order.value.id}`)
+}
+const handleInvoice = () => {
+  router.push({ path: '/invoice-apply', query: { orderId: order.value.id } })
 }
 const handleCancel = async () => {
+  const cancelReasons = [
+    '行程有变，不需要了',
+    '等待时间太长',
+    '误操作下单',
+    '价格太贵',
+    '司机长时间未接单',
+    '其他原因'
+  ]
   try {
-    const { value } = await ElMessageBox.prompt('请输入取消原因', '取消订单', { confirmButtonText: '确认' })
-    await orderApi.cancel(order.value.id, value || '用户取消')
-    ElMessage.success('已取消'); order.value.status = 5; order.value.statusText = '已取消'
+    const { value } = await ElMessageBox({
+      title: '取消订单',
+      message: h('div', null, [
+        h('div', { style: 'margin-bottom:12px;font-size:0.9rem;color:#666' }, '请选择取消原因：'),
+        h('div', { style: 'display:flex;flex-direction:column;gap:8px' },
+          cancelReasons.map(r => h('el-radio', {
+            value: r,
+            modelValue: null,
+            'onUpdate:modelValue': (v) => { selectedReason.value = v }
+          }, r))
+        ),
+        h('el-input', {
+          modelValue: null,
+          'onUpdate:modelValue': (v) => { if (selectedReason.value === '其他原因') selectedReason.value = v },
+          placeholder: '请输入其他原因...',
+          style: 'margin-top:8px',
+          size: 'small'
+        })
+      ]),
+      confirmButtonText: '确认取消',
+      cancelButtonText: '暂不取消',
+      showCancelButton: true,
+      distinguishCancelAndClose: true,
+      dangerouslyUseHTMLString: false
+    })
+    const reason = selectedReason.value || '用户取消'
+    await orderApi.cancel(order.value.id, reason)
+    ElMessage.success('订单已取消')
+    order.value.status = 5
+    order.value.statusText = '已取消'
   } catch (e) {
-    if (e !== 'cancel') {
+    if (e !== 'cancel' && e !== 'close') {
       ElMessage.error('取消失败，请稍后重试')
     }
   }
@@ -81,7 +129,7 @@ const handleReorder = () => router.push({ path: '/order-create', query: { endAdd
 
 <style scoped>
 .map-area { margin-bottom: 12px; }
-.info-card { background: #fff; border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); margin-bottom: 16px; }
+.info-card { margin-bottom: 16px; }
 .status-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 600; }
 .route-row { padding: 4px 0; margin-bottom: 12px; }
 .route-point { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }

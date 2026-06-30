@@ -44,6 +44,106 @@ def split_eval_set(eval_set: list[dict], holdout: float, seed: int = 42) -> tupl
     return train_set, test_set
 
 
+def calculate_summary(results: list[dict]) -> dict:
+    """Calculate pass/fail summary for a list of evaluation results."""
+    passed = sum(1 for r in results if r["pass"])
+    total = len(results)
+    return {"passed": passed, "failed": total - passed, "total": total}
+
+
+def split_eval_results(all_results: list[dict], train_set: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Split evaluation results into train and test sets based on query matching."""
+    train_queries_set = {q["query"] for q in train_set}
+    train_result_list = [r for r in all_results if r["query"] in train_queries_set]
+    test_result_list = [r for r in all_results if r["query"] not in train_queries_set]
+    return train_result_list, test_result_list
+
+
+def calculate_eval_stats(results: list[dict]) -> dict:
+    """Calculate evaluation statistics including precision, recall, accuracy."""
+    pos = [r for r in results if r["should_trigger"]]
+    neg = [r for r in results if not r["should_trigger"]]
+
+    tp = sum(r["triggers"] for r in pos)
+    pos_runs = sum(r["runs"] for r in pos)
+    fn = pos_runs - tp
+
+    fp = sum(r["triggers"] for r in neg)
+    neg_runs = sum(r["runs"] for r in neg)
+    tn = neg_runs - fp
+
+    total = tp + tn + fp + fn
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 1.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 1.0
+    accuracy = (tp + tn) / total if total > 0 else 0.0
+
+    return {
+        "tp": tp, "tn": tn, "fp": fp, "fn": fn,
+        "precision": precision, "recall": recall, "accuracy": accuracy,
+        "total": total, "correct": tp + tn,
+    }
+
+
+def format_eval_stats(label: str, stats: dict, elapsed: float) -> str:
+    """Format evaluation statistics for display."""
+    return f"{label}: {stats['correct']}/{stats['total']} correct, precision={stats['precision']:.0%} recall={stats['recall']:.0%} accuracy={stats['accuracy']:.0%} ({elapsed:.1f}s)"
+
+
+def update_iteration_history(
+    iteration: int,
+    current_description: str,
+    train_summary: dict,
+    test_summary: dict | None,
+    train_results: list[dict],
+    test_results: list[dict] | None,
+) -> dict:
+    """Create a history entry for the current iteration."""
+    history_entry = {
+        "iteration": iteration,
+        "description": current_description,
+        "train_passed": train_summary["passed"],
+        "train_failed": train_summary["failed"],
+        "train_total": train_summary["total"],
+        "train_results": train_results,
+        "passed": train_summary["passed"],
+        "failed": train_summary["failed"],
+        "total": train_summary["total"],
+        "results": train_results,
+    }
+    if test_summary:
+        history_entry.update({
+            "test_passed": test_summary["passed"],
+            "test_failed": test_summary["failed"],
+            "test_total": test_summary["total"],
+            "test_results": test_results,
+        })
+    return history_entry
+
+
+def update_live_report(
+    live_report_path: Path,
+    original_description: str,
+    current_description: str,
+    history: list[dict],
+    holdout: float,
+    train_size: int,
+    test_size: int,
+    skill_name: str,
+) -> None:
+    """Generate and update the live HTML report."""
+    partial_output = {
+        "original_description": original_description,
+        "best_description": current_description,
+        "best_score": "in progress",
+        "iterations_run": len(history),
+        "holdout": holdout,
+        "train_size": train_size,
+        "test_size": test_size,
+        "history": history,
+    }
+    live_report_path.write_text(generate_html(partial_output, auto_refresh=True, skill_name=skill_name))
+
+
 def run_loop(
     eval_set: list[dict],
     skill_path: Path,
@@ -99,81 +199,42 @@ def run_loop(
         )
         eval_elapsed = time.time() - t0
 
-        # Split results back into train/test by matching queries
-        train_queries_set = {q["query"] for q in train_set}
-        train_result_list = [r for r in all_results["results"] if r["query"] in train_queries_set]
-        test_result_list = [r for r in all_results["results"] if r["query"] not in train_queries_set]
+        # Split results back into train/test
+        train_result_list, test_result_list = split_eval_results(all_results["results"], train_set)
 
-        train_passed = sum(1 for r in train_result_list if r["pass"])
-        train_total = len(train_result_list)
-        train_summary = {"passed": train_passed, "failed": train_total - train_passed, "total": train_total}
-        train_results = {"results": train_result_list, "summary": train_summary}
+        # Calculate summaries
+        train_summary = calculate_summary(train_result_list)
+        test_summary = calculate_summary(test_result_list) if test_set else None
 
-        if test_set:
-            test_passed = sum(1 for r in test_result_list if r["pass"])
-            test_total = len(test_result_list)
-            test_summary = {"passed": test_passed, "failed": test_total - test_passed, "total": test_total}
-            test_results = {"results": test_result_list, "summary": test_summary}
-        else:
-            test_results = None
-            test_summary = None
+        # Update history
+        history_entry = update_iteration_history(
+            iteration, current_description, train_summary, test_summary,
+            train_result_list, test_result_list,
+        )
+        history.append(history_entry)
 
-        history.append({
-            "iteration": iteration,
-            "description": current_description,
-            "train_passed": train_summary["passed"],
-            "train_failed": train_summary["failed"],
-            "train_total": train_summary["total"],
-            "train_results": train_results["results"],
-            "test_passed": test_summary["passed"] if test_summary else None,
-            "test_failed": test_summary["failed"] if test_summary else None,
-            "test_total": test_summary["total"] if test_summary else None,
-            "test_results": test_results["results"] if test_results else None,
-            # For backward compat with report generator
-            "passed": train_summary["passed"],
-            "failed": train_summary["failed"],
-            "total": train_summary["total"],
-            "results": train_results["results"],
-        })
-
-        # Write live report if path provided
+        # Update live report if path provided
         if live_report_path:
-            partial_output = {
-                "original_description": original_description,
-                "best_description": current_description,
-                "best_score": "in progress",
-                "iterations_run": len(history),
-                "holdout": holdout,
-                "train_size": len(train_set),
-                "test_size": len(test_set),
-                "history": history,
-            }
-            live_report_path.write_text(generate_html(partial_output, auto_refresh=True, skill_name=name))
+            update_live_report(
+                live_report_path, original_description, current_description, history,
+                holdout, len(train_set), len(test_set), name,
+            )
 
+        # Print statistics
         if verbose:
-            def print_eval_stats(label, results, elapsed):
-                pos = [r for r in results if r["should_trigger"]]
-                neg = [r for r in results if not r["should_trigger"]]
-                tp = sum(r["triggers"] for r in pos)
-                pos_runs = sum(r["runs"] for r in pos)
-                fn = pos_runs - tp
-                fp = sum(r["triggers"] for r in neg)
-                neg_runs = sum(r["runs"] for r in neg)
-                tn = neg_runs - fp
-                total = tp + tn + fp + fn
-                precision = tp / (tp + fp) if (tp + fp) > 0 else 1.0
-                recall = tp / (tp + fn) if (tp + fn) > 0 else 1.0
-                accuracy = (tp + tn) / total if total > 0 else 0.0
-                print(f"{label}: {tp+tn}/{total} correct, precision={precision:.0%} recall={recall:.0%} accuracy={accuracy:.0%} ({elapsed:.1f}s)", file=sys.stderr)
-                for r in results:
-                    status = "PASS" if r["pass"] else "FAIL"
-                    rate_str = f"{r['triggers']}/{r['runs']}"
-                    print(f"  [{status}] rate={rate_str} expected={r['should_trigger']}: {r['query'][:60]}", file=sys.stderr)
+            train_stats = calculate_eval_stats(train_result_list)
+            print(format_eval_stats("Train", train_stats, eval_elapsed), file=sys.stderr)
 
-            print_eval_stats("Train", train_results["results"], eval_elapsed)
-            if test_summary:
-                print_eval_stats("Test ", test_results["results"], 0)
+            if test_set:
+                test_stats = calculate_eval_stats(test_result_list)
+                print(format_eval_stats("Test ", test_stats, 0), file=sys.stderr)
 
+            for r in train_result_list:
+                status = "PASS" if r["pass"] else "FAIL"
+                rate_str = f"{r['triggers']}/{r['runs']}"
+                print(f"  [{status}] rate={rate_str} expected={r['should_trigger']}: {r['query'][:60]}", file=sys.stderr)
+
+        # Check exit conditions
         if train_summary["failed"] == 0:
             exit_reason = f"all_passed (iteration {iteration})"
             if verbose:
@@ -192,15 +253,12 @@ def run_loop(
 
         t0 = time.time()
         # Strip test scores from history so improvement model can't see them
-        blinded_history = [
-            {k: v for k, v in h.items() if not k.startswith("test_")}
-            for h in history
-        ]
+        blinded_history = [{k: v for k, v in h.items() if not k.startswith("test_")} for h in history]
         new_description = improve_description(
             skill_name=name,
             skill_content=content,
             current_description=current_description,
-            eval_results=train_results,
+            eval_results={"results": train_result_list, "summary": train_summary},
             history=blinded_history,
             model=model,
             log_dir=log_dir,

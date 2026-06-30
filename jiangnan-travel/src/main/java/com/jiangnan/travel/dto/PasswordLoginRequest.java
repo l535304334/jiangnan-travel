@@ -3,7 +3,6 @@ package com.jiangnan.travel.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -16,7 +15,6 @@ public class PasswordLoginRequest {
     private String phone;
 
     @NotBlank(message = "密码不能为空")
-    @Size(min = 6, max = 20, message = "密码长度为6-20位")
     @Schema(description = "密码", example = "123456")
     private String password;
 }

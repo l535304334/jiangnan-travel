@@ -4,12 +4,14 @@ import com.jiangnan.travel.entity.*;
 import com.jiangnan.travel.mapper.*;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TestDataInitializer {
@@ -35,7 +37,7 @@ public class TestDataInitializer {
         createDriver("13810000003", pwd, "宁都王师傅", "赣C11111", 3L, 26.4825, 116.0209, "4.70");
 
         redisTemplate.opsForValue().set("test:data:initialized", "true");
-        System.out.println("=== 测试账号初始化完成 ===");
+        log.info("测试账号初始化完成");
     }
 
     private void createUser(String phone, String pwd, String nickname) {

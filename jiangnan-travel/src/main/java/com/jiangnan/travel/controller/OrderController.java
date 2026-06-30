@@ -1,9 +1,8 @@
 package com.jiangnan.travel.controller;
 
+import com.jiangnan.travel.annotation.LogOperation;
 import com.jiangnan.travel.common.Result;
-import com.jiangnan.travel.dto.CancelOrderRequest;
-import com.jiangnan.travel.dto.CreateOrderRequest;
-import com.jiangnan.travel.dto.EstimateRequest;
+import com.jiangnan.travel.dto.*;
 import com.jiangnan.travel.service.OrderService;
 import com.jiangnan.travel.service.PricingService;
 import com.jiangnan.travel.vo.OrderVO;
@@ -11,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,11 +28,17 @@ public class OrderController {
 
     @PostMapping("/estimate")
     @Operation(summary = "预估价格", description = "预估行程距离/时长/费用")
-    public Result<?> estimate(@Valid @RequestBody EstimateRequest request) {
+    public Result<?> estimate(@Valid @RequestBody EstimateRequest request,
+                               Authentication authentication) {
+        if (authentication != null) {
+            request.setUserId((Long) authentication.getPrincipal());
+        }
         return Result.ok(pricingService.estimate(request));
     }
 
     @PostMapping("/create")
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "创建订单", description = "乘客创建出行订单")
     public Result<OrderVO> create(@Valid @RequestBody CreateOrderRequest request,
                                    Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
@@ -40,6 +46,7 @@ public class OrderController {
     }
 
     @GetMapping("/list")
+    @PreAuthorize("hasRole('USER')")
     @Operation(summary = "订单列表", description = "分页查询用户订单列表")
     public Result<List<OrderVO>> list(@RequestParam(required = false) Integer status,
                                        @RequestParam(defaultValue = "1") Integer page,
@@ -50,12 +57,16 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','DRIVER')")
+    @Operation(summary = "订单详情", description = "查询订单详情")
     public Result<OrderVO> detail(@PathVariable Long id, Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         return Result.ok(orderService.getById(id, userId));
     }
 
     @PutMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('USER')")
+    @LogOperation("取消订单")
     @Operation(summary = "取消订单", description = "取消指定订单")
     public Result<?> cancel(@PathVariable Long id,
                              @RequestBody CancelOrderRequest request,
@@ -74,6 +85,8 @@ public class OrderController {
     }
 
     @PostMapping("/{id}/reorder")
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "重新下单", description = "根据历史订单重新下单")
     public Result<OrderVO> reorder(@PathVariable Long id, Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         OrderVO old = orderService.getById(id, userId);
@@ -86,6 +99,9 @@ public class OrderController {
     }
 
     @PutMapping("/{id}/pay")
+    @PreAuthorize("hasRole('USER')")
+    @LogOperation("支付订单")
+    @Operation(summary = "支付订单", description = "支付指定订单")
     public Result<?> pay(@PathVariable Long id, Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         orderService.pay(id, userId);
@@ -93,15 +109,14 @@ public class OrderController {
     }
 
     @PostMapping("/{id}/review")
+    @PreAuthorize("hasRole('USER')")
+    @LogOperation("评价订单")
     @Operation(summary = "评价订单", description = "对已完成的订单进行评价")
     public Result<?> review(@PathVariable Long id,
-                             @RequestBody Map<String, Object> body,
+                             @Valid @RequestBody ReviewOrderRequest request,
                              Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
-        Integer rating = body.get("rating") != null ? ((Number) body.get("rating")).intValue() : null;
-        String tags = (String) body.get("tags");
-        String content = (String) body.get("content");
-        orderService.review(id, userId, rating, tags, content);
+        orderService.review(id, userId, request.getRating(), request.getTags(), request.getContent());
         return Result.ok("评价成功");
     }
 }

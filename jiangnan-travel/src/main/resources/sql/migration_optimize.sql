@@ -87,3 +87,90 @@ ALTER TABLE t_demand_hotspot
 
 ALTER TABLE t_admin
     ADD COLUMN create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' AFTER password;
+
+-- =====================================================
+-- 6. 补充缺失的 deleted 逻辑删除字段（与所有 Entity 的 BaseEntity 对齐）
+-- =====================================================
+-- 说明：所有 21 个 Entity 继承 BaseEntity，包含 @TableLogic 注解的 deleted 字段
+-- MyBatis-Plus 会在所有查询中自动追加 AND deleted=0
+-- 已存在 deleted 的表：t_user, t_car_type, t_driver, t_user_address, t_review
+-- 以下 16 张表补充 deleted 字段
+
+ALTER TABLE t_order
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER cancel_reason;
+
+ALTER TABLE t_order_track
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER remark,
+    ADD COLUMN update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间' AFTER create_time;
+
+ALTER TABLE t_coupon
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER status;
+
+ALTER TABLE t_user_coupon
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER use_order_id,
+    ADD COLUMN update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间' AFTER create_time;
+
+ALTER TABLE t_admin
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER status;
+
+ALTER TABLE t_schedule_route
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER status;
+
+ALTER TABLE t_schedule_order
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER status;
+
+ALTER TABLE t_ai_chat_log
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER tokens_used;
+
+ALTER TABLE t_risk_alert
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER handle_remark;
+
+ALTER TABLE t_user_risk_profile
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER risk_level,
+    ADD COLUMN create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' AFTER risk_level;
+
+ALTER TABLE t_demand_hotspot
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER snapshot_time;
+
+ALTER TABLE t_city_landmark
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER status;
+
+ALTER TABLE t_city_quote
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER status;
+
+ALTER TABLE t_payment
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER pay_time;
+
+ALTER TABLE t_invoice
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER status;
+
+ALTER TABLE t_push_log
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER status;
+
+-- =====================================================
+-- 7. 补充剩余缺失的 update_time 字段
+-- =====================================================
+-- t_user_address 没有 update_time 但实体继承 BaseEntity 需要
+
+ALTER TABLE t_user_address
+    ADD COLUMN update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间' AFTER create_time;
+
+-- =====================================================
+-- 8. 新增通知表 t_notification
+-- =====================================================
+
+DROP TABLE IF EXISTS t_notification;
+CREATE TABLE t_notification (
+    id              BIGINT          PRIMARY KEY AUTO_INCREMENT  COMMENT '通知ID',
+    user_id         BIGINT          NOT NULL                    COMMENT '接收用户ID',
+    type            VARCHAR(32)     NOT NULL                    COMMENT '通知类型 ORDER_CREATED/ORDER_ACCEPTED/ORDER_STARTED/ORDER_COMPLETED/ORDER_CANCELLED/SYSTEM',
+    title           VARCHAR(128)    NOT NULL                    COMMENT '通知标题',
+    content         VARCHAR(512)    DEFAULT ''                  COMMENT '通知内容',
+    related_id      BIGINT                                      COMMENT '关联ID(如订单ID)',
+    is_read         TINYINT         DEFAULT 0                   COMMENT '0未读 1已读',
+    deleted         TINYINT         DEFAULT 0                   COMMENT '逻辑删除 0未删 1已删',
+    create_time     DATETIME        DEFAULT CURRENT_TIMESTAMP   COMMENT '创建时间',
+    update_time     DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_user_read (user_id, is_read),
+    INDEX idx_user_time (user_id, create_time DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='消息通知表';

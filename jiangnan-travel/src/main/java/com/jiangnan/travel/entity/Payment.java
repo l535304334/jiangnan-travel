@@ -19,6 +19,7 @@ public class Payment extends BaseEntity {
     private BigDecimal amount;
     private String payMethod;
     private String payNo;
+    private String idempotentKey;
     private Integer status;
     private LocalDateTime payTime;
 }

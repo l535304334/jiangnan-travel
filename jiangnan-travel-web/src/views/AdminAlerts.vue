@@ -1,41 +1,43 @@
 <template>
-  <div class="admin-alerts">
-    <div class="page-header">
+  <div class="admin-page">
+    <div class="admin-page-header">
       <h3>风控告警</h3>
     </div>
-    <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading">
-      <el-table-column label="告警级别" width="100">
-        <template #default="{ row }">
-          <el-tag :type="row.levelTag" size="small">{{ row.levelText }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="ruleCode" label="规则编码" width="140" />
-      <el-table-column prop="user" label="关联用户" width="120" />
-      <el-table-column prop="orderNo" label="关联订单" width="180" />
-      <el-table-column prop="time" label="告警时间" width="170" />
-      <el-table-column prop="statusText" label="处理状态" width="100">
-        <template #default="{ row }">
-          <el-tag :type="row.handled ? 'success' : 'warning'" size="small">{{ row.statusText }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="100">
-        <template #default="{ row }">
-          <el-button v-if="!row.handled" type="primary" size="small" @click="handleAlert(row)">处理</el-button>
-          <span v-else>---</span>
-        </template>
-      </el-table-column>
-    </el-table>
-    <div class="pagination-wrap">
-      <el-pagination
-        v-model:current-page="pageInfo.current"
-        v-model:page-size="pageInfo.size"
-        :total="pageInfo.total"
-        layout="total, prev, pager, next, jumper"
-        background
-        small
-        @current-change="loadData"
-      />
-    </div>
+    <el-card shadow="never" v-loading="loading">
+      <el-table :data="tableData" stripe :border="false" style="width: 100%">
+        <el-table-column label="告警级别" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.levelTag" size="small">{{ row.levelText }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="ruleCode" label="规则编码" width="140" />
+        <el-table-column prop="user" label="关联用户" width="120" />
+        <el-table-column prop="orderNo" label="关联订单" width="180" />
+        <el-table-column prop="time" label="告警时间" width="170" />
+        <el-table-column prop="statusText" label="处理状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.handled ? 'success' : 'warning'" size="small">{{ row.statusText }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="100">
+          <template #default="{ row }">
+            <el-button v-if="!row.handled" type="primary" size="small" @click="handleAlert(row)">处理</el-button>
+            <span v-else>---</span>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="admin-pagination-wrap">
+        <el-pagination
+          v-model:current-page="pageInfo.current"
+          v-model:page-size="pageInfo.size"
+          :total="pageInfo.total"
+          layout="total, prev, pager, next, jumper"
+          background
+          small
+          @current-change="loadData"
+        />
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -71,22 +73,23 @@ const loadData = async () => {
         statusText: item.handled === 1 ? '已处理' : '未处理'
       }
     })
-  } finally {
+  } catch (e) { ElMessage.error('告警加载失败') }
+  finally {
     loading.value = false
   }
 }
 
 const handleAlert = async (row) => {
-  await adminApi.handleAlert(row.id)
-  row.handled = 1
-  row.statusText = '已处理'
-  ElMessage.success('告警已处理')
+  try {
+    await adminApi.handleAlert(row.id)
+    row.handled = 1
+    row.statusText = '已处理'
+    ElMessage.success('告警已处理')
+  } catch (e) { ElMessage.error('处理告警失败') }
 }
 
 onMounted(loadData)
 </script>
 
 <style scoped>
-.page-header { margin-bottom: 16px; }
-.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>

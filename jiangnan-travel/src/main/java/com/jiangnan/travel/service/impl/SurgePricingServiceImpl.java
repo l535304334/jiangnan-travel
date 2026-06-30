@@ -7,12 +7,14 @@ import com.jiangnan.travel.mapper.DriverMapper;
 import com.jiangnan.travel.mapper.OrderMapper;
 import com.jiangnan.travel.service.SurgePricingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SurgePricingServiceImpl implements SurgePricingService {
