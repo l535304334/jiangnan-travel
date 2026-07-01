@@ -5,6 +5,40 @@
 
 ---
 
+## [fix: 四项改进 — 密钥外部化 + 文档同步 + 前端测试 + 部署模板](70043f57d29d7b3693ca1d370fe1f8eafdf967b4) — 2026-07-01 15:32
+
+| 项目 | 详情 |
+|------|------|
+| **Commit** | `70043f5` |
+| **日期** | 2026-07-01 15:32 |
+| **作者** | 赖睿轩 |
+| **变更** | +4 / ~9 / -0 |
+| **说明** | 1. 密钥外部化: application.yml 敏感值改为 ${ENV:default}, application-prod.yml 强制环境变量
+2. deploy: .env.example 模板, docker-compose.yml 同步敏感变量, application-prod.yml 入库
+3. 文档: 清理 README/ARCHITECTURE/PRODUCT_DESIGN/总结报告 中已删除的 SurgePricing 引用
+4. 前端测试: vitest + useSmsCode 6个测试, 覆盖手机号校验/API调用/倒计时/sending状态
+5. 修复 gitignore: 移除 application-prod.yml 误拦, 添加 !.env.example 例外, .gitignore 自身入库
+
+Co-Authored-By: Claude <noreply@anthropic.com> |
+
+### 变更文件
+```
+  A  .gitignore
+  M  ARCHITECTURE.md
+  M  README.md
+  A  deploy/.env.example
+  M  deploy/docker-compose.yml
+  M  docs/PRODUCT_DESIGN.md
+  M  jiangnan-travel-web/package-lock.json
+  M  jiangnan-travel-web/package.json
+  A  jiangnan-travel-web/src/composables/__tests__/useSmsCode.test.js
+  M  jiangnan-travel-web/vite.config.js
+  A  jiangnan-travel/src/main/resources/application-prod.yml
+  M  jiangnan-travel/src/main/resources/application.yml
+  M  "351241271347233256345274200345217221346200273347273223346212245345221212.md"
+```
+
+
 ## [docs: 更新 CHANGELOG](c1757316d57af41dc65568c82d8355bfa79133e0) — 2026-07-01 15:17
 
 | 项目 | 详情 |
