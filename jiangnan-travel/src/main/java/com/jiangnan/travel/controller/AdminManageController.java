@@ -240,17 +240,32 @@ public class AdminManageController {
 
     @PostMapping("/bus-lines/create")
     @Operation(summary = "创建班线", description = "创建新的城际班线")
-    public Result<?> createBusLine(@Valid @RequestBody BusLine line) {
+    public Result<?> createBusLine(@Valid @RequestBody BusLineSaveRequest req) {
+        BusLine line = new BusLine();
+        applyRequest(req, line);
         busLineService.adminSave(line);
         return Result.ok("创建成功");
     }
 
     @PutMapping("/bus-lines/{id}")
     @Operation(summary = "更新班线", description = "更新班线信息")
-    public Result<?> updateBusLine(@PathVariable Long id, @Valid @RequestBody BusLine line) {
+    public Result<?> updateBusLine(@PathVariable Long id, @Valid @RequestBody BusLineSaveRequest req) {
+        BusLine line = new BusLine();
         line.setId(id);
+        applyRequest(req, line);
         busLineService.adminUpdate(line);
         return Result.ok("更新成功");
+    }
+
+    private void applyRequest(BusLineSaveRequest req, BusLine line) {
+        line.setStartCity(req.getStartCity());
+        line.setEndCity(req.getEndCity());
+        line.setLineName(req.getLineName());
+        line.setPrice(req.getPrice());
+        if (req.getBusType() != null) line.setBusType(req.getBusType());
+        if (req.getDuration() != null) line.setDuration(req.getDuration());
+        if (req.getDistance() != null) line.setDistance(req.getDistance());
+        if (req.getStatus() != null) line.setStatus(req.getStatus());
     }
 
     @DeleteMapping("/bus-lines/{id}")

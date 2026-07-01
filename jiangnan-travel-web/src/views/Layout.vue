@@ -78,19 +78,31 @@ const unreadCount = ref(0)
 
 // WebSocket 连接（用于实时更新未读数量）
 let ws = null
+let reconnectTimer = null
+let reconnectDelay = 1000
+const MAX_RECONNECT_DELAY = 30000
 const userInfo = userStore.userInfo || {}
-const token = localStorage.getItem('token')
+const token = localStorage.getItem("token")
+
+function scheduleReconnect() {
+  if (reconnectTimer) return
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null
+    connectWebSocket()
+  }, reconnectDelay)
+  reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY)
+}
 
 function connectWebSocket() {
-t// ponytail: token via cookie (handshake), not URL query param
   if (!token || !userInfo.id) return
-  const wsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/notification/${userInfo.id}`
+  const wsUrl = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws/notification/${userInfo.id}`
   try {
     ws = new WebSocket(wsUrl)
     ws.onmessage = () => { loadUnreadCount() }
-    ws.onclose = () => { ws = null }
-    ws.onerror = () => { ws = null }
-  } catch { /* ignore */ }
+    ws.onclose = () => { ws = null; scheduleReconnect() }
+    ws.onerror = () => { ws = null; scheduleReconnect() }
+    ws.onopen = () => { reconnectDelay = 1000 }
+  } catch { scheduleReconnect() }
 }
 
 async function loadUnreadCount() {

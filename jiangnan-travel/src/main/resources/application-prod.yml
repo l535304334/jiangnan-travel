@@ -7,7 +7,9 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:smart_travel}?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    # 生产环境必须启用 SSL：useSSL=true&requireSSL=true，并配置证书。
+    # 移除 allowPublicKeyRetrieval=true 以增强安全性。
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:smart_travel}?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=true&requireSSL=true&rewriteBatchedStatements=true
     username: ${DB_USER:root}
     password: ${DB_PASS:Lai20050802@}
     hikari:

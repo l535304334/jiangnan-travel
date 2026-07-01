@@ -40,6 +40,8 @@ request.interceptors.response.use(
       localStorage.removeItem('token')
       localStorage.removeItem('userInfo')
       localStorage.removeItem('adminInfo')
+      // ponytail: window.location ensures full state reset on forced logout.
+      // Router-based redirect is smoother but may leave stale Pinia/composable state.
       window.location.href = window.location.pathname.startsWith('/admin') ? '/admin/login' : '/login'
       ElMessage.error('登录已过期，请重新登录')
     } else if (status === 403) {

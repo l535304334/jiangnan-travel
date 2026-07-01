@@ -162,6 +162,7 @@ CREATE TABLE t_user_coupon (
     expire_time     DATETIME        NOT NULL                    COMMENT '过期时间',
     use_order_id    BIGINT                                      COMMENT '使用订单ID',
     create_time     DATETIME        DEFAULT CURRENT_TIMESTAMP   COMMENT '领取时间',
+    update_time     DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     INDEX idx_user (user_id),
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户优惠券';

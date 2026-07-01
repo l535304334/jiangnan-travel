@@ -374,6 +374,7 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    // ponytail: simplified payment path; full payment (with method/idempotency) → PaymentServiceImpl.pay()
     @Override
     public void pay(Long orderId, Long userId) {
         String lockKey = PAY_LOCK_PREFIX + orderId;

@@ -174,3 +174,25 @@ CREATE TABLE t_notification (
     INDEX idx_user_read (user_id, is_read),
     INDEX idx_user_time (user_id, create_time DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='消息通知表';
+
+-- =====================================================
+-- 9. 清理冗余索引（已被复合索引覆盖的单列索引）
+-- =====================================================
+-- t_order 复合索引 idx_user_status_time / idx_status_create 等已覆盖下列单列索引
+DROP INDEX IF EXISTS idx_user ON t_order;
+DROP INDEX IF EXISTS idx_status ON t_order;
+DROP INDEX IF EXISTS idx_create_time ON t_order;
+
+-- =====================================================
+-- 10. 清理 t_user 归一化残留字段
+-- =====================================================
+-- preferred_driver_ids 已迁移到 t_user_preferred_driver 归一化表
+ALTER TABLE t_user DROP COLUMN IF EXISTS preferred_driver_ids;
+
+-- =====================================================
+-- 11. 补充缺失索引
+-- =====================================================
+-- t_order.cancel_time — 取消分析查询
+ALTER TABLE t_order ADD INDEX IF NOT EXISTS idx_cancel_time (cancel_time);
+-- t_user_coupon.use_order_id — 优惠券使用关联查询
+ALTER TABLE t_user_coupon ADD INDEX IF NOT EXISTS idx_use_order (use_order_id);
