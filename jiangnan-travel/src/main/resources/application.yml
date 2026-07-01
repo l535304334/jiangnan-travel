@@ -75,21 +75,21 @@ knife4j:
 
 # JWT 配置
 jwt:
-  secret: jiangnan-travel-jwt-secret-key-2024-must-be-at-least-256-bits-long
+  secret: ${JWT_SECRET:jiangnan-travel-jwt-secret-key-2024-must-be-at-least-256-bits-long}
   expiration: 86400000  # 24小时
 
 # DeepSeek AI 配置
 deepseek:
-  api-key: REDACTED_DEEPSEEK_API_KEY
+  api-key: ${DEEPSEEK_API_KEY:REDACTED_DEEPSEEK_API_KEY}
   base-url: https://api.deepseek.com/v1
   model: deepseek-chat
 
 # 高德地图配置
 amap:
-  web-api-key: REDACTED_AMAP_API_KEY
+  web-api-key: ${AMAP_WEB_API_KEY:REDACTED_AMAP_API_KEY}
   base-url: https://restapi.amap.com/v3/direction/driving
-  js-api-key: REDACTED_AMAP_API_KEY
-  security-code: 01646b6ce6b541c2057afc03bb2ea17a
+  js-api-key: ${AMAP_JS_API_KEY:REDACTED_AMAP_API_KEY}
+  security-code: ${AMAP_SECURITY_CODE:01646b6ce6b541c2057afc03bb2ea17a}
 
 # 日志
 logging:

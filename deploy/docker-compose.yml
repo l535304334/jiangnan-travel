@@ -66,6 +66,11 @@ services:
       DB_PASS: Lai20050802@
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      AMAP_WEB_API_KEY: ${AMAP_WEB_API_KEY}
+      AMAP_JS_API_KEY: ${AMAP_JS_API_KEY}
+      AMAP_SECURITY_CODE: ${AMAP_SECURITY_CODE}
     depends_on:
       mysql:
         condition: service_healthy

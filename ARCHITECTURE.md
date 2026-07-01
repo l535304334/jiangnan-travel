@@ -621,21 +621,14 @@ POST /api/payment/callback
 最终价 = 总价 × surgeFactor - couponDiscount
 ```
 
-### 7.2 动态加价引擎（SurgePricingService）
-
-```
-动态加价系数 = 1.00 ~ 1.50
-基于区域供需比（需求数 / 可用司机数）
-```
-
-### 7.3 智能派单引擎（DispatchService）
+### 7.2 智能派单引擎（DispatchService）
 
 ```
 派单评分 = 距离得分 × 0.5 + 评分得分 × 0.3 + 空闲时长得分 × 0.2
 派给评分最高的司机
 ```
 
-### 7.4 风控系统（OrderService）
+### 7.3 风控系统（OrderService）
 
 | 规则 | 编码 | 逻辑 |
 |---|---|---|
@@ -643,7 +636,7 @@ POST /api/payment/callback
 | 深夜跨城检查 | R4 | 23:00-05:00 跨城订单 → 记录风控告警 |
 | 疲劳驾驶提醒 | R7 | 行程时长 > 2 小时 → 写入风控告警 |
 
-### 7.5 AI 客服（AiChatService）
+### 7.4 AI 客服（AiChatService）
 
 ```
 ┌─ 用户消息 ──→ 保存到 t_ai_chat_log ──→ 加载历史20条 ──→ 构建对话上下文
@@ -681,9 +674,9 @@ POST /api/payment/callback
 | jjwt-api / jjwt-impl / jjwt-jackson | 0.12.5 | JWT 令牌 |
 | knife4j-openapi3-jakarta-spring-boot-starter | 4.5.0 | API 文档 |
 | openai-java | 0.18.0 | DeepSeek AI SDK |
-| hutool-all | 5.8.25 | 工具类 |
-| spring-boot-starter-actuator | 3.2.6(managed) | 健康检查与监控端点 |
-| micrometer-registry-prometheus | 1.12.6(managed) | Prometheus Metrics 暴露 |
+| hutool-all | 5.8.25 | 工具类（已移除）|
+| spring-boot-starter-actuator | 3.2.6(managed) | 健康检查与监控端点（已移除）|
+| micrometer-registry-prometheus | 1.12.6(managed) | Prometheus Metrics 暴露（已移除）|
 | lombok | managed | 编译期注解 |
 
 ---

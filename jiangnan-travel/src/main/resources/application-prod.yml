@@ -1,0 +1,53 @@
+# 生产环境配置 — 通过环境变量配置数据库/Redis连接
+# 默认值供本地直接启动 jar 时使用
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:smart_travel}?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    username: ${DB_USER:root}
+    password: ${DB_PASS:Lai20050802@}
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 30000
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: 0
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+        shutdown-timeout: 100ms
+
+# 敏感配置 — 生产环境必须通过环境变量注入，无默认值回退
+jwt:
+  secret: ${JWT_SECRET:}
+
+deepseek:
+  api-key: ${DEEPSEEK_API_KEY:}
+
+amap:
+  web-api-key: ${AMAP_WEB_API_KEY:}
+  js-api-key: ${AMAP_JS_API_KEY:}
+  security-code: ${AMAP_SECURITY_CODE:}
+
+mybatis-plus:
+  configuration:
+    # 生产环境关闭 SQL 日志
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+logging:
+  level:
+    com.jiangnan.travel: info
+    org.springframework.security: warn
+    org.springframework.web: warn
