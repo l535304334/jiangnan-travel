@@ -82,8 +82,9 @@ const userInfo = userStore.userInfo || {}
 const token = localStorage.getItem('token')
 
 function connectWebSocket() {
+t// ponytail: token via cookie (handshake), not URL query param
   if (!token || !userInfo.id) return
-  const wsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/notification/${userInfo.id}?token=${token}`
+  const wsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/notification/${userInfo.id}`
   try {
     ws = new WebSocket(wsUrl)
     ws.onmessage = () => { loadUnreadCount() }

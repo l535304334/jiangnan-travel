@@ -23,7 +23,8 @@ ALTER TABLE t_user_coupon ADD INDEX idx_user_status (user_id, status);
 
 -- 5. AI对话日志 - 按用户+时间
 ALTER TABLE t_ai_chat_log ADD INDEX idx_user_time (user_id, create_time);
-ALTER TABLE t_ai_chat_log ADD INDEX idx_session (session_id);
+-- idx_session already exists in init.sql; removed duplicate
+-- ALTER TABLE t_ai_chat_log ADD INDEX idx_session (session_id);
 
 -- 6. 风控告警 - 按状态筛选
 ALTER TABLE t_risk_alert ADD INDEX idx_handled_time (handled, create_time);
@@ -32,7 +33,8 @@ ALTER TABLE t_risk_alert ADD INDEX idx_handled_time (handled, create_time);
 ALTER TABLE t_push_log ADD INDEX idx_user_type (user_id, push_type);
 
 -- 8. 支付记录
-ALTER TABLE t_payment ADD INDEX idx_order (order_id);
+-- idx_order already exists in init.sql; removed duplicate
+-- ALTER TABLE t_payment ADD INDEX idx_order (order_id);
 
 -- 9. 发票
 ALTER TABLE t_invoice ADD INDEX idx_user_order (user_id, order_id);

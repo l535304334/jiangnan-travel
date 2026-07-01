@@ -2,9 +2,11 @@ package com.jiangnan.travel.controller;
 
 import com.jiangnan.travel.annotation.LogOperation;
 import com.jiangnan.travel.common.Result;
+import com.jiangnan.travel.dto.PaymentRequest;
 import com.jiangnan.travel.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -24,13 +26,11 @@ public class PaymentController {
     @PostMapping("/create")
     @LogOperation("创建支付")
     @Operation(summary = "创建支付", description = "支付指定订单")
-    public Result<?> create(@RequestBody Map<String, Object> body,
+    public Result<?> create(@Valid @RequestBody PaymentRequest request,
                             Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
-        Long orderId = Long.valueOf(body.get("orderId").toString());
-        String payMethod = body.get("payMethod") != null ? body.get("payMethod").toString() : "balance";
-        String idempotentKey = body.get("idempotentKey") != null ? body.get("idempotentKey").toString() : null;
-        return Result.ok(paymentService.pay(orderId, userId, payMethod, idempotentKey));
+        String payMethod = request.getPayMethod() != null ? request.getPayMethod() : "balance";
+        return Result.ok(paymentService.pay(request.getOrderId(), userId, payMethod, request.getIdempotentKey()));
     }
 
     @GetMapping("/{orderId}")

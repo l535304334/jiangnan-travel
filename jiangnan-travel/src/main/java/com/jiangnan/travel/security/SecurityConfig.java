@@ -41,11 +41,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/driver/login", "/api/driver/register").permitAll()
                         // 管理员登录
                         .requestMatchers("/api/admin/login").permitAll()
-                        // 公共接口 + 文旅 + AI + WebSocket
+                        // 公共接口 + 文旅 + WebSocket
                         .requestMatchers("/api/common/**",
                                 "/api/landmark", "/api/landmark/**",
                                 "/api/city-quote", "/api/city-quote/**",
-                                "/api/ai/**",
                                 "/ws/**").permitAll()
                         // ARCHITECTURE.md 公开的优惠券/活动/VIP/订单/班线/司机接口
                         .requestMatchers("/api/coupon/list",

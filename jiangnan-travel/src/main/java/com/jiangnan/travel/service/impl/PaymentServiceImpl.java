@@ -21,6 +21,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -150,10 +151,12 @@ public class PaymentServiceImpl implements PaymentService {
                         .eq(Payment::getUserId, userId)
                         .orderByDesc(Payment::getCreateTime));
 
-        return payments.stream().map(p -> {
-            Order order = orderMapper.selectById(p.getOrderId());
-            return toVO(p, order);
-        }).collect(Collectors.toList());
+        // ponytail: batch load orders to avoid N+1
+        List<Long> orderIds = payments.stream().map(Payment::getOrderId).distinct().toList();
+        Map<Long, Order> orderMap = orderIds.isEmpty() ? java.util.Collections.emptyMap()
+                : orderMapper.selectBatchIds(orderIds).stream()
+                        .collect(Collectors.toMap(Order::getId, o -> o));
+        return payments.stream().map(p -> toVO(p, orderMap.get(p.getOrderId()))).collect(Collectors.toList());
     }
 
     @Override

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Service
@@ -37,6 +38,11 @@ public class AiChatServiceImpl implements AiChatService {
 
     @Value("${deepseek.model}")
     private String model;
+
+    // ponytail: volatile cache, TTL 10min — avoid DB queries on every chat request
+    private volatile String cachedSystemPrompt;
+    private volatile long cachedPromptAt;
+    private static final long PROMPT_CACHE_TTL_MS = 10 * 60 * 1000;
 
     @Override
     public ChatVO chat(ChatRequest request, Long userId) {
@@ -101,7 +107,8 @@ public class AiChatServiceImpl implements AiChatService {
                                 try {
                                     emitter.send(SseEmitter.event().name("delta").data(delta));
                                 } catch (IOException e) {
-                                    throw new RuntimeException("SSE send error", e);
+                                    emitter.completeWithError(e);
+                                    return; // stop stream processing, client already gone
                                 }
                             }
                         });
@@ -145,11 +152,15 @@ public class AiChatServiceImpl implements AiChatService {
     }
 
     @Override
-    public List<AiChatLog> getSessionMessages(String sessionId) {
-        return aiChatLogMapper.selectList(
-                new LambdaQueryWrapper<AiChatLog>()
-                        .eq(AiChatLog::getSessionId, sessionId)
-                        .orderByAsc(AiChatLog::getCreateTime));
+    public List<AiChatLog> getSessionMessages(String sessionId, Long userId) {
+        LambdaQueryWrapper<AiChatLog> wrapper = new LambdaQueryWrapper<AiChatLog>()
+                .eq(AiChatLog::getSessionId, sessionId)
+                .orderByAsc(AiChatLog::getCreateTime);
+        // 只返回属于当前用户的会话消息，userId 为 null 时匹配匿名会话
+        if (userId != null) {
+            wrapper.eq(AiChatLog::getUserId, userId);
+        }
+        return aiChatLogMapper.selectList(wrapper);
     }
 
     /**
@@ -165,11 +176,13 @@ public class AiChatServiceImpl implements AiChatService {
         // 1. 添加系统提示词
         builder.addSystemMessage(systemPrompt);
 
-        // 2. 加载历史消息（按时间正序，取最近20条）
+        // 2. 加载历史消息（按时间倒序取最近21条，再反转；避免加载全量会话历史）
         List<AiChatLog> history = aiChatLogMapper.selectList(
                 new LambdaQueryWrapper<AiChatLog>()
                         .eq(AiChatLog::getSessionId, sessionId)
-                        .orderByAsc(AiChatLog::getCreateTime));
+                        .orderByDesc(AiChatLog::getCreateTime)
+                        .last("LIMIT 21"));
+        java.util.Collections.reverse(history);
 
         // 跳过刚保存的当前用户消息（最后一条），取前面最多20条
         int historySize = history.size();
@@ -190,6 +203,11 @@ public class AiChatServiceImpl implements AiChatService {
     }
 
     private String buildSystemPrompt() {
+        // ponytail: return cached prompt if still fresh, avoiding DB queries every chat request
+        String cached = cachedSystemPrompt;
+        if (cached != null && System.currentTimeMillis() - cachedPromptAt < PROMPT_CACHE_TTL_MS) {
+            return cached;
+        }
         StringBuilder sb = new StringBuilder();
         sb.append("你叫江小游，是「江南出行」智慧服务平台的出行助手。");
         sb.append("\"江\"取自江西与江南，\"小游\"意为伴你悠然出行。\n\n");
@@ -227,7 +245,10 @@ public class AiChatServiceImpl implements AiChatService {
                 sb.append("\n");
             }
         }
-        return sb.toString();
+        String result = sb.toString();
+        cachedSystemPrompt = result;
+        cachedPromptAt = System.currentTimeMillis();
+        return result;
     }
 
     private String getFallbackReply(String message) {

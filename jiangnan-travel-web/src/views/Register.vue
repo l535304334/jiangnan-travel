@@ -74,18 +74,22 @@ const rules = {
 }
 
 const handleRegister = async () => {
-  await formRef.value.validate()
-  await withLoading(async () => {
-    const res = await userApi.register({
-      phone: form.phone,
-      code: form.code,
-      password: form.password
+  try {
+    await formRef.value.validate()
+    await withLoading(async () => {
+      const res = await userApi.register({
+        phone: form.phone,
+        code: form.code,
+        password: form.password
+      })
+      userStore.setToken(res.data.token)
+      userStore.setUserInfo(res.data.userInfo)
+      ElMessage.success('注册成功')
+      router.push('/home')
     })
-    userStore.setToken(res.data.token)
-    userStore.setUserInfo(res.data.userInfo)
-    ElMessage.success('注册成功')
-    router.push('/home')
-  })
+  } catch {
+    ElMessage.error('注册失败，请稍后重试')
+  }
 }
 </script>
 

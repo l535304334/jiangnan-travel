@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -193,7 +194,7 @@ public class OrderServiceImpl implements OrderService {
         }
         IPage<Order> page = orderMapper.selectPage(
                 new Page<>(pageNum != null ? pageNum : 1, pageSize != null ? pageSize : 10), wrapper);
-        return page.getRecords().stream().map(this::toVO).collect(Collectors.toList());
+        return toVOList(page.getRecords());
     }
 
     @Override
@@ -206,7 +207,7 @@ public class OrderServiceImpl implements OrderService {
         }
         IPage<Order> page = orderMapper.selectPage(
                 new Page<>(pageNum != null ? pageNum : 1, pageSize != null ? pageSize : 10), wrapper);
-        return page.getRecords().stream().map(this::toVO).collect(Collectors.toList());
+        return toVOList(page.getRecords());
     }
 
     @Override
@@ -287,58 +288,90 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderVO arrive(Long orderId, Long driverId) {
-        Order order = checkDriverOrder(orderId, driverId);
-        if (order.getStatus() != 1) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
-        order.setStatus(2);
-        order.setArriveTime(LocalDateTime.now());
-        orderMapper.updateById(order);
+        String lockKey = "order:status:" + orderId;
+        RLock lock = redissonClient.getLock(lockKey);
+        try {
+            if (!lock.tryLock(5, TimeUnit.SECONDS)) throw new BusinessException(9002, "操作过于频繁");
+            Order order = checkDriverOrder(orderId, driverId);
+            if (order.getStatus() != 1) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
+            order.setStatus(2);
+            order.setArriveTime(LocalDateTime.now());
+            orderMapper.updateById(order);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BusinessException(9002, "系统繁忙");
+        } finally {
+            if (lock.isHeldByCurrentThread()) lock.unlock();
+        }
 
-        notificationService.create(order.getUserId(), "ORDER_ARRIVED",
-                "司机已到达", "司机已到达上车点，请尽快上车", order.getId());
+        Order freshOrder = orderMapper.selectById(orderId);
+        notificationService.create(freshOrder.getUserId(), "ORDER_ARRIVED",
+                "司机已到达", "司机已到达上车点，请尽快上车", orderId);
         OrderTrackingServer.pushOrderUpdate(orderId,
                 String.format("{\"orderId\":%d,\"status\":2,\"action\":\"ORDER_ARRIVED\"}", orderId));
-        return toVO(order);
+        return toVO(freshOrder);
     }
 
     @Override
     public OrderVO startTrip(Long orderId, Long driverId) {
-        Order order = checkDriverOrder(orderId, driverId);
-        if (order.getStatus() != 2) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
-        order.setStatus(3);
-        order.setStartTime(LocalDateTime.now());
-        orderMapper.updateById(order);
+        String lockKey = "order:status:" + orderId;
+        RLock lock = redissonClient.getLock(lockKey);
+        try {
+            if (!lock.tryLock(5, TimeUnit.SECONDS)) throw new BusinessException(9002, "操作过于频繁");
+            Order order = checkDriverOrder(orderId, driverId);
+            if (order.getStatus() != 2) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
+            order.setStatus(3);
+            order.setStartTime(LocalDateTime.now());
+            orderMapper.updateById(order);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BusinessException(9002, "系统繁忙");
+        } finally {
+            if (lock.isHeldByCurrentThread()) lock.unlock();
+        }
 
-        notificationService.create(order.getUserId(), "ORDER_STARTED",
-                "行程已开始", "您的行程已开始，预计 " + (order.getDuration() != null ? (order.getDuration() / 60) + " 分钟" : "即将到达") + " 到达目的地", order.getId());
+        Order freshOrder = orderMapper.selectById(orderId);
+        notificationService.create(freshOrder.getUserId(), "ORDER_STARTED",
+                "行程已开始", "您的行程已开始，预计 " + (freshOrder.getDuration() != null ? (freshOrder.getDuration() / 60) + " 分钟" : "即将到达") + " 到达目的地", orderId);
         OrderTrackingServer.pushOrderUpdate(orderId,
                 String.format("{\"orderId\":%d,\"status\":3,\"action\":\"ORDER_STARTED\"}", orderId));
-        return toVO(order);
+        return toVO(freshOrder);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public OrderVO complete(Long orderId, Long driverId) {
-        Order order = checkDriverOrder(orderId, driverId);
-        if (order.getStatus() != 3) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
-        order.setStatus(4);
-        order.setEndTime(LocalDateTime.now());
-        orderMapper.updateById(order);
+        String lockKey = "order:status:" + orderId;
+        RLock lock = redissonClient.getLock(lockKey);
+        try {
+            if (!lock.tryLock(5, TimeUnit.SECONDS)) throw new BusinessException(9002, "操作过于频繁");
+            Order order = checkDriverOrder(orderId, driverId);
+            if (order.getStatus() != 3) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
+            order.setStatus(4);
+            order.setEndTime(LocalDateTime.now());
+            orderMapper.updateById(order);
 
-        // R7 疲劳提醒：行程超过2小时
-        checkRiskR7(order);
+            // R7 疲劳提醒：行程超过2小时
+            checkRiskR7(order);
 
-        Driver driver = driverMapper.selectById(driverId);
-        if (driver != null) {
-            driver.setStatus(1);
-            driver.setTotalOrders(driver.getTotalOrders() + 1);
-            driverMapper.updateById(driver);
+            Driver driver = driverMapper.selectById(driverId);
+            if (driver != null) {
+                driver.setStatus(1);
+                driver.setTotalOrders(driver.getTotalOrders() + 1);
+                driverMapper.updateById(driver);
+            }
+
+            notificationService.create(order.getUserId(), "ORDER_COMPLETED",
+                    "行程已完成", "订单 " + order.getOrderNo() + " 已完成，费用 ¥" + order.getFinalPrice(), order.getId());
+            OrderTrackingServer.pushOrderUpdate(orderId,
+                    String.format("{\"orderId\":%d,\"status\":4,\"action\":\"ORDER_COMPLETED\"}", orderId));
+            return toVO(order);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BusinessException(9002, "系统繁忙");
+        } finally {
+            if (lock.isHeldByCurrentThread()) lock.unlock();
         }
-
-        notificationService.create(order.getUserId(), "ORDER_COMPLETED",
-                "行程已完成", "订单 " + order.getOrderNo() + " 已完成，费用 ¥" + order.getFinalPrice(), order.getId());
-        OrderTrackingServer.pushOrderUpdate(orderId,
-                String.format("{\"orderId\":%d,\"status\":4,\"action\":\"ORDER_COMPLETED\"}", orderId));
-        return toVO(order);
     }
 
     @Override
@@ -407,15 +440,16 @@ public class OrderServiceImpl implements OrderService {
         review.setContent(content);
         reviewMapper.insert(review);
 
-        // 同步更新司机平均评分
+        // 同步更新司机平均评分（DB 聚合，避免加载全量评价到内存）
         Long driverId = order.getDriverId();
         if (driverId != null) {
-            List<Review> driverReviews = reviewMapper.selectList(
-                    new LambdaQueryWrapper<Review>().eq(Review::getDriverId, driverId));
-            BigDecimal avg = driverReviews.stream()
-                    .map(r -> BigDecimal.valueOf(r.getRating()))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add)
-                    .divide(BigDecimal.valueOf(driverReviews.size()), 2, RoundingMode.HALF_UP);
+            var avgResult = reviewMapper.selectMaps(
+                    new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Review>()
+                            .select("COALESCE(AVG(rating),0) as avgRating")
+                            .eq("driver_id", driverId));
+            BigDecimal avg = avgResult.isEmpty() || avgResult.get(0).get("avgRating") == null
+                    ? BigDecimal.ZERO
+                    : new BigDecimal(avgResult.get(0).get("avgRating").toString()).setScale(2, RoundingMode.HALF_UP);
             Driver driver = driverMapper.selectById(driverId);
             if (driver != null) {
                 driver.setAvgRating(avg);
@@ -448,12 +482,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public BigDecimal getTodayRevenue() {
-        List<Order> todayCompletedOrders = orderMapper.selectList(new LambdaQueryWrapper<Order>()
-                .eq(Order::getStatus, 4)
-                .apply("DATE(create_time) = CURDATE()"));
-        return todayCompletedOrders.stream()
-                .map(o -> o.getFinalPrice() != null ? o.getFinalPrice() : BigDecimal.ZERO)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // ponytail: SQL SUM instead of loading all rows into memory
+        var result = orderMapper.selectMaps(
+                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Order>()
+                        .select("COALESCE(SUM(final_price),0) as total")
+                        .eq("status", 4)
+                        .apply("DATE(create_time) = CURDATE()"));
+        if (result.isEmpty() || result.get(0).get("total") == null) return BigDecimal.ZERO;
+        return new BigDecimal(result.get(0).get("total").toString());
     }
 
     @Override
@@ -473,11 +509,11 @@ public class OrderServiceImpl implements OrderService {
                         .le(Order::getStartLng, lng.add(BigDecimal.valueOf(radius))));
 
         int resultLimit = limit != null && limit > 0 ? limit : 20;
-        return pendingOrders.stream()
+        List<Order> sorted = pendingOrders.stream()
                 .sorted(Comparator.comparingDouble(o -> distanceMeters(lat, lng, o.getStartLat(), o.getStartLng())))
                 .limit(resultLimit)
-                .map(this::toVO)
-                .collect(Collectors.toList());
+                .toList();
+        return toVOList(sorted);
     }
 
     private double distanceMeters(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2) {
@@ -552,6 +588,29 @@ public class OrderServiceImpl implements OrderService {
         return order;
     }
 
+    // ponytail: batch CarType/Driver lookup to avoid N+1 in list methods
+    private List<OrderVO> toVOList(List<Order> orders) {
+        if (orders.isEmpty()) return List.of();
+        var carTypeIds = orders.stream().map(Order::getCarTypeId).filter(Objects::nonNull).distinct().toList();
+        var driverIds = orders.stream().map(Order::getDriverId).filter(Objects::nonNull).distinct().toList();
+        var carTypeMap = carTypeIds.isEmpty() ? java.util.Collections.<Long, CarType>emptyMap()
+                : carTypeMapper.selectBatchIds(carTypeIds).stream()
+                        .collect(Collectors.toMap(CarType::getId, c -> c));
+        var driverMap = driverIds.isEmpty() ? java.util.Collections.<Long, Driver>emptyMap()
+                : driverMapper.selectBatchIds(driverIds).stream()
+                        .collect(Collectors.toMap(Driver::getId, d -> d));
+        return orders.stream().map(o -> toVO(o, carTypeMap, driverMap)).collect(Collectors.toList());
+    }
+
+    private OrderVO toVO(Order order, java.util.Map<Long, CarType> carTypeMap, java.util.Map<Long, Driver> driverMap) {
+        CarType ct = carTypeMap.get(order.getCarTypeId());
+        Driver d = driverMap.get(order.getDriverId());
+        return buildVO(order,
+                ct != null ? ct.getName() : "",
+                d != null ? d.getRealName() : "",
+                d != null ? d.getCarPlate() : "");
+    }
+
     private OrderVO toVO(Order order) {
         String carTypeName = "", driverName = "", carPlate = "";
         if (order.getCarTypeId() != null) {
@@ -562,6 +621,10 @@ public class OrderServiceImpl implements OrderService {
             Driver d = driverMapper.selectById(order.getDriverId());
             if (d != null) { driverName = d.getRealName(); carPlate = d.getCarPlate(); }
         }
+        return buildVO(order, carTypeName, driverName, carPlate);
+    }
+
+    private OrderVO buildVO(Order order, String carTypeName, String driverName, String carPlate) {
         return OrderVO.builder()
                 .id(order.getId()).orderNo(order.getOrderNo())
                 .userId(order.getUserId()).driverId(order.getDriverId())

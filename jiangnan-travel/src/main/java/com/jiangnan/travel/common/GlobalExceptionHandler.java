@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -24,12 +25,23 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BindException.class)
     @ResponseStatus(HttpStatus.OK)
     public Result<?> handleBindException(BindException e) {
-        String msg = e.getBindingResult().getFieldErrors().stream()
-                .map(err -> err.getField() + ": " + err.getDefaultMessage())
-                .reduce((a, b) -> a + "; " + b)
-                .orElse("参数校验失败");
+        String msg = extractFieldErrors(e.getBindingResult().getFieldErrors()
+                .stream().map(err -> err.getField() + ": " + err.getDefaultMessage()));
         log.warn("参数校验异常: {}", msg);
         return Result.fail(ErrorCode.BAD_REQUEST.getCode(), msg);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public Result<?> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+        String msg = extractFieldErrors(e.getBindingResult().getFieldErrors()
+                .stream().map(err -> err.getField() + ": " + err.getDefaultMessage()));
+        log.warn("请求体校验失败: {}", msg);
+        return Result.fail(ErrorCode.BAD_REQUEST.getCode(), msg);
+    }
+
+    private String extractFieldErrors(java.util.stream.Stream<String> fieldErrors) {
+        return fieldErrors.reduce((a, b) -> a + "; " + b).orElse("参数校验失败");
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

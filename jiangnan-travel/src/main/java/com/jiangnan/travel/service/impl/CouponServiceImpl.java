@@ -20,6 +20,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -42,8 +44,13 @@ public class CouponServiceImpl implements CouponService {
                 new LambdaQueryWrapper<UserCoupon>()
                         .eq(UserCoupon::getUserId, userId)
                         .orderByDesc(UserCoupon::getCreateTime));
+        // ponytail: batch load coupons to avoid N+1
+        List<Long> couponIds = list.stream().map(UserCoupon::getCouponId).distinct().toList();
+        java.util.Map<Long, Coupon> couponMap = couponIds.isEmpty() ? java.util.Collections.emptyMap()
+                : couponMapper.selectBatchIds(couponIds).stream()
+                        .collect(java.util.stream.Collectors.toMap(Coupon::getId, c -> c));
         return list.stream().map(uc -> {
-            Coupon coupon = couponMapper.selectById(uc.getCouponId());
+            Coupon coupon = couponMap.get(uc.getCouponId());
             return UserCouponVO.builder()
                     .id(uc.getId())
                     .userId(uc.getUserId())

@@ -200,7 +200,7 @@ CREATE TABLE t_schedule_route (
     id              BIGINT          PRIMARY KEY AUTO_INCREMENT  COMMENT '路线ID',
     start_city      VARCHAR(50)     NOT NULL                    COMMENT '出发城市',
     end_city        VARCHAR(50)     NOT NULL                    COMMENT '目的城市',
-    depart_time     VARCHAR(20)     NOT NULL                    COMMENT '发车时间 HH:mm',
+    depart_time     TIME            NOT NULL                    COMMENT '发车时间',
     price           DECIMAL(8,2)    NOT NULL                    COMMENT '票价',
     total_seats     INT             DEFAULT 30                  COMMENT '总座位数',
     status          TINYINT         DEFAULT 1                   COMMENT '0禁用 1启用',

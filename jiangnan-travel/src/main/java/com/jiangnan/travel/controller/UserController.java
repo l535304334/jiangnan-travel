@@ -3,13 +3,16 @@ package com.jiangnan.travel.controller;
 import com.jiangnan.travel.annotation.LogOperation;
 import com.jiangnan.travel.common.Result;
 import com.jiangnan.travel.dto.*;
+import com.jiangnan.travel.security.TokenBlacklistService;
 import com.jiangnan.travel.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final TokenBlacklistService blacklistService;
 
     @PostMapping("/send-code")
     @Operation(summary = "发送验证码", description = "向指定手机号发送登录验证码")
@@ -69,12 +73,29 @@ public class UserController {
     }
 
     @PutMapping("/password")
-    @LogOperation("修改登录密码")
-    @Operation(summary = "修改登录密码", description = "验证旧密码并更新登录密码")
+    @LogOperation(value = "修改登录密码", saveRequestParams = false)
+    @Operation(summary = "修改登录密码", description = "验证旧密码并更新登录密码，同时使当前 token 失效")
     public Result<?> changePassword(@Valid @RequestBody ChangePasswordRequest request,
-                                     Authentication authentication) {
+                                     Authentication authentication,
+                                     HttpServletRequest httpRequest) {
         Long userId = (Long) authentication.getPrincipal();
         userService.updatePassword(userId, request.getOldPassword(), request.getNewPassword());
-        return Result.ok("密码修改成功");
+        blacklistCurrentToken(httpRequest);
+        return Result.ok("密码修改成功，请重新登录");
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "登出", description = "登出并使当前 token 失效")
+    public Result<?> logout(HttpServletRequest request) {
+        blacklistCurrentToken(request);
+        return Result.ok("已登出");
+    }
+
+    /** 从 Authorization header 提取 token 并加入黑名单 */
+    private void blacklistCurrentToken(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearer) && bearer.startsWith("Bearer ")) {
+            blacklistService.blacklist(bearer.substring(7));
+        }
     }
 }

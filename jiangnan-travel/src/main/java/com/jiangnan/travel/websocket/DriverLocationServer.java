@@ -1,6 +1,7 @@
 package com.jiangnan.travel.websocket;
 
 import com.jiangnan.travel.security.JwtUtil;
+import com.jiangnan.travel.security.TokenBlacklistService;
 import jakarta.websocket.*;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
@@ -13,15 +14,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component
-@ServerEndpoint("/ws/driver-location")
-/**
- * WebSocket 端点由容器管理实例（非 Spring），
- * 因此使用静态 setter 注入（@Autowired 异常豁免）。
- * 参考：PROJECT_RULES.md 3.4
- */
+@ServerEndpoint(value = "/ws/driver-location", configurator = JwtCookieConfigurator.class)
 public class DriverLocationServer {
 
     private static JwtUtil jwtUtil;
+    private static TokenBlacklistService blacklistService;
     private static final ConcurrentHashMap<Long, Session> driverSessions = new ConcurrentHashMap<>();
 
     @Autowired
@@ -29,10 +26,16 @@ public class DriverLocationServer {
         DriverLocationServer.jwtUtil = jwtUtil;
     }
 
+    @Autowired
+    public void setBlacklistService(TokenBlacklistService blacklistService) {
+        DriverLocationServer.blacklistService = blacklistService;
+    }
+
     @OnOpen
     public void onOpen(Session session) {
-        String token = getParam(session, "token");
-        if (token == null || !jwtUtil.validateToken(token)) {
+        String token = JwtCookieConfigurator.getToken(session);
+        if (token == null || !jwtUtil.validateToken(token) ||
+                (blacklistService != null && blacklistService.isBlacklisted(token))) {
             try { session.close(); } catch (Exception ignored) {}
             return;
         }
@@ -91,16 +94,6 @@ public class DriverLocationServer {
     private Long getDriverId(Session session) {
         for (var entry : driverSessions.entrySet()) {
             if (entry.getValue().equals(session)) return entry.getKey();
-        }
-        return null;
-    }
-
-    private String getParam(Session session, String key) {
-        String query = session.getRequestURI().getQuery();
-        if (query == null) return null;
-        for (String p : query.split("&")) {
-            String[] kv = p.split("=");
-            if (kv.length == 2 && kv[0].equals(key)) return kv[1];
         }
         return null;
     }

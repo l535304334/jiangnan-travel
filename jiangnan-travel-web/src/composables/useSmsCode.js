@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { userApi } from '@/api/user'
 
@@ -30,6 +30,7 @@ export function useSmsCode(phoneRef, options = {}) {
       timer = null
     }
   }
+  onUnmounted(clearTimer) // ponytail: prevent timer leak on component unmount
 
   /** 开始倒计时 */
   const startCountdown = () => {

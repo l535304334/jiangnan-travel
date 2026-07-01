@@ -158,7 +158,7 @@ const goLongTrip = () => router.push('/order?tripType=1')
 const quickActionsShort = [
   { label: '市内出行', icon: '🚗', desc: '快速接驾，即时到达', action: goShortTrip, bg: 'linear-gradient(135deg, #2D8A6E, #4CAF50)' },
   { label: '城际出行', icon: '🚙', desc: '跨城直达，舒适长途', action: goLongTrip, bg: 'linear-gradient(135deg, #E67E22, #F39C12)' },
-  { label: '收藏地址', icon: '⭐', desc: '常用地址管理', action: () => router.push('/addresses'), bg: 'linear-gradient(135deg, #2196F3, #64B5F6)' },
+  { label: '收藏地址', icon: '⭐', desc: '常用地址管理', action: () => router.push('/address'), bg: 'linear-gradient(135deg, #2196F3, #64B5F6)' },
   { label: '历史订单', icon: '📋', desc: '查看出行记录', action: () => router.push('/orders'), bg: 'linear-gradient(135deg, #9C27B0, #CE93D8)' }
 ]
 

@@ -23,27 +23,28 @@ public class AiChatController {
     @PostMapping("/chat")
     @Operation(summary = "AI对话", description = "与AI客服进行对话")
     public Result<?> chat(@Valid @RequestBody ChatRequest request, Authentication authentication) {
-        Long userId = authentication != null ? (Long) authentication.getPrincipal() : null;
+        Long userId = (Long) authentication.getPrincipal();
         return Result.ok(aiChatService.chat(request, userId));
     }
 
     @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "AI流式对话", description = "SSE流式AI对话，逐字返回回复内容")
     public SseEmitter chatStream(@Valid @RequestBody ChatRequest request, Authentication authentication) {
-        Long userId = authentication != null ? (Long) authentication.getPrincipal() : null;
+        Long userId = (Long) authentication.getPrincipal();
         return aiChatService.chatStream(request, userId);
     }
 
     @GetMapping("/sessions")
     @Operation(summary = "会话列表", description = "获取用户的AI对话会话列表")
     public Result<?> getSessions(Authentication authentication) {
-        Long userId = authentication != null ? (Long) authentication.getPrincipal() : null;
+        Long userId = (Long) authentication.getPrincipal();
         return Result.ok(aiChatService.getSessions(userId));
     }
 
     @GetMapping("/sessions/{sessionId}/messages")
     @Operation(summary = "会话消息", description = "获取指定会话的全部消息")
-    public Result<?> getSessionMessages(@PathVariable String sessionId) {
-        return Result.ok(aiChatService.getSessionMessages(sessionId));
+    public Result<?> getSessionMessages(@PathVariable String sessionId, Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return Result.ok(aiChatService.getSessionMessages(sessionId, userId));
     }
 }

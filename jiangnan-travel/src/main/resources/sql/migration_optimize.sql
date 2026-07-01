@@ -78,15 +78,15 @@ CREATE TABLE t_user_preferred_driver (
 -- 为 t_demand_hotspot 添加针对范围查询的索引
 
 ALTER TABLE t_demand_hotspot
-    ADD INDEX idx_coord_range (lat, lng),
+    -- idx_coord_range duplicates idx_coord in init.sql; removed
     ADD INDEX idx_create_time (create_time);
 
 -- =====================================================
 -- 5. t_admin 补充常规字段
 -- =====================================================
 
-ALTER TABLE t_admin
-    ADD COLUMN create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' AFTER password;
+-- create_time already exists in init.sql; removed duplicate
+-- ALTER TABLE t_admin ADD COLUMN create_time ...
 
 -- =====================================================
 -- 6. 补充缺失的 deleted 逻辑删除字段（与所有 Entity 的 BaseEntity 对齐）
@@ -126,8 +126,8 @@ ALTER TABLE t_risk_alert
     ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER handle_remark;
 
 ALTER TABLE t_user_risk_profile
-    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER risk_level,
-    ADD COLUMN create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' AFTER risk_level;
+    ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER risk_level;
+-- create_time already exists in init.sql; removed duplicate ADD
 
 ALTER TABLE t_demand_hotspot
     ADD COLUMN deleted TINYINT DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER snapshot_time;

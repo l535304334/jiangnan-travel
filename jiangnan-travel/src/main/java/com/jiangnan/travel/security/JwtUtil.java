@@ -62,4 +62,14 @@ public class JwtUtil {
             return false;
         }
     }
+
+    /** 获取 token 剩余有效毫秒数，用于黑名单 TTL */
+    public long getRemainingMs(String token) {
+        try {
+            Date exp = parseToken(token).getExpiration();
+            return exp.getTime() - System.currentTimeMillis();
+        } catch (JwtException | IllegalArgumentException e) {
+            return 0;
+        }
+    }
 }

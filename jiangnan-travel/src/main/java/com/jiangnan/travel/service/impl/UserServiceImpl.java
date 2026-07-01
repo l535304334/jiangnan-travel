@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(9002, "验证码发送过于频繁，请60秒后再试");
         }
         // 生成6位验证码
-        String code = String.valueOf((int) ((Math.random() * 9 + 1) * 100000));
+        String code = String.valueOf((int) ((new java.security.SecureRandom().nextInt(900000) + 100000)));
         // 存入Redis，5分钟有效
         redisTemplate.opsForValue().set(SMS_PREFIX + phone, code, SMS_CODE_EXPIRE, TimeUnit.MINUTES);
         redisTemplate.opsForValue().set(rateLimitKey, "1", 60, TimeUnit.SECONDS);

@@ -18,6 +18,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Slf4j
 @Aspect
@@ -100,12 +101,35 @@ public class OperationLogAspect {
         return ip != null && ip.contains(",") ? ip.split(",")[0].trim() : ip;
     }
 
+    // ponytail: parameter-level sanitization; full DTO field walker if false-positives become a problem
+    private static final Set<String> SENSITIVE_PARAM_PATTERNS = Set.of(
+        "password", "oldpassword", "newpassword", "pwd", "passwd",
+        "secret", "token", "apikey", "code"
+    );
+
     private String getRequestParams(ProceedingJoinPoint point) {
         try {
-            return objectMapper.writeValueAsString(point.getArgs());
+            Object[] args = point.getArgs();
+            String[] paramNames = ((MethodSignature) point.getSignature()).getParameterNames();
+            Object[] sanitized = new Object[args.length];
+            for (int i = 0; i < args.length; i++) {
+                if (args[i] == null) {
+                    sanitized[i] = null;
+                } else if (paramNames != null && i < paramNames.length && isSensitive(paramNames[i])) {
+                    sanitized[i] = "***";
+                } else {
+                    sanitized[i] = args[i];
+                }
+            }
+            return objectMapper.writeValueAsString(sanitized);
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private boolean isSensitive(String paramName) {
+        String lower = paramName.toLowerCase().replace("_", "");
+        return SENSITIVE_PARAM_PATTERNS.stream().anyMatch(lower::contains);
     }
 
     private HttpServletRequest getRequest() {

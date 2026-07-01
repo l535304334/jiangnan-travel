@@ -15,5 +15,5 @@ public interface AiChatService {
 
     List<String> getSessions(Long userId);
 
-    List<AiChatLog> getSessionMessages(String sessionId);
+    List<AiChatLog> getSessionMessages(String sessionId, Long userId);
 }
