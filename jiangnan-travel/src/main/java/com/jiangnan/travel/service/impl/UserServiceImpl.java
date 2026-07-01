@@ -33,7 +33,10 @@ public class UserServiceImpl implements UserService {
     private final CouponServiceImpl couponService;
 
     private static final String SMS_PREFIX = "sms:code:";
+    private static final String LOGIN_ATTEMPT_PREFIX = "login:attempt:";
     private static final long SMS_CODE_EXPIRE = 5; // 5分钟
+    private static final int MAX_LOGIN_ATTEMPTS = 5;
+    private static final long LOGIN_LOCKOUT_MINUTES = 15;
 
     @Override
     public void sendCode(String phone) {
@@ -96,9 +99,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginVO passwordLogin(com.jiangnan.travel.dto.PasswordLoginRequest request) {
+        // 暴力破解防护：检查登录尝试次数
+        String attemptKey = LOGIN_ATTEMPT_PREFIX + request.getPhone();
+        String attempts = redisTemplate.opsForValue().get(attemptKey);
+        if (attempts != null && Integer.parseInt(attempts) >= MAX_LOGIN_ATTEMPTS) {
+            throw new BusinessException(ErrorCode.RATE_LIMIT);
+        }
+
         User user = userMapper.selectOne(
                 new LambdaQueryWrapper<User>().eq(User::getPhone, request.getPhone()));
         if (user == null) {
+            incrementLoginAttempts(attemptKey);
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
         if (user.getStatus() == 0) {
@@ -108,8 +119,12 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(ErrorCode.RISK_ACCOUNT_FROZEN);
         }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            incrementLoginAttempts(attemptKey);
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "用户名或密码错误");
         }
+        // 登录成功，清除尝试计数
+        redisTemplate.delete(attemptKey);
+
         user.setLastLoginTime(LocalDateTime.now());
         userMapper.updateById(user);
 
@@ -121,6 +136,13 @@ public class UserServiceImpl implements UserService {
                 .nickname(user.getNickname())
                 .avatar(user.getAvatar())
                 .build();
+    }
+
+    private void incrementLoginAttempts(String key) {
+        Long count = redisTemplate.opsForValue().increment(key);
+        if (count != null && count == 1) {
+            redisTemplate.expire(key, LOGIN_LOCKOUT_MINUTES, TimeUnit.MINUTES);
+        }
     }
 
     @Override

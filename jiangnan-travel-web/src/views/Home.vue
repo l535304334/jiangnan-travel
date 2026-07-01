@@ -149,7 +149,7 @@ onMounted(async () => {
         vipDiscountText.value = (vipRes.data.vipLevel.discount * 10).toFixed(1) + '折'
       }
     }
-  } catch { /* ignore */ }
+  } catch { vipDiscountText.value = '无折扣' /* VIP 未开通或加载失败，降级显示 */ }
 })
 
 const goShortTrip = () => router.push('/order?tripType=0')

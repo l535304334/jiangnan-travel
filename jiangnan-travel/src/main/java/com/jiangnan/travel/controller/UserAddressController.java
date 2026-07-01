@@ -4,6 +4,9 @@ import com.jiangnan.travel.common.Result;
 import com.jiangnan.travel.service.UserAddressService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +25,12 @@ public class UserAddressController {
     private final UserAddressService userAddressService;
 
     @Data
-    static class AddReq { String tag; String address; BigDecimal lat; BigDecimal lng; }
+    static class AddReq {
+        @Size(max = 20) String tag;
+        @NotBlank @Size(max = 200) String address;
+        BigDecimal lat;
+        BigDecimal lng;
+    }
 
     @GetMapping
     @Operation(summary = "地址列表", description = "获取用户收藏的地址列表")
@@ -33,11 +41,11 @@ public class UserAddressController {
 
     @PostMapping
     @Operation(summary = "新增地址", description = "新增收藏地址")
-    public Result<?> add(@RequestBody AddReq req, Authentication authentication) {
+    public Result<?> add(@Valid @RequestBody AddReq req, Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         return Result.ok(userAddressService.add(userId,
                 req.tag != null ? req.tag : "自定义",
-                req.address != null ? req.address : "",
+                req.address,
                 req.lat != null ? req.lat : BigDecimal.ZERO,
                 req.lng != null ? req.lng : BigDecimal.ZERO));
     }

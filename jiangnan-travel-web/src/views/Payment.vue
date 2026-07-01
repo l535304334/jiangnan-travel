@@ -3,7 +3,7 @@
     <!-- 支付金额 -->
     <div class="amount-card">
       <p class="amount-label">支付金额</p>
-      <p class="amount-value">¥{{ payInfo?.amount || '0.00' }}</p>
+      <p class="amount-value">¥{{ formatAmount(payInfo?.amount) }}</p>
       <p class="order-no">订单号：{{ payInfo?.orderNo }}</p>
     </div>
 
@@ -45,7 +45,7 @@
     <!-- 支付按钮 -->
     <div class="pay-action">
       <el-button type="primary" size="large" :loading="paying" class="btn-full" @click="handlePay">
-        立即支付 ¥{{ payInfo?.amount || '0.00' }}
+        立即支付 ¥{{ formatAmount(payInfo?.amount) }}
       </el-button>
     </div>
 
@@ -56,7 +56,7 @@
         <el-icon v-if="paySuccess" class="result-icon success" :size="48"><CircleCheck /></el-icon>
         <el-icon v-else class="result-icon fail" :size="48"><CircleClose /></el-icon>
         <p class="result-text">{{ paySuccess ? '支付成功' : '支付失败' }}</p>
-        <p class="result-amount text-primary">¥{{ payInfo?.amount }}</p>
+        <p class="result-amount text-primary">¥{{ formatAmount(payInfo?.amount) }}</p>
         <p class="result-method">{{ methodLabel }}</p>
       </div>
       <template #footer>
@@ -85,6 +85,9 @@ const payMethod = ref('wxpay')
 const resultVisible = ref(false)
 const paySuccess = ref(false)
 
+const formatAmount = (val) => (Number(val) || 0).toFixed(2)
+const randomUUID = () => crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
+
 const methodLabel = computed(() => {
   const map = { wxpay: '微信支付', alipay: '支付宝', balance: '余额支付' }
   return map[payMethod.value] || '微信支付'
@@ -104,7 +107,7 @@ onMounted(async () => {
 const handlePay = async () => {
   paying.value = true
   try {
-    const idempotentKey = crypto.randomUUID()
+    const idempotentKey = randomUUID()
     const res = await paymentApi.create(orderId, payMethod.value, idempotentKey)
     payInfo.value = res.data
     paySuccess.value = true

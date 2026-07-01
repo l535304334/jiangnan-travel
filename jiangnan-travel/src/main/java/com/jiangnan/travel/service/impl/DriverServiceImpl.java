@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -38,6 +39,8 @@ public class DriverServiceImpl implements DriverService {
     private final CarTypeMapper carTypeMapper;
     private final OrderMapper orderMapper;
     private final JwtUtil jwtUtil;
+    // ponytail: local cache for userId→driverId, avoids DB query on every driver API call
+    private final ConcurrentHashMap<Long, Long> driverIdCache = new ConcurrentHashMap<>();
 
     @Override
     public LoginVO login(String phone) {
@@ -105,10 +108,12 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public Long getDriverIdByUserId(Long userId) {
-        Driver driver = driverMapper.selectOne(
-                new LambdaQueryWrapper<Driver>().eq(Driver::getUserId, userId));
-        if (driver == null) throw new BusinessException(ErrorCode.DRIVER_NOT_FOUND);
-        return driver.getId();
+        return driverIdCache.computeIfAbsent(userId, uid -> {
+            Driver driver = driverMapper.selectOne(
+                    new LambdaQueryWrapper<Driver>().eq(Driver::getUserId, uid));
+            if (driver == null) throw new BusinessException(ErrorCode.DRIVER_NOT_FOUND);
+            return driver.getId();
+        });
     }
 
     @Override

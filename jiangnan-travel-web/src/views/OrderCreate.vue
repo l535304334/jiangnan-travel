@@ -406,7 +406,7 @@ const handleCreate = async () => {
       carTypeId: carTypeId.value,
       tripType: tripType.value,
       couponId: selectedCoupon.value?.id || null,
-      idempotentKey: Date.now().toString()
+      idempotentKey: (crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`)
     })
     if (res.code === 200) {
       ElMessage.success('下单成功')

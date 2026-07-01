@@ -30,6 +30,11 @@ request.interceptors.response.use(
     return body
   },
   error => {
+    // 超时处理
+    if (error.code === 'ECONNABORTED') {
+      ElMessage.error('请求超时，请检查网络')
+      return Promise.reject(error)
+    }
     const status = error.response?.status
     if (status === 401) {
       localStorage.removeItem('token')
