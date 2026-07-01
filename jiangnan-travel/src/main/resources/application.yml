@@ -27,6 +27,22 @@ spring:
           max-idle: 8
           min-idle: 4
 
+  web:
+    cors:
+      allowed-origin-patterns: "*"
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+      allowed-headers: "*"
+      allow-credentials: true
+      max-age: 3600
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 10m
+      key-prefix: jiangnan
+      cache-null-values: false
+    cache-names: carTypes,landmarks,cityQuotes,hotDestinations,dashboard
+
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai
@@ -74,19 +90,6 @@ amap:
   base-url: https://restapi.amap.com/v3/direction/driving
   js-api-key: REDACTED_AMAP_API_KEY
   security-code: 01646b6ce6b541c2057afc03bb2ea17a
-
-# Actuator / Prometheus 监控
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus,metrics
-  endpoint:
-    health:
-      show-details: always
-  metrics:
-    tags:
-      application: ${spring.application.name}
 
 # 日志
 logging:

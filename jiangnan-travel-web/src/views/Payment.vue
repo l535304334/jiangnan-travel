@@ -73,7 +73,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { CircleCheck, CircleClose } from '@element-plus/icons-vue'
 import { paymentApi } from '@/api/payment'
-import { v4 as uuidv4 } from 'uuid'
 
 const route = useRoute()
 const router = useRouter()
@@ -105,7 +104,7 @@ onMounted(async () => {
 const handlePay = async () => {
   paying.value = true
   try {
-    const idempotentKey = uuidv4()
+    const idempotentKey = crypto.randomUUID()
     const res = await paymentApi.create(orderId, payMethod.value, idempotentKey)
     payInfo.value = res.data
     paySuccess.value = true

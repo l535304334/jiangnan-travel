@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@org.springframework.context.annotation.Profile("dev")
 public class TestDataInitializer {
 
     private final UserMapper userMapper;

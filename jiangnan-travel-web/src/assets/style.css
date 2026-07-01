@@ -349,25 +349,6 @@ img {
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* 可点击的卡片 */
-.card-clickable {
-  cursor: pointer;
-  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
-}
-
-.card-clickable:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-/* 卡片加载骨架 */
-.card-skeleton {
-  background: var(--color-white);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-sm);
-}
-
 .section-title {
   font-size: var(--font-size-h2);
   font-weight: var(--font-weight-semi-bold);
@@ -634,47 +615,5 @@ body.admin-layout-open {
 }
 
 /* ============================================================
-   十三、移动端共享样式
+   十三、移动端共享样式（统一使用 .card / .card-list-item，见第六节）
    ============================================================ */
-.app-page {
-  padding: var(--spacing-md);
-}
-
-.app-section {
-  margin-bottom: var(--spacing-lg);
-}
-
-.app-section-title {
-  font-size: var(--font-size-h3);
-  font-weight: var(--font-weight-semi-bold);
-  color: var(--color-text);
-  margin-bottom: var(--spacing-md);
-}
-
-.app-card {
-  background: var(--color-white);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  padding: var(--spacing-lg);
-  transition: box-shadow var(--transition-fast);
-}
-
-.app-card:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.app-list-item {
-  background: var(--color-white);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  padding: var(--spacing-lg);
-  transition: box-shadow var(--transition-fast);
-}
-
-.app-list-item:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.app-list-item + .app-list-item {
-  margin-top: var(--spacing-sm);
-}

@@ -22,7 +22,7 @@
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <knife4j.version>4.5.0</knife4j.version>
         <redisson.version>3.32.0</redisson.version>
-        <hutool.version>5.8.25</hutool.version>
+
         <jjwt.version>0.12.5</jjwt.version>
     </properties>
 
@@ -51,14 +51,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
         <!-- MyBatis-Plus -->
@@ -115,12 +107,6 @@
             <version>0.18.0</version>
         </dependency>
 
-        <!-- Hutool 工具类 -->
-        <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-all</artifactId>
-            <version>${hutool.version}</version>
-        </dependency>
 
         <!-- Lombok -->
         <dependency>

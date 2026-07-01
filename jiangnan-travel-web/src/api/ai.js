@@ -78,9 +78,6 @@ export const aiApi = {
   getHotspots() {
     return request.get('/ai/hotspots')
   },
-  getFrequentRoutes() {
-    return request.get('/user/frequent-routes')
-  },
   getCityQuotes() {
     return request.get('/common/city-quote')
   },

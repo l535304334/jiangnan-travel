@@ -101,11 +101,17 @@ import { driverApi } from '@/api/driver'
 import { adminApi } from '@/api/admin'
 import { useUserStore } from '@/stores/user'
 import { useSmsCode } from '@/composables/useSmsCode'
-import { useFeedback } from '@/composables/useFeedback'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
-const { loading, withLoading, notifySuccess, notifyError, notifyWarning } = useFeedback()
+
+const loading = ref(false)
+const withLoading = async (fn) => {
+  if (loading.value) return
+  loading.value = true
+  try { return await fn() } finally { loading.value = false }
+}
 const role = ref('user')
 const mode = ref('password')
 
@@ -150,10 +156,10 @@ const handleLogin = async () => {
         : await userApi.login({ phone: form.phone, code: form.code })
       userStore.setToken(res.data.token)
       userStore.setUserInfo(res.data)
-      notifySuccess(`欢迎, ${res.data.nickname || '用户'}`)
+      ElMessage.success(`欢迎, ${res.data.nickname || '用户'}`)
       router.push('/home')
     } catch {
-      notifyError('登录失败')
+      ElMessage.error('登录失败')
     }
   })
 }
@@ -169,10 +175,10 @@ const handleDriverLogin = async () => {
       userStore.setUserInfo(driverInfo)
       localStorage.setItem('driverToken', res.data.token)
       localStorage.setItem('driverInfo', JSON.stringify(driverInfo))
-      notifySuccess(`司机 ${res.data.nickname} 登录成功`)
+      ElMessage.success(`司机 ${res.data.nickname} 登录成功`)
       router.push('/driver/home')
     } catch {
-      notifyError('司机登录失败')
+      ElMessage.error('司机登录失败')
     }
   })
 }
@@ -192,10 +198,10 @@ const handleAdminLogin = async () => {
       userStore.setUserInfo(adminInfo)
       localStorage.setItem('adminToken', res.data.token)
       localStorage.setItem('adminInfo', JSON.stringify(adminInfo))
-      notifySuccess('管理员登录成功')
+      ElMessage.success('管理员登录成功')
       router.push('/admin/dashboard')
     } catch {
-      notifyError('管理员登录失败，请使用 admin / 123456')
+      ElMessage.error('管理员登录失败，请使用 admin / 123456')
     }
   })
 }

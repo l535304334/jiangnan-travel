@@ -41,11 +41,17 @@ import { Phone, Lock } from '@element-plus/icons-vue'
 import { userApi } from '@/api/user'
 import { useUserStore } from '@/stores/user'
 import { useSmsCode } from '@/composables/useSmsCode'
-import { useFeedback } from '@/composables/useFeedback'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
-const { loading, withLoading, notifySuccess } = useFeedback()
+
+const loading = ref(false)
+const withLoading = async (fn) => {
+  if (loading.value) return
+  loading.value = true
+  try { return await fn() } finally { loading.value = false }
+}
 const formRef = ref(null)
 const form = reactive({ phone: '', code: '', password: '' })
 
@@ -77,7 +83,7 @@ const handleRegister = async () => {
     })
     userStore.setToken(res.data.token)
     userStore.setUserInfo(res.data.userInfo)
-    notifySuccess('注册成功')
+    ElMessage.success('注册成功')
     router.push('/home')
   })
 }
