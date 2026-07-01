@@ -77,7 +77,8 @@ public class OrderController {
     }
 
     @GetMapping("/{id}/share")
-    @Operation(summary = "行程分享", description = "分享行程信息")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "行程分享", description = "分享行程信息（需登录）")
     public Result<Map<String, String>> share(@PathVariable Long id) {
         return Result.ok(Map.of("shareUrl",
                 "https://travel.jiangnan.com/s/" + id,

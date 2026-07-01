@@ -62,11 +62,11 @@ public class AiChatServiceImpl implements AiChatService {
         try {
             ChatCompletion completion = deepSeekClient.chat().completions().create(params);
             reply = completion.choices().get(0).message().content().orElse("抱歉，我没能理解您的问题。");
-            tokensUsed = 0L;
+            tokensUsed = completion.usage().map(u -> u.totalTokens()).orElse(0L);
         } catch (Exception e) {
             log.error("DeepSeek API 调用失败", e);
             reply = getFallbackReply(request.getMessage());
-            tokensUsed = 0;
+            tokensUsed = 0L;
         }
 
         // 保存AI回复

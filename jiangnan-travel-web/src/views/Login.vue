@@ -115,7 +115,7 @@ const withLoading = async (fn) => {
 const role = ref('user')
 const mode = ref('password')
 
-const form = reactive({ phone: '', code: '', password: '123456' })
+const form = reactive({ phone: '', code: '', password: '' })
 const driverForm = reactive({ phone: '', carPlate: '' })
 const adminForm = reactive({ username: '', password: '' })
 

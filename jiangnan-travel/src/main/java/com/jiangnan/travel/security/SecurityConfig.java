@@ -30,6 +30,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // CSRF 已禁用 — 纯 REST API + JWT Bearer 无状态架构，无需 CSRF。
+                // 若未来改用 httpOnly Cookie 存储 JWT，需重新启用 CSRF 保护。
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth

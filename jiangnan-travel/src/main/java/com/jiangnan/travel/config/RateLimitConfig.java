@@ -54,6 +54,8 @@ public class RateLimitConfig implements WebMvcConfigurer {
         }
     }
 
+    // 注意：X-Forwarded-For 仅应在反向代理（Nginx）之后信任。
+    // 若无代理直接暴露服务，攻击者可伪造此头绕过限流。生产部署时确保代理剥离外部 XFF 头。
     static String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty()) ip = request.getHeader("X-Real-IP");

@@ -74,6 +74,35 @@ public class GlobalExceptionHandler {
         return Result.fail(ErrorCode.UNAUTHORIZED.getCode(), ErrorCode.UNAUTHORIZED.getMessage());
     }
 
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<Result<?>> handleMessageNotReadable() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Result.fail(ErrorCode.BAD_REQUEST.getCode(), "请求体格式错误"));
+    }
+
+    @ExceptionHandler(org.springframework.web.bind.MissingServletRequestParameterException.class)
+    public ResponseEntity<Result<?>> handleMissingParam(
+            org.springframework.web.bind.MissingServletRequestParameterException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Result.fail(ErrorCode.BAD_REQUEST.getCode(), "缺少必要参数: " + e.getParameterName()));
+    }
+
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<Result<?>> handleConstraintViolation(jakarta.validation.ConstraintViolationException e) {
+        String msg = e.getConstraintViolations().stream()
+                .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                .reduce((a, b) -> a + "; " + b).orElse("参数校验失败");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Result.fail(ErrorCode.BAD_REQUEST.getCode(), msg));
+    }
+
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Result<?>> handleMethodNotSupported(
+            org.springframework.web.HttpRequestMethodNotSupportedException e) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(Result.fail(405, "不支持的请求方法: " + e.getMethod()));
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Result<?> handleException(Exception e) {

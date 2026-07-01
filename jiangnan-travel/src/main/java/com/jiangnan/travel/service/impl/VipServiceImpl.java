@@ -36,6 +36,7 @@ public class VipServiceImpl implements VipService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public UserVipVO getMyVip(Long userId) {
         UserVip userVip = userVipMapper.selectOne(
                 new LambdaQueryWrapper<UserVip>()

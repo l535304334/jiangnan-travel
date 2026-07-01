@@ -96,9 +96,8 @@ public class CouponServiceImpl implements CouponService {
         User user = userMapper.selectById(userId);
         if (user == null) return;
 
-        // 发放新用户专享券（id=1）
-        Coupon newUserCoupon = couponMapper.selectOne(
-                new LambdaQueryWrapper<Coupon>().eq(Coupon::getName, "新用户专享"));
+        // 发放新用户专享券（固定 ID=1，避免按名称查询的脆断性）
+        Coupon newUserCoupon = couponMapper.selectById(1L);
         if (newUserCoupon != null) {
             UserCoupon uc = new UserCoupon();
             uc.setUserId(userId);
