@@ -5,6 +5,73 @@
 
 ---
 
+## [fix: 修复 7 CRITICAL + 19 HIGH 安全/性能/数据问题](35e1af2d7579ff093760743317e424891b7f37b8) — 2026-07-01 17:03
+
+| 项目 | 详情 |
+|------|------|
+| **Commit** | `35e1af2` |
+| **日期** | 2026-07-01 17:03 |
+| **作者** | 赖睿轩 |
+| **变更** | +5 / ~26 / -0 |
+| **说明** | CRITICAL (7):
+- C1: OperationLogAspect 参数名敏感词过滤, changePassword 关闭参数记录
+- C2: PaymentController Map→PaymentRequest DTO(@Valid), 新增 MethodArgumentNotValidException handler
+- C3: AiChatController 移除 permitAll, 强制认证 + getSessionMessages 加 userId 校验
+- C4: application.yml 密钥 ${ENV:default}, application-prod.yml 无回退
+- C5: stores/user.js JSON.parse 加 try-catch 防白屏
+- C6: WebSocket JWT URL→Cookie(JwtCookieConfigurator 握手拦截 + 前端 Cookie 同步)
+- C7: JWT 黑名单(TokenBlacklistService) + Filter/WS 双重校验 + 登出/改密自动失效
+
+HIGH 性能 (7):
+- toVO→toVOList 批量加载 CarType/Driver (消灭 N×2 查询)
+- review() SELECT AVG(rating) 替代加载全量评价
+- getTodayRevenue() SELECT SUM(final_price) 替代加载全量订单
+- CouponServiceImpl/PaymentServiceImpl selectBatchIds 替代 N+1
+- AiChatServiceImpl: buildChatParams() LIMIT 21 + buildSystemPrompt() volatile 缓存
+
+HIGH 安全 (2): CORS 收紧 + Math.random→SecureRandom
+HIGH 数据库 (5): indexes.sql/migration 去重 + VARCHAR→TIME
+HIGH 前端 (3): Register 错误处理 + /addresses 路由修正 + useSmsCode 定时器清理
+HIGH 锁/流 (2): arrive/startTrip/complete Redisson 锁 + SSE completeWithError
+
+Co-Authored-By: Claude <noreply@anthropic.com> |
+
+### 变更文件
+```
+  A  .claude/CLAUDE.md
+  M  jiangnan-travel-web/src/composables/useSmsCode.js
+  M  jiangnan-travel-web/src/stores/user.js
+  M  jiangnan-travel-web/src/views/Home.vue
+  M  jiangnan-travel-web/src/views/Layout.vue
+  M  jiangnan-travel-web/src/views/Register.vue
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/aspect/OperationLogAspect.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/common/GlobalExceptionHandler.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/controller/AiChatController.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/controller/PaymentController.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/controller/UserController.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/dto/PaymentRequest.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/security/JwtAuthFilter.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/security/JwtUtil.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/security/SecurityConfig.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/security/TokenBlacklistService.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/service/AiChatService.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/AiChatServiceImpl.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/CouponServiceImpl.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/OrderServiceImpl.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/PaymentServiceImpl.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/UserServiceImpl.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/websocket/DriverLocationServer.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/websocket/JwtCookieConfigurator.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/websocket/NotificationWebSocketServer.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/websocket/OrderTrackingServer.java
+  M  jiangnan-travel/src/main/resources/application.yml
+  M  jiangnan-travel/src/main/resources/sql/indexes.sql
+  M  jiangnan-travel/src/main/resources/sql/init.sql
+  M  jiangnan-travel/src/main/resources/sql/migration_optimize.sql
+  A  tests/test-report-1782893922865.json
+```
+
+
 ## [fix: 四项改进 — 密钥外部化 + 文档同步 + 前端测试 + 部署模板](70043f57d29d7b3693ca1d370fe1f8eafdf967b4) — 2026-07-01 15:32
 
 | 项目 | 详情 |
