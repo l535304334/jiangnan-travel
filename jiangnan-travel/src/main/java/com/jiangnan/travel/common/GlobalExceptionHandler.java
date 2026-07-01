@@ -2,6 +2,7 @@ package com.jiangnan.travel.common;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindException;
@@ -15,29 +16,37 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /** 将业务异常码映射为 HTTP 状态码 */
+    private static HttpStatus toHttpStatus(int code) {
+        if (code >= 400 && code < 600) return HttpStatus.valueOf(code); // HTTP 标准码
+        if (code >= 4000 && code < 5000) return HttpStatus.FORBIDDEN;   // 风控
+        if (code >= 9000) return HttpStatus.TOO_MANY_REQUESTS;           // 系统繁忙/限流
+        return HttpStatus.BAD_REQUEST;                                    // 默认客户端错误
+    }
+
     @ExceptionHandler(BusinessException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public Result<?> handleBusinessException(BusinessException e) {
+    public ResponseEntity<Result<?>> handleBusinessException(BusinessException e) {
         log.warn("业务异常: code={}, message={}", e.getCode(), e.getMessage());
-        return Result.fail(e.getCode(), e.getMessage());
+        return ResponseEntity.status(toHttpStatus(e.getCode()))
+                .body(Result.fail(e.getCode(), e.getMessage()));
     }
 
     @ExceptionHandler(BindException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public Result<?> handleBindException(BindException e) {
+    public ResponseEntity<Result<?>> handleBindException(BindException e) {
         String msg = extractFieldErrors(e.getBindingResult().getFieldErrors()
                 .stream().map(err -> err.getField() + ": " + err.getDefaultMessage()));
         log.warn("参数校验异常: {}", msg);
-        return Result.fail(ErrorCode.BAD_REQUEST.getCode(), msg);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Result.fail(ErrorCode.BAD_REQUEST.getCode(), msg));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public Result<?> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+    public ResponseEntity<Result<?>> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
         String msg = extractFieldErrors(e.getBindingResult().getFieldErrors()
                 .stream().map(err -> err.getField() + ": " + err.getDefaultMessage()));
         log.warn("请求体校验失败: {}", msg);
-        return Result.fail(ErrorCode.BAD_REQUEST.getCode(), msg);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Result.fail(ErrorCode.BAD_REQUEST.getCode(), msg));
     }
 
     private String extractFieldErrors(java.util.stream.Stream<String> fieldErrors) {
@@ -45,10 +54,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public Result<?> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException e) {
+    public ResponseEntity<Result<?>> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException e) {
         log.warn("路径参数类型错误: name={}, value={}", e.getName(), e.getValue());
-        return Result.fail(ErrorCode.BAD_REQUEST.getCode(), "请求参数类型错误: " + e.getName());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Result.fail(ErrorCode.BAD_REQUEST.getCode(), "请求参数类型错误: " + e.getName()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)

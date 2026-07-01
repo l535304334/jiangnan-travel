@@ -58,12 +58,21 @@ const groups = [
 ]
 
 if (skipSecurity) {
-  // 仅跳过安全与边界分组，保留并发/风控/WebSocket
   const idx = groups.findIndex(g => g.name === '安全与边界')
   if (idx >= 0) groups.splice(idx, 1)
 }
 
 const results = []
+
+function clearRedisLimits() {
+  try {
+    execSync('redis-cli --no-auth-warning -h 127.0.0.1 -p 6379 KEYS "rate:*" 2>nul', { encoding: 'utf8', shell: true })
+      .trim().split(/\r?\n/).filter(Boolean)
+      .forEach(k => {
+        try { execSync(`redis-cli --no-auth-warning -h 127.0.0.1 -p 6379 DEL "${k.trim()}" 2>nul`, { stdio: 'ignore', shell: true }) } catch {}
+      })
+  } catch { /* redis-cli unavailable */ }
+}
 
 function runScript(script) {
   return new Promise((resolve) => {
@@ -102,7 +111,6 @@ async function main() {
   console.log(`模式：${skipSecurity ? '跳过安全测试' : '完整测试'} | 清理数据：${cleanup ? '是' : '否'}`)
   console.log(`开始时间：${new Date().toLocaleString()}\n`)
 
-  // 启动前自动清理历史测试数据，避免风控/状态残留影响结果
   if (existsSync(CLEANUP_SQL)) {
     try {
       const sql = readFileSync(CLEANUP_SQL, 'utf8')
@@ -128,23 +136,15 @@ async function main() {
         console.log(`⚠️ 脚本不存在，跳过：${script}`)
         continue
       }
-      // 清理 Redis 限流计数，避免前序脚本耗尽本分钟配额
-      try {
-        const keys = execSync('redis-cli KEYS "rate:limit:*"', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim().split('\n').filter(Boolean)
-        if (keys.length > 0) {
-          execSync(`redis-cli DEL ${keys.join(' ')}`, { stdio: 'ignore' })
-        }
-      } catch {}
+      clearRedisLimits()
       const res = await runScript(script)
       results.push({ group: group.name, ...res })
       const icon = res.failed === 0 ? '✅' : '❌'
       console.log(`${icon} ${script} | ${res.passed}/${res.total} 通过 | ${res.failed} 失败 | ${res.duration}ms`)
-      // 限流保护：脚本之间停顿 3 秒
-      await new Promise(r => setTimeout(r, 3000))
+      await new Promise(r => setTimeout(r, 2000))
     }
   }
 
-  // 生成汇总
   const totalTests = results.reduce((s, r) => s + r.total, 0)
   const totalPassed = results.reduce((s, r) => s + r.passed, 0)
   const totalFailed = results.reduce((s, r) => s + r.failed, 0)
@@ -164,31 +164,21 @@ async function main() {
       console.log(`\n--- ${r.script} ---`)
       const lines = r.stdout.split('\n').filter(l => l.includes('❌'))
       lines.forEach(l => console.log(l))
-      if (r.stderr) {
-        console.log('stderr:', r.stderr.slice(0, 500))
-      }
+      if (r.stderr) console.log('stderr:', r.stderr.slice(0, 500))
     }
   }
 
-  // 写入报告文件
   const reportPath = join(__dirname, `test-report-${Date.now()}.json`)
   writeFileSync(reportPath, JSON.stringify({
     time: new Date().toISOString(),
     skipSecurity,
     summary: { total: totalTests, passed: totalPassed, failed: totalFailed, duration: totalDuration },
     results: results.map(r => ({
-      script: r.script,
-      group: r.group,
-      total: r.total,
-      passed: r.passed,
-      failed: r.failed,
-      duration: r.duration,
-      crashed: r.crashed
+      script: r.script, group: r.group, total: r.total, passed: r.passed, failed: r.failed, duration: r.duration, crashed: r.crashed
     }))
   }, null, 2))
   console.log(`\n测试报告已保存：${reportPath}`)
 
-  // 数据清理（仅当显式指定 --cleanup 时执行）
   if (cleanup) {
     console.log('\n⚠️ 已请求测试数据清理，请确认 SQL 脚本 cleanup_test_data.sql 内容后再执行')
     console.log('本次运行未自动执行清理，请手动运行：mysql -u root -p smart_travel < cleanup_test_data.sql')

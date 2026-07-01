@@ -1,0 +1,174 @@
+{
+  "time": "2026-07-01T09:13:33.904Z",
+  "skipSecurity": false,
+  "summary": {
+    "total": 78,
+    "passed": 52,
+    "failed": 37,
+    "duration": 9300
+  },
+  "results": [
+    {
+      "script": "auth_boundary_test.mjs",
+      "group": "核心链路回归",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "duration": 1359,
+      "crashed": false
+    },
+    {
+      "script": "order_flow_test.mjs",
+      "group": "核心链路回归",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 829,
+      "crashed": false
+    },
+    {
+      "script": "driver_flow_test.mjs",
+      "group": "核心链路回归",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "duration": 1087,
+      "crashed": false
+    },
+    {
+      "script": "payment_review_test.mjs",
+      "group": "核心链路回归",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 971,
+      "crashed": false
+    },
+    {
+      "script": "comprehensive_api_test.mjs",
+      "group": "核心链路回归",
+      "total": 36,
+      "passed": 18,
+      "failed": 18,
+      "duration": 2974,
+      "crashed": false
+    },
+    {
+      "script": "cancel_refund_test.mjs",
+      "group": "业务模块专项",
+      "total": 0,
+      "passed": 0,
+      "failed": 1,
+      "duration": 327,
+      "crashed": true
+    },
+    {
+      "script": "notification_test.mjs",
+      "group": "业务模块专项",
+      "total": 0,
+      "passed": 0,
+      "failed": 1,
+      "duration": 280,
+      "crashed": true
+    },
+    {
+      "script": "address_test.mjs",
+      "group": "业务模块专项",
+      "total": 0,
+      "passed": 0,
+      "failed": 1,
+      "duration": 113,
+      "crashed": true
+    },
+    {
+      "script": "coupon_lifecycle_test.mjs",
+      "group": "业务模块专项",
+      "total": 0,
+      "passed": 0,
+      "failed": 1,
+      "duration": 102,
+      "crashed": true
+    },
+    {
+      "script": "vip_test.mjs",
+      "group": "业务模块专项",
+      "total": 0,
+      "passed": 0,
+      "failed": 1,
+      "duration": 104,
+      "crashed": true
+    },
+    {
+      "script": "bus_line_test.mjs",
+      "group": "业务模块专项",
+      "total": 0,
+      "passed": 0,
+      "failed": 1,
+      "duration": 122,
+      "crashed": true
+    },
+    {
+      "script": "idor_security_test.mjs",
+      "group": "安全与边界",
+      "total": 0,
+      "passed": 0,
+      "failed": 1,
+      "duration": 162,
+      "crashed": true
+    },
+    {
+      "script": "jwt_security_test.mjs",
+      "group": "安全与边界",
+      "total": 0,
+      "passed": 0,
+      "failed": 1,
+      "duration": 105,
+      "crashed": true
+    },
+    {
+      "script": "payment_security_test.mjs",
+      "group": "安全与边界",
+      "total": 0,
+      "passed": 0,
+      "failed": 1,
+      "duration": 168,
+      "crashed": true
+    },
+    {
+      "script": "input_security_test.mjs",
+      "group": "安全与边界",
+      "total": 8,
+      "passed": 2,
+      "failed": 6,
+      "duration": 157,
+      "crashed": false
+    },
+    {
+      "script": "concurrent_test.mjs",
+      "group": "并发、风控与实时消息",
+      "total": 2,
+      "passed": 0,
+      "failed": 2,
+      "duration": 156,
+      "crashed": false
+    },
+    {
+      "script": "risk_rules_test.mjs",
+      "group": "并发、风控与实时消息",
+      "total": 0,
+      "passed": 0,
+      "failed": 1,
+      "duration": 110,
+      "crashed": true
+    },
+    {
+      "script": "websocket_test.mjs",
+      "group": "并发、风控与实时消息",
+      "total": 0,
+      "passed": 0,
+      "failed": 1,
+      "duration": 174,
+      "crashed": true
+    }
+  ]
+}

@@ -48,7 +48,8 @@ public class UserServiceImpl implements UserService {
         redisTemplate.opsForValue().set(SMS_PREFIX + phone, code, SMS_CODE_EXPIRE, TimeUnit.MINUTES);
         redisTemplate.opsForValue().set(rateLimitKey, "1", 60, TimeUnit.SECONDS);
         // TODO: 接入真实短信服务，当前仅打印日志
-        log.info("验证码 [{}]: {}", phone, code);
+        // ponytail: never log verification codes — security risk (MEDIUM #17)
+        log.info("验证码已发送至: {}", phone.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
     }
 
     @Override
