@@ -7,7 +7,7 @@
 ## Phase 1: 技术债偿还（Task 001-005）
 
 ### ✅ Task 001 — DDL补全deleted字段（已完成）
-- **目标**：所有21张表DDL与Entity对齐
+- **目标**：所有28张表DDL与Entity对齐
 - **涉及文件**：src/main/resources/sql/migration_optimize.sql
 - **数据库**：16张表补ALTER TABLE ADD COLUMN deleted（含3张表补update_time、1张表补create_time）
 - **验收**：所有表查询带deleted条件正常

@@ -48,7 +48,7 @@
 | **P2 — 规划时读取** | `FEATURE_ROADMAP.md` | 功能路线图 |
 | | `TASK_ROADMAP.md` | 任务路线图 |
 | | `DEVELOPMENT_PLAN.md` | 开发计划 |
-| | `PROJECT_REVIEW_REPORT.md` | 项目审查报告 |
+| | `项目开发总结报告.md` | 项目开发总结报告（含审查、能力、历程） |
 | | `README.md` | 项目说明 |
 
 > **冲突处理**：读取时如果发现文件间存在冲突，按 `constitution.md` 的优先级规则裁决。无法裁决时，立即停止并请示用户。

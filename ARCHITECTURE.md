@@ -2,7 +2,7 @@
 
 > 项目：江南出行智慧服务平台（Jiangnan Travel）  
 > 版本：1.0.0-SNAPSHOT  
-> 最后更新：2026-06-30  
+> 最后更新：2026-07-01  
 > **说明：本文档是项目唯一架构文档，后续新增模块必须同步更新。**
 
 ---
@@ -43,9 +43,9 @@ jiangnan-travel/                        # 后端 Maven 项目
 │   │   │   │   ├── RedisCacheConfig.java    # 缓存管理
 │   │   │   │   └── TestDataInitializer.java # 测试数据初始化
 │   │   │   ├── controller/          (22个)
-│   │   │   ├── dto/                 (25个)
-│   │   │   ├── entity/              (28个)
-│   │   │   ├── mapper/              (28个)
+│   │   │   ├── dto/                 (26个)
+│   │   │   ├── entity/              (30个，含 BaseEntity)
+│   │   │   ├── mapper/              (29个)
 │   │   │   ├── security/
 │   │   │   │   ├── JwtUtil.java
 │   │   │   │   ├── JwtAuthFilter.java
@@ -53,7 +53,7 @@ jiangnan-travel/                        # 后端 Maven 项目
 │   │   │   ├── service/
 │   │   │   │   ├── *.java           (22个接口)
 │   │   │   │   └── impl/*.java      (22个实现)
-│   │   │   ├── vo/                  (16个)
+│   │   │   ├── vo/                  (17个)
 │   │   │   └── websocket/
 │   │   │       ├── DriverLocationServer.java
 │   │   │       ├── NotificationWebSocketServer.java
@@ -65,7 +65,9 @@ jiangnan-travel/                        # 后端 Maven 项目
 │   │           ├── init.sql
 │   │           ├── migration_optimize.sql
 │   │           ├── indexes.sql
+│   │           ├── seed_data.sql
 │   │           ├── test_accounts.sql
+│   │           ├── fix_chinese_data.sql
 │   │           └── fix_password.sql
 │   └── test/java/com/jiangnan/travel/
 │       └── UserServiceTest.java
@@ -101,7 +103,7 @@ jiangnan-travel-web/                    # 前端 Vue 项目
     │   └── useAmapPoiSearch.js         # 高德POI搜索
     ├── router/index.js                 # 路由配置 + 守卫
     ├── stores/user.js                  # Pinia 状态管理
-    ├── views/                   (38个)
+    ├── views/                   (41个)
 
 docs/
 └── spec/                               # 功能规格说明
@@ -116,7 +118,7 @@ docs/
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Controller 层 (@RestController)                       │
-│  22 个 Controller · 80+ API 端点                       │
+│  22 个 Controller · 97 个 API 端点                       │
 │  职责：URL 路由、参数校验、认证提取、调用 Service        │
 ├─────────────────────────────────────────────────────────┤
 │  Service 层 (Interface + Impl)                          │
@@ -125,11 +127,11 @@ docs/
 ├──────────────────┬──────────────────────────────────────┤
 │  Mapper 层        │  Security 层                        │
 │  (BaseMapper)     │  JWT 鉴权过滤                       │
-│  28 个 Mapper     │  SecurityConfig                    │
+│  29 个 Mapper     │  SecurityConfig                    │
 │  纯 MyBatis-Plus  │  3 层鉴权体系                       │
 ├──────────────────┴──────────────────────────────────────┤
 │  Entity 层 (@TableName)                                 │
-│  28 个实体 + BaseEntity                                  │
+│  29 个业务实体 + BaseEntity（共 30 个文件）                │
 │  全部继承 BaseEntity（id/deleted/createTime/updateTime）  │
 ├─────────────────────────────────────────────────────────┤
 │  Config 层 · Common 层 · WebSocket 层                   │
@@ -219,6 +221,8 @@ controller → dto → service → mapper → entity
 
 ### 4.3 完整表结构（28 张表）
 
+> **表数与 Entity 文件数差异说明**：Entity 目录共 30 个文件，其中 `BaseEntity` 为抽象基类无对应表；`OperationLog` 标注了 `@TableName("t_operation_log")` 但该表尚未在 SQL 脚本中创建。反之，`migration_optimize.sql` 中的 `t_user_preferred_driver` 无对应 Entity（规划未落地）。因此有建表语句且有 Entity 的表为 28 张。
+
 所有表均继承 `BaseEntity` 的三个字段（`id BIGINT AUTO_INCREMENT PK`、`deleted TINYINT DEFAULT 0`、`create_time DATETIME`、`update_time DATETIME`），以下不再重复列出。
 
 #### 用户/权限体系（3 表）
@@ -301,9 +305,9 @@ controller → dto → service → mapper → entity
 
 ---
 
-## 五、API 接口清单（80+ 个端点）
+## 五、API 接口清单（97 个端点）
 
-### 5.1 用户模块 — `/api/user`（6 个）
+### 5.1 用户模块 — `/api/user`（7 个）
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
@@ -313,6 +317,7 @@ controller → dto → service → mapper → entity
 | POST | `/api/user/register` | 用户注册 | 公开 |
 | GET | `/api/user/profile` | 获取个人信息 | 需登录 |
 | PUT | `/api/user/profile` | 修改个人信息 | 需登录 |
+| PUT | `/api/user/password` | 修改密码 | 需登录 |
 
 ### 5.2 司机模块 — `/api/driver`（5 个）
 
@@ -324,7 +329,7 @@ controller → dto → service → mapper → entity
 | PUT | `/api/driver/location` | 更新位置坐标 | 司机身份 |
 | GET | `/api/driver/profile` | 获取司机信息 | 司机身份 |
 
-### 5.3 司机订单 — `/api/driver/order`（6 个）
+### 5.3 司机订单 — `/api/driver/order`（8 个）
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
@@ -334,12 +339,15 @@ controller → dto → service → mapper → entity
 | PUT | `/api/driver/order/{id}/start` | 开始行程 | 司机身份 |
 | PUT | `/api/driver/order/{id}/complete` | 完成行程 | 司机身份 |
 | GET | `/api/driver/order/best/{orderId}` | 最佳司机推荐 | 公开 |
+| GET | `/api/driver/order/pending` | 进行中订单 | 司机身份 |
+| GET | `/api/driver/order/history` | 历史订单 | 司机身份 |
 
-### 5.4 司机收入 — `/api/driver`（1 个）
+### 5.4 司机收入 — `/api/driver`（2 个）
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
-| GET | `/api/driver/earning` | 收入统计 | 公开 |
+| GET | `/api/driver/earning` | 收入统计 | 司机身份 |
+| GET | `/api/driver/earning/weekly` | 周收入统计 | 司机身份 |
 
 ### 5.5 订单管理 — `/api/order`（9 个）
 
@@ -371,21 +379,36 @@ controller → dto → service → mapper → entity
 | POST | `/api/user/address` | 新增地址 | 需登录 |
 | DELETE | `/api/user/address/{id}` | 删除地址 | 需登录 |
 
-### 5.8 管理后台 — `/api/admin`（11 个）
+### 5.8 管理后台 — `/api/admin`（24 个）
+
+> 由 `AdminController`（1 个登录端点）与 `AdminManageController`（23 个管理端点，类级 `@PreAuthorize("hasRole('ADMIN')")`）共同组成。
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
 | POST | `/api/admin/login` | 管理员登录 | 公开 |
-| GET | `/api/admin/dashboard` | 数据大屏 | 需登录 |
-| GET | `/api/admin/users` | 用户列表 | 需登录 |
-| PUT | `/api/admin/users/{id}/status` | 更新用户状态 | 需登录 |
-| GET | `/api/admin/drivers` | 司机列表 | 需登录 |
-| PUT | `/api/admin/drivers/{id}/verify` | 审核司机 | 需登录 |
-| GET | `/api/admin/orders` | 订单列表 | 需登录 |
-| GET | `/api/admin/alerts` | 告警列表 | 需登录 |
-| PUT | `/api/admin/alerts/{id}/handle` | 处理告警 | 需登录 |
-| GET | `/api/admin/car-types` | 车型列表 | 需登录 |
-| PUT | `/api/admin/car-types/{id}` | 更新车型 | 需登录 |
+| GET | `/api/admin/dashboard` | 数据大屏 | 管理员 |
+| GET | `/api/admin/dashboard/chart` | 图表数据 | 管理员 |
+| GET | `/api/admin/users` | 用户列表 | 管理员 |
+| PUT | `/api/admin/users/{id}/status` | 更新用户状态 | 管理员 |
+| GET | `/api/admin/drivers` | 司机列表 | 管理员 |
+| PUT | `/api/admin/drivers/{id}/verify` | 审核司机 | 管理员 |
+| GET | `/api/admin/orders` | 订单列表 | 管理员 |
+| GET | `/api/admin/alerts` | 告警列表 | 管理员 |
+| PUT | `/api/admin/alerts/{id}/handle` | 处理告警 | 管理员 |
+| GET | `/api/admin/car-types` | 车型列表 | 管理员 |
+| PUT | `/api/admin/car-types/{id}` | 更新车型 | 管理员 |
+| GET | `/api/admin/campaigns` | 活动管理列表 | 管理员 |
+| POST | `/api/admin/campaigns` | 新建活动 | 管理员 |
+| PUT | `/api/admin/campaigns/{id}` | 编辑活动 | 管理员 |
+| DELETE | `/api/admin/campaigns/{id}` | 删除活动 | 管理员 |
+| GET | `/api/admin/vip-levels` | VIP 等级管理列表 | 管理员 |
+| POST | `/api/admin/vip-levels/create` | 新建 VIP 等级 | 管理员 |
+| PUT | `/api/admin/vip-levels/{id}` | 编辑 VIP 等级 | 管理员 |
+| DELETE | `/api/admin/vip-levels/{id}` | 删除 VIP 等级 | 管理员 |
+| GET | `/api/admin/bus-lines` | 班线管理列表 | 管理员 |
+| POST | `/api/admin/bus-lines/create` | 新建班线 | 管理员 |
+| PUT | `/api/admin/bus-lines/{id}` | 编辑班线 | 管理员 |
+| DELETE | `/api/admin/bus-lines/{id}` | 删除班线 | 管理员 |
 
 ### 5.9 文旅 — `/api/landmark`（2 个）
 
@@ -394,7 +417,9 @@ controller → dto → service → mapper → entity
 | GET | `/api/landmark` | 地标列表 | 公开 |
 | GET | `/api/landmark/search` | 搜索地标 | 公开 |
 
-### 5.10 AI 服务 — `/api/ai`（5 个）
+### 5.10 AI 服务 — `/api/ai`（6 个）
+
+> 由 `AiChatController`（4 个）、`AiPredictionController`（1 个）与 `AIDataController.hotspots`（1 个）共同组成。
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
@@ -403,6 +428,7 @@ controller → dto → service → mapper → entity
 | GET | `/api/ai/sessions` | 会话历史列表 | 需登录 |
 | GET | `/api/ai/sessions/{sessionId}/messages` | 会话消息详情 | 需登录 |
 | GET | `/api/ai/recommend-dest` | 推荐目的地 | 需登录 |
+| GET | `/api/ai/hotspots` | 需求热点 | 公开 |
 
 ### 5.11 安全风控 — `/api/safety`（1 个）
 
@@ -410,11 +436,12 @@ controller → dto → service → mapper → entity
 |---|---|---|---|
 | POST | `/api/safety/alert` | 安全预警 | 公开 |
 
-### 5.12 文旅数据 — 多路径（3 个）
+### 5.12 文旅数据 — 多路径（2 个）
+
+> 由 `AIDataController` 提供（类级 `@RequestMapping("/api")`，方法分布在不同业务前缀下）。
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
-| GET | `/api/ai/hotspots` | 需求热点 | 公开 |
 | GET | `/api/common/city-quote` | 城市文化短句 | 公开 |
 | GET | `/api/user/frequent-routes` | 常走路线 | 需登录 |
 
@@ -433,45 +460,41 @@ controller → dto → service → mapper → entity
 | PUT | `/api/notification/{id}/read` | 标记单条已读 | 需登录 |
 | PUT | `/api/notification/read-all` | 标记全部已读 | 需登录 |
 
-### 5.15 活动管理 — `/api/campaign`（4 个）
+### 5.15 活动管理 — `/api/campaign`（3 个）
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
 | GET | `/api/campaign/list` | 活动列表(分页) | 公开 |
 | GET | `/api/campaign/{id}` | 活动详情 | 公开 |
 | POST | `/api/campaign/{id}/claim` | 活动领券 | 需登录 |
-| GET | `/api/campaign/available-coupons` | 可用优惠券列表 | 公开 |
 
-### 5.16 VIP 会员 — `/api/vip`（5 个）
+### 5.16 VIP 会员 — `/api/vip`（4 个）
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
 | GET | `/api/vip/levels` | VIP等级列表 | 公开 |
-| POST | `/api/vip/purchase` | 开通/续费VIP | 需登录 |
-| GET | `/api/vip/my` | 我的VIP信息 | 需登录 |
 | GET | `/api/vip/benefits` | VIP权益说明 | 公开 |
-| POST | `/api/vip/renew` | 续费VIP | 需登录 |
+| GET | `/api/vip/my` | 我的VIP信息 | 需登录 |
+| POST | `/api/vip/purchase` | 开通/续费VIP | 需登录 |
 
-### 5.17 班线管理 — `/api/bus-line` + `/api/bus-schedule`（6 个）
+### 5.17 班线 — `/api/bus-line`（3 个）
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
 | GET | `/api/bus-line/list` | 班线列表 | 公开 |
 | GET | `/api/bus-line/{id}` | 班线详情 | 公开 |
 | POST | `/api/bus-line/purchase` | 购买班线车票 | 需登录 |
-| GET | `/api/bus-schedule/list` | 班次列表(按线路) | 公开 |
-| GET | `/api/bus-schedule/{id}` | 班次详情 | 公开 |
-| POST | `/api/bus-schedule/create` | 创建班次(管理) | 管理员 |
 
-### 5.18 支付 — `/api/payment`（3 个）
+### 5.18 支付 — `/api/payment`（4 个）
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
 | POST | `/api/payment/create` | 创建支付单 | 需登录 |
-| GET | `/api/payment/{id}` | 查询支付状态 | 需登录 |
+| GET | `/api/payment/{orderId}` | 查询支付状态 | 需登录 |
+| GET | `/api/payment/list` | 支付记录列表 | 需登录 |
 | POST | `/api/payment/callback` | 支付回调（第三方/模拟） | 公开 |
 
-### 5.19 发票 — `/api/invoice`（4 个）
+### 5.19 发票 — `/api/invoice`（5 个）
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
@@ -479,28 +502,13 @@ controller → dto → service → mapper → entity
 | GET | `/api/invoice/list` | 发票列表 | 需登录 |
 | GET | `/api/invoice/{id}` | 发票详情 | 需登录 |
 | PUT | `/api/invoice/{id}/cancel` | 取消发票申请 | 需登录 |
+| PUT | `/api/invoice/{id}/issue` | 开票 | 管理员 |
 
-### 5.20 管理后台延伸 — `/api/admin`（延伸端点）
+### 5.20 路径规划 — `/api/route`（1 个）
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
-| GET | `/api/admin/chart-data` | 图表数据 | 需登录 |
-| GET | `/api/admin/campaigns` | 活动管理列表 | 管理员 |
-| POST | `/api/admin/campaigns/create` | 新建活动 | 管理员 |
-| PUT | `/api/admin/campaigns/{id}` | 编辑活动 | 管理员 |
-| DELETE | `/api/admin/campaigns/{id}` | 删除活动 | 管理员 |
-| GET | `/api/admin/vip-levels` | VIP等级管理列表 | 管理员 |
-| POST | `/api/admin/vip-levels/create` | 新建VIP等级 | 管理员 |
-| PUT | `/api/admin/vip-levels/{id}` | 编辑VIP等级 | 管理员 |
-| DELETE | `/api/admin/vip-levels/{id}` | 删除VIP等级 | 管理员 |
-| GET | `/api/admin/bus-lines` | 班线管理列表 | 管理员 |
-| POST | `/api/admin/bus-lines/create` | 新建班线 | 管理员 |
-| PUT | `/api/admin/bus-lines/{id}` | 编辑班线 | 管理员 |
-| DELETE | `/api/admin/bus-lines/{id}` | 删除班线 | 管理员 |
-| GET | `/api/admin/bus-schedules/{lineId}` | 班次管理列表 | 管理员 |
-| POST | `/api/admin/bus-schedules/create` | 新建班次 | 管理员 |
-| PUT | `/api/admin/bus-schedules/{id}` | 编辑班次 | 管理员 |
-| DELETE | `/api/admin/bus-schedules/{id}` | 删除班次 | 管理员 |
+| GET | `/api/route/plan` | 路径规划 | 需登录 |
 
 ---
 
@@ -542,41 +550,59 @@ controller → dto → service → mapper → entity
 
 ### 6.3 公开接口清单（permitAll）
 
+> 严格对应 `SecurityConfig` 中的 `permitAll()` 配置。注意：`/api/ai/**` 全部放行，但其中 `sessions`、`recommend-dest` 等端点在业务层依赖 `SecurityContext` 中的 `userId`，未登录调用将无法获取用户身份。
+
 ```
+# 用户登录/注册
 POST /api/user/register
 POST /api/user/login
 POST /api/user/login-password
 POST /api/user/send-code
+
+# 司机登录/注册
 POST /api/driver/login
 POST /api/driver/register
+
+# 管理员登录
 POST /api/admin/login
+
+# 文旅与通用数据
 GET  /api/landmark
 GET  /api/landmark/search
-POST /api/order/estimate
-GET  /api/order/{id}/share
-GET  /api/coupon/list
-POST /api/safety/alert
-GET  /api/driver/earning
-GET  /api/driver/order/nearby
-GET  /api/driver/order/best/{orderId}
 GET  /api/common/city-quote
-GET  /api/ai/hotspots
-POST /api/admin/ai/insight
+
+# AI 服务（/api/ai/** 全部放行，方法级 @PreAuthorize 可能进一步限制）
 POST /api/ai/chat
-GET  /api/campaign/list
-GET  /api/campaign/{id}
-GET  /api/campaign/available-coupons
-GET  /api/vip/levels
-GET  /api/vip/benefits
-GET  /api/bus-line/list
-GET  /api/bus-line/{id}
-GET  /api/bus-schedule/list
-GET  /api/bus-schedule/{id}
-POST /api/payment/callback
 POST /api/ai/chat/stream
 GET  /api/ai/sessions
-/swagger-ui/**, /swagger-ui.html, /v3/api-docs/**, /doc.html, /webjars/**
+GET  /api/ai/sessions/{sessionId}/messages
+GET  /api/ai/recommend-dest
+GET  /api/ai/hotspots
+
+# 优惠券/活动/VIP/订单/班线 公开查询
+GET  /api/coupon/list
+GET  /api/campaign/list
+GET  /api/campaign/{id}
+GET  /api/vip/levels
+GET  /api/vip/benefits
+POST /api/order/estimate
+GET  /api/bus-line/list
+GET  /api/bus-line/{id}
+
+# 司机订单查询
+GET  /api/driver/order/nearby
+
+# 支付回调
+POST /api/payment/callback
+
+# WebSocket
 /ws/**
+
+# API 文档
+/swagger-ui/**, /swagger-ui.html, /v3/api-docs/**, /doc.html, /webjars/**
+
+# 监控端点
+/actuator/health, /actuator/info, /actuator/prometheus, /actuator/metrics
 ```
 
 ---
@@ -887,12 +913,14 @@ management:
 ### 12.5 SQL 脚本（`resources/sql/`）
 
 | 脚本 | 用途 |
-|---|---|---|
-| `init.sql` | 完整建表（28 张）+ 种子数据 |
-| `migration_optimize.sql` | 补充 update_time 字段 |
-| `indexes.sql` | 联合索引优化 |
-| `test_accounts.sql` | 6 个测试账号 |
-| `fix_password.sql` | 重置密码 |
+|---|---|
+| `init.sql` | 完整建表（27 张）+ 管理员/车型/地标等种子数据 |
+| `migration_optimize.sql` | 补充 update_time 字段；新增 `t_notification`（有 Entity）与 `t_user_preferred_driver`（无 Entity，规划未落地）两张表；需求热点索引优化 |
+| `indexes.sql` | 订单高频查询联合索引优化 |
+| `seed_data.sql` | 长途车型种子数据（城际快车、长途大巴） |
+| `test_accounts.sql` | 6 个测试账号（3 司机 + 3 乘客，默认密码 `123456`） |
+| `fix_chinese_data.sql` | 修复中文乱码数据（城市地标、城市语录等） |
+| `fix_password.sql` | 重置用户/管理员密码 |
 
 ### 12.6 CI/CD 配置
 

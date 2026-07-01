@@ -12,7 +12,7 @@
 | **最高** (P0) | **AGENTS.md** | `./AGENTS.md` | AI 代理总入口 — 核心原则、默认行为、文件读取清单、Skill/MCP 调用原则、质量门禁 |
 | **P0** | **EXECUTION_MODE.md** | `./EXECUTION_MODE.md` | 企业级执行模式 — 启动流程、Task 推进规则、文档维护、开发纪律、停止条件、汇报规范 |
 | **P1** | **PROJECT_RULES.md** | `./PROJECT_RULES.md` | 编码规范 — 包结构、Controller/Service/Mapper/DTO/VO/Result/异常/日志/Git/AI 规范 |
-| **P2** | **ARCHITECTURE.md** | `./ARCHITECTURE.md` | 架构文档（唯一） — 数据库 21 张表、46 个 API 端点、安全/缓存/WebSocket 架构 |
+| **P2** | **ARCHITECTURE.md** | `./ARCHITECTURE.md` | 架构文档（唯一） — 数据库 28 张表、22 个 Controller、97 个 API 端点、安全/缓存/WebSocket 架构 |
 | **P3** | **AI_WORKFLOW.md** | `./AI_WORKFLOW.md` | Skill + MCP 工作流 — 8 阶段流程、每阶段调用哪个 Skill 和 MCP |
 
 ---

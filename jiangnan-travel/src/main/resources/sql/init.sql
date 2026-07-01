@@ -477,7 +477,7 @@ INSERT INTO t_car_type (name, base_price, mid_per_km, long_per_km, super_long_pe
 ('专车', 12.00, 2.50, 2.20, 2.00, 0.50, 3),
 ('商务七座', 15.00, 3.20, 2.80, 2.50, 0.60, 7);
 
--- 管理员种子数据（默认密码: admin123）
+-- 管理员种子数据（默认密码: 123456）
 INSERT INTO t_admin (username, password, real_name, role) VALUES
 ('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '系统管理员', 'super_admin');
 

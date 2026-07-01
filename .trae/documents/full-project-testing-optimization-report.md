@@ -153,12 +153,12 @@
 
 | 文件 | 说明 |
 |---|---|
-| [test-suite.mjs](../test-suite.mjs) | 全量测试编排器，新增并发/风控/WebSocket 分组 |
-| [concurrent_test.mjs](../concurrent_test.mjs) | 并发抢单与并发支付测试 |
-| [risk_rules_test.mjs](../risk_rules_test.mjs) | 风控规则 R1/R2/R3 测试 |
-| [websocket_test.mjs](../websocket_test.mjs) | WebSocket 认证与消息推送测试 |
-| [cleanup_test_data.sql](../cleanup_test_data.sql) | 测试数据一键清理脚本 |
-| [TEST_GUIDE.md](../TEST_GUIDE.md) | 测试脚本使用说明 |
+| [tests/test-suite.mjs](../../tests/test-suite.mjs) | 全量测试编排器，新增并发/风控/WebSocket 分组 |
+| [tests/concurrent_test.mjs](../../tests/concurrent_test.mjs) | 并发抢单与并发支付测试 |
+| [tests/risk_rules_test.mjs](../../tests/risk_rules_test.mjs) | 风控规则 R1/R2/R3 测试 |
+| [tests/websocket_test.mjs](../../tests/websocket_test.mjs) | WebSocket 认证与消息推送测试 |
+| [tests/cleanup_test_data.sql](../../tests/cleanup_test_data.sql) | 测试数据一键清理脚本 |
+| [tests/TEST_GUIDE.md](../../tests/TEST_GUIDE.md) | 测试脚本使用说明 |
 | [ARCHITECTURE.md](../ARCHITECTURE.md) | 已同步的架构文档 |
 | [jiangnan-travel/src/main/java/com/jiangnan/travel/aspect/SlowQueryAspect.java](../jiangnan-travel/src/main/java/com/jiangnan/travel/aspect/SlowQueryAspect.java) | Service 慢查询监控切面 |
 | [.github/workflows/ci.yml](../.github/workflows/ci.yml) | GitHub Actions CI 流水线 |
