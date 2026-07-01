@@ -5,6 +5,36 @@
 
 ---
 
+## [fix: MEDIUM 关键项 — 验证码日志脱敏 + Swagger生产关闭 + 异常HTTP状态码](fb92bd0b98e886b74c6de962a40da63962193b92) — 2026-07-01 17:20
+
+| 项目 | 详情 |
+|------|------|
+| **Commit** | `fb92bd0` |
+| **日期** | 2026-07-01 17:20 |
+| **作者** | 赖睿轩 |
+| **变更** | +2 / ~5 / -0 |
+| **说明** | - UserServiceImpl: 日志中验证码明文→手机号脱敏(log.info不再泄露code)
+- GlobalExceptionHandler: BusinessException现在返回正确HTTP状态码
+  - 400-599范围→直接映射 | 40xx→403 | 9000+→429 | 默认→400
+  - BindException/MethodArgumentNotValidException→400
+- application-prod.yml: 生产环境关闭Swagger/Knife4j/springdoc
+- application.yml: Knife4j增加production标志
+- test-suite.mjs: 每个脚本前清理Redis限流计数 + 2s间隔
+
+Co-Authored-By: Claude <noreply@anthropic.com> |
+
+### 变更文件
+```
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/common/GlobalExceptionHandler.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/UserServiceImpl.java
+  M  jiangnan-travel/src/main/resources/application-prod.yml
+  M  jiangnan-travel/src/main/resources/application.yml
+  A  tests/test-helper.mjs
+  A  tests/test-report-1782897213904.json
+  M  tests/test-suite.mjs
+```
+
+
 ## [fix: 修复 7 CRITICAL + 19 HIGH 安全/性能/数据问题](35e1af2d7579ff093760743317e424891b7f37b8) — 2026-07-01 17:03
 
 | 项目 | 详情 |
