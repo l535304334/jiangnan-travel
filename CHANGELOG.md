@@ -5,6 +5,53 @@
 
 ---
 
+## [chore: 前端后端瘦身 — 移除未使用依赖/代码/配置](b2b8294cd23acd0ca5829d9bd2533adc21d30a30) — 2026-07-01 15:17
+
+| 项目 | 详情 |
+|------|------|
+| **Commit** | `b2b8294` |
+| **日期** | 2026-07-01 15:17 |
+| **作者** | 赖睿轩 |
+| **变更** | +0 / ~12 / -5 |
+| **说明** | 前端:
+- 移除 uuid 依赖,用 crypto.randomUUID() 替代
+- 删除 useFeedback composable,组件内直接使用 ElMessage
+- 移除全局 Element Plus 图标注册,改为按需引入
+- 删除未使用的 CSS 类(骨架屏/stagger动画/app-*等)
+- 移除未使用的 getFrequentRoutes API
+
+后端:
+- 删除 CorsConfig/RedisCacheConfig Java 配置,move to application.yml
+- 删除 SurgePricingService(未使用的动态加价功能)
+- 移除 actuator/prometheus/hutool 未使用依赖
+- TestDataInitializer 添加 @Profile("dev") 限制
+
++145 / -356 行
+
+Co-Authored-By: Claude <noreply@anthropic.com> |
+
+### 变更文件
+```
+  M  CHANGELOG.md
+  M  jiangnan-travel-web/package.json
+  M  jiangnan-travel-web/src/api/ai.js
+  M  jiangnan-travel-web/src/assets/style.css
+  M  jiangnan-travel-web/src/assets/transitions.css
+  D  jiangnan-travel-web/src/composables/useFeedback.js
+  M  jiangnan-travel-web/src/main.js
+  M  jiangnan-travel-web/src/views/Login.vue
+  M  jiangnan-travel-web/src/views/Payment.vue
+  M  jiangnan-travel-web/src/views/Register.vue
+  M  jiangnan-travel/pom.xml
+  D  jiangnan-travel/src/main/java/com/jiangnan/travel/config/CorsConfig.java
+  D  jiangnan-travel/src/main/java/com/jiangnan/travel/config/RedisCacheConfig.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/config/TestDataInitializer.java
+  D  jiangnan-travel/src/main/java/com/jiangnan/travel/service/SurgePricingService.java
+  D  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/SurgePricingServiceImpl.java
+  M  jiangnan-travel/src/main/resources/application.yml
+```
+
+
 ## [chore: 项目文件归档整理与文档全面精确更新](7112284bf8f7daf0c8d22d3b64e76f38224183b8) — 2026-07-01 12:00
 
 | 项目 | 详情 |
