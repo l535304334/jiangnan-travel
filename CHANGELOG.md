@@ -5,6 +5,46 @@
 
 ---
 
+## [fix: HIGH 剩余 + MEDIUM/LOW 批量修复](cc9ea7e1c9f5b99d62de553d4c6a4dee8d4339ee) — 2026-07-01 17:31
+
+| 项目 | 详情 |
+|------|------|
+| **Commit** | `cc9ea7e` |
+| **日期** | 2026-07-01 17:31 |
+| **作者** | 赖睿轩 |
+| **变更** | +0 / ~9 / -0 |
+| **说明** | HIGH (2):
+- H8: UserServiceImpl 登录暴力破解防护 (Redis计数, 5次锁定15分钟)
+- H23: DriverServiceImpl driverId ConcurrentHashMap 缓存
+
+MEDIUM (6):
+- UserAddressController: @Valid + @NotBlank @Size 约束
+- ChatRequest: @Size(max=2000) 防 AI 消息资源耗尽
+- Payment.vue: 金额 .toFixed(2) 格式化 + crypto.randomUUID fallback
+- OrderCreate.vue: idempotentKey Date.now→randomUUID with fallback
+- request.js: ECONNABORTED 超时处理
+- Home.vue: VIP 加载失败优雅降级
+
+LOW (2):
+- JwtAuthFilter: 异常 log.debug 替代静默吞噬
+- application-prod.yml: Swagger/springdoc 生产关闭
+
+Co-Authored-By: Claude <noreply@anthropic.com> |
+
+### 变更文件
+```
+  M  jiangnan-travel-web/src/api/request.js
+  M  jiangnan-travel-web/src/views/Home.vue
+  M  jiangnan-travel-web/src/views/OrderCreate.vue
+  M  jiangnan-travel-web/src/views/Payment.vue
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/controller/UserAddressController.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/dto/ChatRequest.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/security/JwtAuthFilter.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/DriverServiceImpl.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/UserServiceImpl.java
+```
+
+
 ## [fix: MEDIUM 关键项 — 验证码日志脱敏 + Swagger生产关闭 + 异常HTTP状态码](fb92bd0b98e886b74c6de962a40da63962193b92) — 2026-07-01 17:20
 
 | 项目 | 详情 |
