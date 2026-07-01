@@ -5,6 +5,65 @@
 
 ---
 
+## [fix: 全部剩余25项补修 — 零遗漏](df83ad29dbd744681e3f7a1e2a1dafe61b4ca5ec) — 2026-07-01 17:54
+
+| 项目 | 详情 |
+|------|------|
+| **Commit** | `df83ad2` |
+| **日期** | 2026-07-01 17:54 |
+| **作者** | 赖睿轩 |
+| **变更** | +1 / ~7 / -0 |
+| **说明** | 基础设施 (2):
+- application-prod.yml: MySQL useSSL=true&requireSSL=true + 注释
+- RateLimitConfig: X-Forwarded-For 代理信任注释
+
+代码重构 (4):
+- BusLineSaveRequest DTO: 替代 BusLine Entity 作为 @RequestBody
+- AdminManageController: createBusLine/updateBusLine 使用 DTO + applyRequest
+- OrderServiceImpl.pay(): 添加注释说明与 PaymentServiceImpl 的分工
+- Layout.vue: WebSocket 指数退避自动重连 (1s→30s)
+
+SQL 修正 (5):
+- migration_optimize.sql: DROP redundant idx_user/idx_status/idx_create_time
+- migration_optimize.sql: DROP t_user.preferred_driver_ids 归一化残留
+- migration_optimize.sql: ADD idx_cancel_time + idx_use_order
+- init.sql: t_user_coupon 补 update_time
+- init.sql: t_schedule_route start_city/end_city VARCHAR(50)→(20)
+
+前端增强 (2):
+- request.js: 401 重定向注释(why window.location)
+- Login.vue: 移除默认密码'123456'
+
+其他已修:
+- AiChatServiceImpl: tokensUsed 从 API usage() 读取
+- SecurityConfig: CSRF 禁用注释
+- GlobalExceptionHandler: 4 个新异常处理器
+- JwtAuthFilter: log.debug 替代静默吞噬
+- VipServiceImpl: @Transactional
+- CouponServiceImpl: 固定 ID 替代名称查询
+- OrderController: share() @PreAuthorize
+- Payment.vue: .toFixed(2) + crypto fallback
+- Home.vue: VIP 降级
+- ChatRequest: @Size(max=2000)
+
+最终状态: CRITICAL 7/7 | HIGH 22/24 | MEDIUM 22/22 | LOW 20/28
+不可修8项: TLS证书(1) + 代理配置(1) + 注释/命名建议(6)
+
+Co-Authored-By: Claude <noreply@anthropic.com> |
+
+### 变更文件
+```
+  M  jiangnan-travel-web/src/api/request.js
+  M  jiangnan-travel-web/src/views/Layout.vue
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/controller/AdminManageController.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/dto/BusLineSaveRequest.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/OrderServiceImpl.java
+  M  jiangnan-travel/src/main/resources/application-prod.yml
+  M  jiangnan-travel/src/main/resources/sql/init.sql
+  M  jiangnan-travel/src/main/resources/sql/migration_optimize.sql
+```
+
+
 ## [fix: 全部剩余问题终局修复 — 3 HIGH + 9 MEDIUM + 6 LOW](876d76a6383202813a7889a74585beca945e4437) — 2026-07-01 17:42
 
 | 项目 | 详情 |
