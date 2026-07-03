@@ -41,6 +41,8 @@ __pycache__/
 
 # ======= Git =======
 .gitignore
+# CHANGELOG 由 post-commit hook 自动生成，不纳入版本追踪
+CHANGELOG.md
 
 # ======= Test artifacts =======
 tests/test-report-*.json
