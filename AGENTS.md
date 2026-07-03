@@ -20,13 +20,13 @@
 
 ### 1.2 默认进入执行模式
 
-**本项目默认处于 [EXECUTION_MODE.md](./EXECUTION_MODE.md) 定义的执行模式。**
+**本项目遵循 [CLAUDE.md](./.claude/CLAUDE.md)（项目级）+ 全局 CLAUDE.md（20 Rules）定义的开发规范。**
 
 - 收到"继续开发""开发 Task-NNN"等指令后，AI **自动执行**完整开发流程
 - 每个 Task 完成后，AI **自动输出开发报告**，等待用户确认后再继续
 - 除非用户明确要求退出，否则永久保持该模式
 
-> 详细执行流程、Task 推进规则、开发纪律、停止条件、汇报规范 → 参见 `EXECUTION_MODE.md`
+> 详细执行流程、开发纪律、汇报规范 → 参见 `.claude/CLAUDE.md` 及全局 CLAUDE.md
 
 ---
 
@@ -37,10 +37,9 @@
 | 优先级 | 文件 | 用途 |
 |---|---|---|
 | **P0 — 必须读取** | `AGENTS.md` | AI 总入口（本文件） |
-| | `EXECUTION_MODE.md` | 执行模式定义 |
-| | `PROJECT_RULES.md` | 编码规范 |
 | | `ARCHITECTURE.md` | 架构文档 |
-| | `AI_WORKFLOW.md` | Skill + MCP 工作流 |
+| | `docs/江南出行调度系统_系统设计文档_v1.5.md` | 系统设计文档 |
+| | `docs/ai-development-log.md` | AI 开发实践记录 |
 | **P1 — 开发时读取** | `PRODUCT_DESIGN.md` | 产品设计 |
 | | `DESIGN_SYSTEM.md` | 设计系统 |
 | | `UI_UX_SPEC.md` | UI/UX 规范 |
@@ -76,7 +75,7 @@
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-> **详细流程**（启动流程 5 步、单 Task 执行 9 步、冲突处理、停止恢复）→ 参见 `EXECUTION_MODE.md`
+> **详细流程**（启动流程、Task 推进、冲突处理）→ 参见 CLAUDE.md Rule 10（检查点）和 Rule 15（开发环境原则）
 
 ---
 
@@ -109,7 +108,7 @@
 | **文档** | `documentation-and-adrs` | API 文档、ADR |
 | **Git** | `git-workflow-and-versioning` | 提交规范、分支策略 |
 
-> 详细 Skill 调用矩阵（含排除列表、触发条件、产出物）→ 参见 `AI_WORKFLOW.md`
+> 详细 Skill 调用矩阵（含排除列表、触发条件、产出物）→ 参见 CLAUDE.md Section 三（Skill 自动绑定表）
 
 ---
 
@@ -138,7 +137,7 @@
 | **Git 提交** | Git | 全流程工具 |
 | **调试** | MySQL + Playwright | 数据 + 页面联合调试 |
 
-> 详细 MCP 调用矩阵（含工具名、调用条件、限制说明）→ 参见 `AI_WORKFLOW.md`
+> 详细 MCP 调用矩阵（含工具名、调用条件、限制说明）→ 参见 CLAUDE.md Section 五（MCP 工具自动使用表）
 
 ---
 
@@ -181,6 +180,6 @@
 ---
 
 > **文件体系：**  
-> `AGENTS.md`（入口）→ `EXECUTION_MODE.md`（执行模式）→ `AI_WORKFLOW.md`（Skill/MCP 详情）→ `PROJECT_RULES.md`（编码规范）→ `ARCHITECTURE.md`（架构参考）  
+> `AGENTS.md`（入口）→ `.claude/CLAUDE.md`（项目规则）→ `ARCHITECTURE.md`（架构参考）→ `docs/`（设计文档+面试材料）  
 > 优先级规则见 `constitution.md`。  
 > 生成时间：2026-06-24

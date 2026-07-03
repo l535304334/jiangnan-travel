@@ -5,6 +5,140 @@
 
 ---
 
+## [docs: 研究生复试级项目表达体系](2d90e145aff273ee393aaafbff40313e31a5c37b) — 2026-07-03 19:28
+
+| 项目 | 详情 |
+|------|------|
+| **Commit** | `2d90e14` |
+| **日期** | 2026-07-03 19:28 |
+| **作者** | 赖睿轩 |
+| **变更** | +5 / ~1 / -0 |
+| **说明** | - 新增 docs/interview/interview_script.md (3min+5min背诵稿)
+- 新增 docs/interview/project_highlights_interview.md (8个亮点详解)
+- 新增 docs/interview/interview_qna.md (8个面试问答+速查卡)
+- 新增 docs/resume/project_description.md (150字简历版+100字短版)
+- 新增 docs/architecture/interview_architecture.md (白板架构图+讲解提示)
+- 更新 docs/ai-development-log.md (追加分阶段开发记录) |
+
+### 变更文件
+```
+  M  docs/ai-development-log.md
+  A  docs/architecture/interview_architecture.md
+  A  docs/interview/interview_qna.md
+  A  docs/interview/interview_script.md
+  A  docs/interview/project_highlights_interview.md
+  A  docs/resume/project_description.md
+```
+
+
+## [chore: Stage 3 — 更新 .gitignore 规则](fdd9902e31aeb84fe45be314fc1612eb20eb70c5) — 2026-07-03 19:23
+
+| 项目 | 详情 |
+|------|------|
+| **Commit** | `fdd9902` |
+| **日期** | 2026-07-03 19:23 |
+| **作者** | 赖睿轩 |
+| **变更** | +0 / ~1 / -0 |
+| **说明** | - 新增 tests/test-report-*.json 排除测试产物
+- 新增 ~$* 排除 MS Office 临时文件 |
+
+### 变更文件
+```
+  M  .gitignore
+```
+
+
+## [chore: Stage 2 — 合并重复文档](48949a8ca514e7f36a7c07690c9ed438ccb77e64) — 2026-07-03 19:21
+
+| 项目 | 详情 |
+|------|------|
+| **Commit** | `48949a8` |
+| **日期** | 2026-07-03 19:21 |
+| **作者** | 赖睿轩 |
+| **变更** | +0 / ~0 / -3 |
+| **说明** | - 删除 docs/system-design.md (中文 v1.5 设计文档已完整覆盖)
+- 删除 docs/DEVELOPMENT_PLAN.md (与 TASK_ROADMAP.md 内容重复)
+- 删除 tests/concurrent_test.mjs (被 concurrent_dispatch_test.mjs 取代)
+- deploy/JAR + dist/ 保留 (Docker构建依赖, 不可删除) |
+
+### 变更文件
+```
+  D  docs/DEVELOPMENT_PLAN.md
+  D  docs/system-design.md
+  D  tests/concurrent_test.mjs
+```
+
+
+## [chore: Stage 1 仓库整理 — 删除临时文件 + 移动错位SQL](a07a63143374b7d3e09f75dcef702352bc787a3d) — 2026-07-03 19:20
+
+| 项目 | 详情 |
+|------|------|
+| **Commit** | `a07a631` |
+| **日期** | 2026-07-03 19:20 |
+| **作者** | 赖睿轩 |
+| **变更** | +41 / ~5 / -4 |
+| **说明** | - 删除 MS Office 临时文件 (~$*.docx)
+- 删除 debug.log (前端)
+- 删除 3 个测试报告 JSON 产物
+- 删除空 ai/ 目录
+- 移动 insert_long_haul.sql 到正确位置 (web/ → resources/sql/)
+- 新增所有 v1.1-v1.5 系统增强代码和文档 |
+
+### 变更文件
+```
+  A  PROJECT_HIGHLIGHTS.md
+  M  README.md
+  A  docs/ai-development-log.md
+  A  docs/system-design.md
+  A  "docs/346261237345215227345207272350241214_347256200345216206351235242350257225350241250350276276345261202_v1.5.md"
+  A  "docs/346261237345215227345207272350241214350260203345272246347263273347273237_347263273347273237350256276350256241346226207346241243_v1.5.md"
+  D  jiangnan-travel-web/insert_long_haul.sql
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/controller/AssignmentController.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/entity/Bill.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/entity/Driver.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/entity/OrderEvent.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/entity/Payment.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/entity/PaymentTrace.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/enums/DriverStatus.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/enums/OrderStatus.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/enums/PaymentStatus.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/mapper/BillMapper.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/mapper/OrderEventMapper.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/mapper/PaymentTraceMapper.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/AnomalyDetectionService.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/BillingService.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/ConcurrentDispatchService.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/DispatchMetricsService.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/DriverAssignmentService.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/DriverContext.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/ScoringEngine.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/SystemHealthService.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/AnomalyDetectionServiceImpl.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/BillingServiceImpl.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/ConcurrentDispatchServiceImpl.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/DispatchMetricsServiceImpl.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/DriverAssignmentServiceImpl.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/DynamicScoringEngine.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/OrderServiceImpl.java
+  M  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/PaymentServiceImpl.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/SystemHealthServiceImpl.java
+  A  jiangnan-travel/src/main/java/com/jiangnan/travel/service/impl/WeightedScoringEngine.java
+  A  jiangnan-travel/src/main/resources/sql/insert_long_haul.sql
+  A  jiangnan-travel/src/main/resources/sql/migration_state_machine.sql
+  A  jiangnan-travel/src/main/resources/sql/migration_v1.1.sql
+  A  jiangnan-travel/src/main/resources/sql/migration_v1.2.sql
+  A  jiangnan-travel/src/test/java/com/jiangnan/travel/OrderStateMachineTest.java
+  A  tests/concurrent_dispatch_test.mjs
+  A  tests/dispatch_order_lifecycle_test.mjs
+  A  tests/extreme_stress_convergence_test.mjs
+  A  tests/payment_order_state_machine_test.mjs
+  A  tests/stress_test_v13.mjs
+  D  tests/test-report-1782893922865.json
+  D  tests/test-report-1782897213904.json
+  D  "~$346257225344270232345256236344271240344270273350247202351227256345215267350260203346237245350241250357274210344274201344270232345241253345206231345271266347233226347253240357274211-346250241346235277-202606.docx"
+```
+
+
 ## [chore: gitignore 新增隐私保护规则 — 实习日志/实习材料仅入本地仓库](a2f7dfbc44d176bf3ea4293a05fd1e6fc05ad8ca) — 2026-07-01 18:58
 
 | 项目 | 详情 |
