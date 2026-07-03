@@ -8,6 +8,7 @@ import com.jiangnan.travel.common.ErrorCode;
 import com.jiangnan.travel.dto.CreateOrderRequest;
 import com.jiangnan.travel.entity.*;
 import com.jiangnan.travel.entity.RiskAlert;
+import com.jiangnan.travel.enums.OrderStatus;
 import com.jiangnan.travel.mapper.*;
 import com.jiangnan.travel.service.NotificationService;
 import com.jiangnan.travel.service.OrderService;
@@ -50,11 +51,38 @@ public class OrderServiceImpl implements OrderService {
     private final RedissonClient redissonClient;
     private final NotificationService notificationService;
     private final RiskAlertService riskAlertService;
+    private final BillingServiceImpl billingService;
+    private final OrderEventMapper orderEventMapper;
     private final TransactionTemplate transactionTemplate;
 
     private static final String IDEMPOTENT_PREFIX = "order:idempotent:";
     private static final String ACCEPT_LOCK_PREFIX = "order:lock:accept:";
     private static final String PAY_LOCK_PREFIX = "order:lock:pay:";
+
+    // ── 状态机辅助 ──
+
+    /** 校验状态流转合法性，不合法直接抛异常。 */
+    private void guardTransition(Order order, OrderStatus target) {
+        OrderStatus from = OrderStatus.fromCode(order.getStatus());
+        if (!target.canTransitionFrom(from)) {
+            throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR,
+                    "非法状态流转: " + from.getLabel() + " → " + target.getLabel());
+        }
+    }
+
+    /** 记录状态变更事件。 */
+    private void recordEvent(Order order, int toStatus, Long operatorId, String operatorType, String remark) {
+        OrderEvent event = new OrderEvent();
+        event.setOrderId(order.getId());
+        event.setOrderNo(order.getOrderNo());
+        event.setFromStatus(order.getStatus());
+        event.setToStatus(toStatus);
+        event.setOperatorId(operatorId);
+        event.setOperatorType(operatorType);
+        event.setRemark(remark);
+        event.setEventTime(java.time.LocalDateTime.now());
+        orderEventMapper.insert(event);
+    }
 
     @Override
     @Transactional
@@ -217,13 +245,12 @@ public class OrderServiceImpl implements OrderService {
         if (order == null || !order.getUserId().equals(userId)) {
             throw new BusinessException(ErrorCode.ORDER_NOT_FOUND);
         }
-        if (order.getStatus() > 1) {
-            throw new BusinessException(ErrorCode.ORDER_CANNOT_CANCEL);
-        }
+        // 状态机守卫: 允许从 CREATED/PAID/ASSIGNED/ARRIVED 取消
+        guardTransition(order, OrderStatus.CANCELLED);
         checkRiskR2(userId);
 
         // 已接单订单取消后恢复司机在线状态
-        if (order.getStatus() == 1 && order.getDriverId() != null) {
+        if (order.getStatus() == OrderStatus.ASSIGNED.getCode() && order.getDriverId() != null) {
             Driver driver = driverMapper.selectById(order.getDriverId());
             if (driver != null) {
                 driver.setStatus(1);
@@ -231,10 +258,14 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        order.setStatus(5);
+        int fromStatus = order.getStatus();
+        order.setStatus(OrderStatus.CANCELLED.getCode());
         order.setCancelReason(reason);
         order.setCancelTime(LocalDateTime.now());
         orderMapper.updateById(order);
+
+        recordEvent(order, OrderStatus.CANCELLED.getCode(), userId, "user",
+                "用户取消" + (reason != null ? "：" + reason : ""));
 
         notificationService.create(order.getUserId(), "ORDER_CANCELLED",
                 "订单已取消", "订单 " + order.getOrderNo() + " 已取消" + (reason != null ? "：" + reason : ""), order.getId());
@@ -258,17 +289,21 @@ public class OrderServiceImpl implements OrderService {
             return transactionTemplate.execute(status -> {
                 // 加锁后重新检查订单状态，防止并发抢单
                 Order order = orderMapper.selectById(orderId);
-                if (order == null || order.getStatus() != 0) {
+                if (order == null || order.getStatus() != OrderStatus.PAID.getCode()) {
                     throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
                 }
+                guardTransition(order, OrderStatus.ASSIGNED);
                 Driver driver = driverMapper.selectById(driverId);
                 if (driver == null || driver.getStatus() != 1) {
                     throw new BusinessException(ErrorCode.DRIVER_OFFLINE);
                 }
                 order.setDriverId(driverId);
-                order.setStatus(1);
+                order.setStatus(OrderStatus.ASSIGNED.getCode());
                 order.setAcceptTime(LocalDateTime.now());
                 orderMapper.updateById(order);
+
+                recordEvent(order, OrderStatus.ASSIGNED.getCode(), driverId, "driver",
+                        "司机 " + driver.getRealName() + " 接单");
 
                 driver.setStatus(2);
                 driverMapper.updateById(driver);
@@ -293,10 +328,12 @@ public class OrderServiceImpl implements OrderService {
         try {
             if (!lock.tryLock(5, TimeUnit.SECONDS)) throw new BusinessException(9002, "操作过于频繁");
             Order order = checkDriverOrder(orderId, driverId);
-            if (order.getStatus() != 1) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
-            order.setStatus(2);
+            if (order.getStatus() != OrderStatus.ASSIGNED.getCode()) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
+            guardTransition(order, OrderStatus.ARRIVED);
+            order.setStatus(OrderStatus.ARRIVED.getCode());
             order.setArriveTime(LocalDateTime.now());
             orderMapper.updateById(order);
+            recordEvent(order, OrderStatus.ARRIVED.getCode(), driverId, "driver", "司机到达上车点");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new BusinessException(9002, "系统繁忙");
@@ -319,10 +356,12 @@ public class OrderServiceImpl implements OrderService {
         try {
             if (!lock.tryLock(5, TimeUnit.SECONDS)) throw new BusinessException(9002, "操作过于频繁");
             Order order = checkDriverOrder(orderId, driverId);
-            if (order.getStatus() != 2) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
-            order.setStatus(3);
+            if (order.getStatus() != OrderStatus.ARRIVED.getCode()) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
+            guardTransition(order, OrderStatus.IN_PROGRESS);
+            order.setStatus(OrderStatus.IN_PROGRESS.getCode());
             order.setStartTime(LocalDateTime.now());
             orderMapper.updateById(order);
+            recordEvent(order, OrderStatus.IN_PROGRESS.getCode(), driverId, "driver", "行程开始");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new BusinessException(9002, "系统繁忙");
@@ -346,10 +385,15 @@ public class OrderServiceImpl implements OrderService {
         try {
             if (!lock.tryLock(5, TimeUnit.SECONDS)) throw new BusinessException(9002, "操作过于频繁");
             Order order = checkDriverOrder(orderId, driverId);
-            if (order.getStatus() != 3) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
-            order.setStatus(4);
+            if (order.getStatus() != OrderStatus.IN_PROGRESS.getCode()) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
+            guardTransition(order, OrderStatus.COMPLETED);
+            order.setStatus(OrderStatus.COMPLETED.getCode());
             order.setEndTime(LocalDateTime.now());
             orderMapper.updateById(order);
+            recordEvent(order, OrderStatus.COMPLETED.getCode(), driverId, "driver", "行程完成，费用 ¥" + order.getFinalPrice());
+
+            // 自动生成账单
+            billingService.generateBill(order);
 
             // R7 疲劳提醒：行程超过2小时
             checkRiskR7(order);
@@ -394,9 +438,13 @@ public class OrderServiceImpl implements OrderService {
                 if (order == null || !order.getUserId().equals(userId)) {
                     throw new BusinessException(ErrorCode.ORDER_NOT_FOUND);
                 }
-                if (order.getStatus() != 4) throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
+                // 状态机: CREATED → PAID
+                if (order.getStatus() != OrderStatus.CREATED.getCode() && order.getStatus() != OrderStatus.COMPLETED.getCode()) {
+                    throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
+                }
+                guardTransition(order, OrderStatus.PAID);
 
-                // 检查是否已支付，防止重复支付
+                // 检查是否已支付
                 Payment existing = paymentMapper.selectOne(
                         new LambdaQueryWrapper<Payment>()
                                 .eq(Payment::getOrderId, orderId)
@@ -414,6 +462,14 @@ public class OrderServiceImpl implements OrderService {
                 payment.setStatus(1);
                 payment.setPayTime(LocalDateTime.now());
                 paymentMapper.insert(payment);
+
+                // 订单状态 → PAID
+                int fromStatus = order.getStatus();
+                order.setStatus(OrderStatus.PAID.getCode());
+                orderMapper.updateById(order);
+
+                recordEvent(order, OrderStatus.PAID.getCode(), userId, "user",
+                        "用户支付 ¥" + order.getFinalPrice() + "（从状态 " + fromStatus + " → " + OrderStatus.PAID.getCode() + "）");
             });
         } finally {
             if (lock.isHeldByCurrentThread()) {
@@ -456,6 +512,10 @@ public class OrderServiceImpl implements OrderService {
                 driver.setAvgRating(avg);
                 driverMapper.updateById(driver);
             }
+
+            // 记录评价事件
+            recordEvent(order, order.getStatus(), userId, "user",
+                    "用户评价: " + rating + "星" + (content != null && !content.isEmpty() ? " — " + content : ""));
         }
     }
 

@@ -5,8 +5,11 @@ import com.jiangnan.travel.common.BusinessException;
 import com.jiangnan.travel.common.ErrorCode;
 import com.jiangnan.travel.entity.Order;
 import com.jiangnan.travel.entity.Payment;
+import com.jiangnan.travel.entity.PaymentTrace;
+import com.jiangnan.travel.enums.PaymentStatus;
 import com.jiangnan.travel.mapper.OrderMapper;
 import com.jiangnan.travel.mapper.PaymentMapper;
+import com.jiangnan.travel.mapper.PaymentTraceMapper;
 import com.jiangnan.travel.service.NotificationService;
 import com.jiangnan.travel.service.PaymentService;
 import com.jiangnan.travel.vo.PaymentVO;
@@ -33,12 +36,15 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentMapper paymentMapper;
     private final OrderMapper orderMapper;
+    private final PaymentTraceMapper paymentTraceMapper;
     private final NotificationService notificationService;
     private final RedissonClient redissonClient;
     private final TransactionTemplate transactionTemplate;
 
     private static final String PAY_LOCK_PREFIX = "order:lock:pay:";
     private static final String PAY_IDEMPOTENT_PREFIX = "pay:idempotent:";
+    /** 最大重试次数 */
+    private static final int MAX_RETRY = 3;
 
     @Override
     public PaymentVO pay(Long orderId, Long userId, String payMethod, String idempotentKey) {
@@ -57,28 +63,32 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         try {
-            // 在锁内执行事务，确保事务提交后才释放锁
+            // ── 支付重试 + 追踪 ──
             return transactionTemplate.execute(status -> {
                 // 1. 校验订单
                 Order order = orderMapper.selectById(orderId);
                 if (order == null || !order.getUserId().equals(userId)) {
-                    throw new BusinessException(ErrorCode.ORDER_NOT_FOUND);
+                    traceAndThrow(null, orderId, userId, 1, payMethod, null, null,
+                            finalIdempotentKey, "订单不存在");
                 }
-                if (order.getStatus() != 4) {
-                    throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
+                // 允许 CREATED → 预支付 或 COMPLETED → 后付费
+                if (order.getStatus() != com.jiangnan.travel.enums.OrderStatus.CREATED.getCode()
+                        && order.getStatus() != com.jiangnan.travel.enums.OrderStatus.COMPLETED.getCode()) {
+                    traceAndThrow(null, orderId, userId, 1, payMethod, order.getFinalPrice(), null,
+                            finalIdempotentKey, "订单状态不允许支付: " + order.getStatus());
                 }
 
                 // 2. 检查是否已支付
                 Payment existing = paymentMapper.selectOne(
                         new LambdaQueryWrapper<Payment>()
                                 .eq(Payment::getOrderId, orderId)
-                                .eq(Payment::getStatus, 1)
+                                .eq(Payment::getStatus, PaymentStatus.PAID.getCode())
                                 .last("LIMIT 1"));
                 if (existing != null) {
                     throw new BusinessException(ErrorCode.PAY_FAILED, "该订单已支付");
                 }
 
-                // 3. 幂等键检查：同一幂等键仅允许一笔支付记录
+                // 3. 幂等键检查
                 Payment idempotentPayment = paymentMapper.selectOne(
                         new LambdaQueryWrapper<Payment>()
                                 .eq(Payment::getIdempotentKey, finalIdempotentKey)
@@ -87,27 +97,92 @@ public class PaymentServiceImpl implements PaymentService {
                     return toVO(idempotentPayment, order);
                 }
 
-                // 4. 生成支付流水号
+                // 4. 查已有失败记录，决定重试
+                int attemptNo = 1;
+                Payment failedPayment = paymentMapper.selectOne(
+                        new LambdaQueryWrapper<Payment>()
+                                .eq(Payment::getOrderId, orderId)
+                                .eq(Payment::getStatus, PaymentStatus.FAILED.getCode())
+                                .last("LIMIT 1"));
+                if (failedPayment != null) {
+                    attemptNo = (failedPayment.getRetryCount() != null ? failedPayment.getRetryCount() : 0) + 1;
+                    if (attemptNo > MAX_RETRY) {
+                        traceAndThrow(failedPayment.getId(), orderId, userId, attemptNo, payMethod,
+                                order.getFinalPrice(), null, finalIdempotentKey,
+                                "超过最大重试次数 " + MAX_RETRY);
+                    }
+                }
+
+                // 5. 执行支付（模拟：90% 成功率；真实环境接入微信/支付宝 SDK）
+                long startMs = System.currentTimeMillis();
                 String payNo = "P" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                         + String.format("%04d", new Random().nextInt(10000));
+                boolean paySuccess = new Random().nextInt(100) < 90; // 90% 模拟成功率
 
-                // 5. 创建支付记录（模拟：直接标记成功）
-                Payment payment = new Payment();
-                payment.setOrderId(orderId);
-                payment.setUserId(userId);
-                payment.setAmount(order.getFinalPrice());
-                payment.setPayMethod(payMethod != null ? payMethod : "balance");
+                if (!paySuccess) {
+                    int costMs = (int) (System.currentTimeMillis() - startMs);
+                    Payment failRecord = (failedPayment != null) ? failedPayment : new Payment();
+                    if (failedPayment == null) {
+                        failRecord.setOrderId(orderId);
+                        failRecord.setUserId(userId);
+                        failRecord.setAmount(order.getFinalPrice());
+                        failRecord.setPayMethod(payMethod != null ? payMethod : "balance");
+                        failRecord.setIdempotentKey(finalIdempotentKey);
+                    }
+                    failRecord.setPayNo(payNo);
+                    failRecord.setStatus(PaymentStatus.FAILED.getCode());
+                    failRecord.setRetryCount(attemptNo);
+                    failRecord.setFailReason("模拟支付失败 (第" + attemptNo + "次尝试)");
+                    if (failedPayment != null) {
+                        paymentMapper.updateById(failRecord);
+                    } else {
+                        paymentMapper.insert(failRecord);
+                    }
+                    // trace
+                    tracePayment(failRecord.getId(), orderId, userId, attemptNo,
+                            PaymentStatus.FAILED.getCode(), payMethod, payNo, finalIdempotentKey,
+                            order.getFinalPrice(), "模拟支付失败", costMs);
+                    if (attemptNo >= MAX_RETRY) {
+                        throw new BusinessException(ErrorCode.PAY_FAILED,
+                                "支付失败，已重试 " + attemptNo + " 次，请稍后再试");
+                    }
+                    throw new BusinessException(ErrorCode.PAY_FAILED,
+                            "支付失败(第" + attemptNo + "次)，将自动重试");
+                }
+
+                int costMs = (int) (System.currentTimeMillis() - startMs);
+
+                // 6. 创建/更新支付记录为成功
+                Payment payment = (failedPayment != null) ? failedPayment : new Payment();
+                if (failedPayment == null) {
+                    payment.setOrderId(orderId);
+                    payment.setUserId(userId);
+                    payment.setAmount(order.getFinalPrice());
+                    payment.setPayMethod(payMethod != null ? payMethod : "balance");
+                    payment.setIdempotentKey(finalIdempotentKey);
+                }
                 payment.setPayNo(payNo);
-                payment.setIdempotentKey(finalIdempotentKey);
-                payment.setStatus(1);
+                payment.setStatus(PaymentStatus.PAID.getCode());
+                payment.setRetryCount(attemptNo);
                 payment.setPayTime(LocalDateTime.now());
-                paymentMapper.insert(payment);
+                payment.setFailReason(null);
+                if (failedPayment != null) {
+                    paymentMapper.updateById(payment);
+                } else {
+                    paymentMapper.insert(payment);
+                }
 
-                // 5. 发送通知
+                // 7. 追踪成功
+                tracePayment(payment.getId(), orderId, userId, attemptNo,
+                        PaymentStatus.PAID.getCode(), payMethod, payNo, finalIdempotentKey,
+                        order.getFinalPrice(), null, costMs);
+
+                // 8. 发送通知
                 notificationService.create(userId, "PAY_SUCCESS",
                         "支付成功", "订单 " + order.getOrderNo() + " 已支付 ¥" + order.getFinalPrice(), orderId);
 
-                log.info("用户[{}]支付订单[{}]成功，方式={}，金额={}", userId, orderId, payMethod, order.getFinalPrice());
+                log.info("用户[{}]支付订单[{}]成功，方式={}，金额={}，尝试次数={}",
+                        userId, orderId, payMethod, order.getFinalPrice(), attemptNo);
                 return toVO(payment, order);
             });
         } finally {
@@ -127,7 +202,7 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentMapper.selectOne(
                 new LambdaQueryWrapper<Payment>()
                         .eq(Payment::getOrderId, orderId)
-                        .eq(Payment::getStatus, 1)
+                        .eq(Payment::getStatus, PaymentStatus.PAID.getCode())
                         .last("LIMIT 1"));
 
         if (payment == null) {
@@ -164,13 +239,44 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentMapper.selectOne(
                 new LambdaQueryWrapper<Payment>().eq(Payment::getPayNo, payNo));
         if (payment == null) throw new BusinessException(ErrorCode.NOT_FOUND);
-        if (payment.getStatus() == 0) {
-            payment.setStatus(1);
+        if (payment.getStatus() == PaymentStatus.PENDING.getCode()) {
+            payment.setStatus(PaymentStatus.PAID.getCode());
             payment.setPayTime(LocalDateTime.now());
             paymentMapper.updateById(payment);
         }
         Order order = orderMapper.selectById(payment.getOrderId());
         return toVO(payment, order);
+    }
+
+    // ── 支付追踪辅助 ──
+
+    /** 记录一条支付追踪日志 */
+    private void tracePayment(Long paymentId, Long orderId, Long userId, int attemptNo,
+                              int status, String payMethod, String payNo, String idempotentKey,
+                              java.math.BigDecimal amount, String failReason, int costMs) {
+        PaymentTrace trace = new PaymentTrace();
+        trace.setPaymentId(paymentId);
+        trace.setOrderId(orderId);
+        trace.setUserId(userId);
+        trace.setAttemptNo(attemptNo);
+        trace.setStatus(status);
+        trace.setPayMethod(payMethod);
+        trace.setPayNo(payNo);
+        trace.setIdempotentKey(idempotentKey);
+        trace.setAmount(amount);
+        trace.setFailReason(failReason);
+        trace.setCostMs(costMs);
+        trace.setTraceTime(LocalDateTime.now());
+        paymentTraceMapper.insert(trace);
+    }
+
+    /** 记录追踪日志后抛出业务异常 */
+    private void traceAndThrow(Long paymentId, Long orderId, Long userId, int attemptNo,
+                               String payMethod, java.math.BigDecimal amount, String payNo,
+                               String idempotentKey, String reason) {
+        tracePayment(paymentId, orderId, userId, attemptNo, PaymentStatus.FAILED.getCode(),
+                payMethod, payNo, idempotentKey, amount, reason, 0);
+        throw new BusinessException(ErrorCode.PAY_FAILED, reason);
     }
 
     private PaymentVO toVO(Payment payment, Order order) {
@@ -180,6 +286,12 @@ public class PaymentServiceImpl implements PaymentService {
             case "alipay" -> "支付宝";
             default -> "余额支付";
         };
+        String statusText;
+        try {
+            statusText = PaymentStatus.fromCode(payment.getStatus()).getLabel();
+        } catch (IllegalArgumentException e) {
+            statusText = "未知";
+        }
         return PaymentVO.builder()
                 .id(payment.getId())
                 .orderId(payment.getOrderId())
@@ -189,7 +301,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .payMethodName(methodName)
                 .payNo(payment.getPayNo())
                 .status(payment.getStatus())
-                .statusText(payment.getStatus() == 1 ? "支付成功" : payment.getStatus() == 2 ? "支付失败" : "待支付")
+                .statusText(statusText)
                 .payTime(payment.getPayTime())
                 .startAddress(order != null ? order.getStartAddress() : null)
                 .endAddress(order != null ? order.getEndAddress() : null)

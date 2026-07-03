@@ -21,5 +21,7 @@ public class Payment extends BaseEntity {
     private String payNo;
     private String idempotentKey;
     private Integer status;
+    private Integer retryCount;
+    private String failReason;
     private LocalDateTime payTime;
 }
