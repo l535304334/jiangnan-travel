@@ -81,15 +81,15 @@ jwt:
 
 # DeepSeek AI 配置
 deepseek:
-  api-key: ${DEEPSEEK_API_KEY:REDACTED_DEEPSEEK_API_KEY}
+  api-key: ${DEEPSEEK_API_KEY:}
   base-url: https://api.deepseek.com/v1
   model: deepseek-chat
 
 # 高德地图配置
 amap:
-  web-api-key: ${AMAP_WEB_API_KEY:REDACTED_AMAP_API_KEY}
+  web-api-key: ${AMAP_WEB_API_KEY:}
   base-url: https://restapi.amap.com/v3/direction/driving
-  js-api-key: ${AMAP_JS_API_KEY:REDACTED_AMAP_API_KEY}
+  js-api-key: ${AMAP_JS_API_KEY:}
   security-code: ${AMAP_SECURITY_CODE:01646b6ce6b541c2057afc03bb2ea17a}
 
 # 日志
