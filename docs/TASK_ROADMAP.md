@@ -185,7 +185,7 @@
 ## Phase 5: 文档+测试+部署（Task 028-030）
 
 ### ✅ Task 028 — 文档更新（已完成）
-- **目标**：更新README+ARCHITECTURE+PROJECT_RULES+AI_WORKFLOW
+- **目标**：更新README+ARCHITECTURE+PROJECT_HIGHLIGHTS
 - **涉及文件**：4个核心文档
 - **验收**：文档与代码一致
 - **完成日期**：2026-06-24
