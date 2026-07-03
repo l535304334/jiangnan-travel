@@ -42,6 +42,12 @@ __pycache__/
 # ======= Git =======
 .gitignore
 
+# ======= Test artifacts =======
+tests/test-report-*.json
+
+# ======= MS Office temp =======
+~$*
+
 # ======= 个人隐私 =======
 # 实习日志、实习材料、含个人身份信息的文件仅入本地仓库，禁止推送到远程
 实习日志/
