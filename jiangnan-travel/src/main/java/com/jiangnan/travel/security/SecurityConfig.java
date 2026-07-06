@@ -72,6 +72,18 @@ public class SecurityConfig {
                         .requestMatchers("/api/driver/**").hasRole("DRIVER")
                         // 用户端 — 仅 USER 角色（除 login/register/send-code 已在上面放行）
                         .requestMatchers("/api/user/**").hasRole("USER")
+
+                        // ============ 派单调度端点（需特定角色）============
+                        // 调度监控/指标/异常检测 — 仅 ADMIN
+                        .requestMatchers("/api/dispatch/**").hasRole("ADMIN")
+                        // 派单/并发调度/批量派单 — 仅 ADMIN（手动触发）
+                        .requestMatchers("/api/order/*/assign",
+                                "/api/order/*/dispatch",
+                                "/api/order/batch-dispatch").hasRole("ADMIN")
+                        // 司机接单/拒单 — 仅 DRIVER
+                        .requestMatchers("/api/order/*/accept-assignment",
+                                "/api/order/*/reject-assignment").hasRole("DRIVER")
+
                         // 订单操作需要授权（用户或司机均可访问自己的订单）
                         .requestMatchers("/api/order/**").authenticated()
                         // 安全相关
