@@ -94,6 +94,17 @@
 | B-11 | ✅ 已确认修复 | `migration_optimize.sql` 第 153-156 行已补 `t_user_address.update_time` 字段，CI 已包含此 migration。 |
 | B-02 | ✅ 部分修复 | `router/index.js` 的 `clearAllAuth()` 函数漏清 `driverInfo` 已修复（添加 `localStorage.removeItem('driverInfo')`）。双 key 设计（token/adminToken/driverToken）为有意的多角色路由守卫支持，不重构。原描述的"与 AdminLogin.vue 逻辑重复"已过时（AdminLogin.vue 不存在，管理员登录集成在 Login.vue）。 |
 
+### RC 第 11 轮（2026-07-07）
+
+| ID | 状态 | 修复说明 |
+|---|---|---|
+| L-05 | ✅ 已修复 | 为三个 WebSocket 端点（`OrderTrackingServer`、`DriverLocationServer`、`NotificationWebSocketServer`）添加 `AtomicInteger` 全局连接计数器限流。阈值分别为 1000/500/1000，超过时拒绝新连接并记录 warn 日志。`onClose` 使用 `wasInMap` 模式确保计数器不会变负。`DriverLocationServer` 的 `onError` 改为复用 `onClose` 逻辑，避免重复代码。 |
+| B-06 | ✅ 已确认修复 | `TripTracking.vue` 已实现 `connectWebSocket(orderId)` 函数（第 91-112 行），通过 `localStorage.getItem('token')` 获取 token 并建立 `/ws/order/{orderId}?token=xxx` 连接，`onUnmounted` 中关闭连接。 |
+| B-07 | ✅ 已确认修复 | `DriverHome.vue` 通过 `loadHomeData` 调用 `driverApi.earning()` 和 `driverApi.pendingOrders()` 拉取真实数据，无硬编码。 |
+| B-08 | ✅ 已确认修复 | `DriverEarnings.vue` 调用 `driverApi.earning()`、`driverApi.weeklyEarning()`、`driverApi.orderHistory()` 拉取真实数据。 |
+| B-09 | ✅ 已确认修复 | `DriverProfile.vue` 调用 `driverApi.getProfile()` 拉取真实数据。 |
+| — | ✅ 已修复 | `InvoiceServiceTest` 添加 `payment.mock.success-rate=100` 属性覆盖，消除 10% 随机支付失败导致的 flaky test（testing-standards.md 规则 1）。 |
+
 ### RC 第 8 轮（2026-07-07）
 
 | ID | 状态 | 修复说明 |
@@ -119,11 +130,10 @@
 
 | ID | 优先级 | 说明 |
 |---|---|---|
-| B-06 | P1 | `TripTracking.vue` WebSocket 未实际连接，司机位置不更新 |
-| L-05 | P1 | WebSocket 无限流，仅 HTTP 层有限流 |
-| B-07~B-09 | P1 | 司机端首页/收入/个人信息硬编码假数据 |
 | B-12~B-15 | P2 | 密码强度、幂等键过期、前端密钥暴露、多余依赖 |
 | L-01 | P2 | `/api/ai/**` 公开访问，未登录可调用消耗 Token |
 | S-04 | 中 | `CorsConfig` 允许所有 origin |
 | S-05 | 中 | 高德地图 API Key 无 IP 白名单 |
 | P-01~P-04 | P2 | 性能问题（AI 缓存、分页、地图 SDK、订单筛选） |
+
+> **P0/P1 全部清零**（截至 RC 第 11 轮）。剩余问题均为 P2 及以下，不影响交付。

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
@@ -20,6 +21,9 @@ public class NotificationWebSocketServer {
     private static JwtUtil jwtUtil;
     private static TokenBlacklistService blacklistService;
     private static final ConcurrentHashMap<Long, ConcurrentHashMap<String, Session>> userSessions = new ConcurrentHashMap<>();
+    /** L-05 修复：全局连接数限流，防止 WebSocket DoS */
+    private static final AtomicInteger totalConnections = new AtomicInteger(0);
+    private static final int MAX_TOTAL_CONNECTIONS = 1000;
 
     @Autowired
     public void setJwtUtil(JwtUtil jwtUtil) {
@@ -44,6 +48,12 @@ public class NotificationWebSocketServer {
             try { session.close(); } catch (Exception ignored) {}
             return;
         }
+        if (totalConnections.incrementAndGet() > MAX_TOTAL_CONNECTIONS) {
+            totalConnections.decrementAndGet();
+            log.warn("WebSocket 全局连接数超过上限 {}，拒绝新连接", MAX_TOTAL_CONNECTIONS);
+            try { session.close(); } catch (Exception ignored) {}
+            return;
+        }
         userSessions.computeIfAbsent(userId, k -> new ConcurrentHashMap<>())
                 .put(session.getId(), session);
         log.info("用户[{}] 已连接通知WebSocket", userId);
@@ -52,9 +62,13 @@ public class NotificationWebSocketServer {
     @OnClose
     public void onClose(Session session, @PathParam("userId") Long userId) {
         ConcurrentHashMap<String, Session> map = userSessions.get(userId);
+        boolean wasInMap = false;
         if (map != null) {
-            map.remove(session.getId());
+            wasInMap = map.remove(session.getId()) != null;
             if (map.isEmpty()) userSessions.remove(userId);
+        }
+        if (wasInMap) {
+            totalConnections.decrementAndGet();
         }
     }
 

@@ -28,7 +28,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(properties = "jiangnan.websocket.enabled=false")
+@SpringBootTest(properties = {"jiangnan.websocket.enabled=false", "payment.mock.success-rate=100"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class InvoiceServiceTest {
 

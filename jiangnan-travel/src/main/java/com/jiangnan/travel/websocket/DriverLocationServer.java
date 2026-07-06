@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
@@ -20,6 +21,9 @@ public class DriverLocationServer {
     private static JwtUtil jwtUtil;
     private static TokenBlacklistService blacklistService;
     private static final ConcurrentHashMap<Long, Session> driverSessions = new ConcurrentHashMap<>();
+    /** L-05 修复：全局连接数限流，防止 WebSocket DoS */
+    private static final AtomicInteger totalConnections = new AtomicInteger(0);
+    private static final int MAX_TOTAL_CONNECTIONS = 500;
 
     @Autowired
     public void setJwtUtil(JwtUtil jwtUtil) {
@@ -36,6 +40,12 @@ public class DriverLocationServer {
         String token = JwtCookieConfigurator.getToken(session);
         if (token == null || !jwtUtil.validateToken(token) ||
                 (blacklistService != null && blacklistService.isBlacklisted(token))) {
+            try { session.close(); } catch (Exception ignored) {}
+            return;
+        }
+        if (totalConnections.incrementAndGet() > MAX_TOTAL_CONNECTIONS) {
+            totalConnections.decrementAndGet();
+            log.warn("WebSocket 全局连接数超过上限 {}，拒绝新连接", MAX_TOTAL_CONNECTIONS);
             try { session.close(); } catch (Exception ignored) {}
             return;
         }
@@ -73,15 +83,17 @@ public class DriverLocationServer {
     public void onClose(Session session) {
         Long driverId = getDriverId(session);
         if (driverId != null) {
-            driverSessions.remove(driverId);
+            Session removed = driverSessions.remove(driverId);
+            if (removed != null) {
+                totalConnections.decrementAndGet();
+            }
             log.info("司机[{}] WS 已断开", driverId);
         }
     }
 
     @OnError
     public void onError(Session session, Throwable e) {
-        Long driverId = getDriverId(session);
-        if (driverId != null) driverSessions.remove(driverId);
+        onClose(session);
     }
 
     public static void sendToDriver(Long driverId, String msg) {
