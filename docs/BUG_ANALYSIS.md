@@ -72,3 +72,53 @@
 | P-02 | getSessions()使用groupBy+orderBy，无分页 | 用户会话多时DB压力大 | 加LIMIT 50 |
 | P-03 | AmapView多个实例各自加载一次高德JS SDK | 同一页面多个地图组件重复加载 | 全局单例加载 |
 | P-04 | 订单列表无时间范围默认筛选 | 数据量大时全表扫描 | 默认筛选近30天 |
+
+---
+
+## 五、修复状态
+
+> 本章节跟踪各问题的修复进度，按修复时间倒序排列。
+
+### RC 第 9 轮（2026-07-07）
+
+| ID | 状态 | 修复说明 |
+|---|---|---|
+| L-03 | ✅ 已修复 | `PricingServiceImpl.estimate` 根据实际距离（≥50km 为长途）校验并纠正前端传入的 `tripType`，防止用户篡改获取低价。显式传入且不符时记录 warn 日志，未传入时静默纠正。 |
+| L-04 | ✅ 已确认修复 | `UserServiceImpl.passwordLogin` 已实现暴力破解防护：5 次失败后锁定 15 分钟（Redis 计数器 `login:attempt:{phone}`），登录成功清除计数。 |
+
+### RC 第 8 轮（2026-07-07）
+
+| ID | 状态 | 修复说明 |
+|---|---|---|
+| B-03 | ✅ 已修复 | `migration_optimize.sql` + `migration_state_machine.sql` 补全 `t_order_event`、`t_payment_trace` 等 BaseEntity 字段（deleted/update_time）。 |
+| — | ✅ 已修复 | `DynamicScoringEngine` 添加 `@Primary` 解决 ScoringEngine bean 歧义（ApplicationContext 加载失败 P0）。 |
+| — | ✅ 已修复 | `PaymentServiceImpl` 模拟支付成功率改为 `@Value` 注入（`payment.mock.success-rate`），消除测试随机失败。 |
+| — | ✅ 已修复 | `VipServiceTest` VIP_LEVEL 范围扩大至 1000-9999 + 防御性清理，消除数据碰撞。 |
+| — | ✅ 已修复 | CI 数据库初始化补充 `migration_v1.2.sql` 和 `migration_state_machine.sql`。 |
+
+### RC 早期轮次
+
+| ID | 状态 | 修复说明 |
+|---|---|---|
+| B-04 | ✅ 已修复 | `SecurityConfig` 为司机端 API 添加 `hasRole` 角色鉴权。 |
+| B-05 | ✅ 已修复 | `SecurityConfig` 为管理员端 API 添加 `hasRole` 角色鉴权。 |
+| L-02 | ✅ 已修复 | `OrderServiceImpl.cancelOrder` 取消订单时恢复司机在线状态（含 ARRIVED 状态取消的司机卡死修复）。 |
+| S-01 | ✅ 已修复 | JWT 密钥改为 `${JWT_SECRET:}` 环境变量注入，无默认值 fail-fast。 |
+| S-03 | ✅ 已修复 | 数据库密码改为 `${DB_PASS:}` 环境变量注入，无默认值 fail-fast。 |
+| S-06 | ✅ 已修复 | DeepSeek API Key 改为 `${DEEPSEEK_API_KEY:}` 环境变量注入。 |
+
+### 待修复
+
+| ID | 优先级 | 说明 |
+|---|---|---|
+| B-06 | P1 | `TripTracking.vue` WebSocket 未实际连接，司机位置不更新 |
+| L-05 | P1 | WebSocket 无限流，仅 HTTP 层有限流 |
+| B-02 | P1 | `Login.vue` 与 `AdminLogin.vue` 登录态管理不一致 |
+| B-07~B-09 | P1 | 司机端首页/收入/个人信息硬编码假数据 |
+| B-10 | P1 | `AIDataController` 路径不 RESTful（/api/api/ai/hotspots） |
+| B-11 | P1 | `t_user_address` DDL 无 update_time |
+| B-12~B-15 | P2 | 密码强度、幂等键过期、前端密钥暴露、多余依赖 |
+| L-01 | P2 | `/api/ai/**` 公开访问，未登录可调用消耗 Token |
+| S-04 | 中 | `CorsConfig` 允许所有 origin |
+| S-05 | 中 | 高德地图 API Key 无 IP 白名单 |
+| P-01~P-04 | P2 | 性能问题（AI 缓存、分页、地图 SDK、订单筛选） |

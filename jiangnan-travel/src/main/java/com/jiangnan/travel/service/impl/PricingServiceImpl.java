@@ -34,8 +34,23 @@ public class PricingServiceImpl implements PricingService {
 
     @Override
     public EstimateVO estimate(EstimateRequest request) {
+        // 距离和时长（提前提取，用于 tripType 校验）
+        int distMeters = request.getDistance() != null ? request.getDistance() : 5000;
+        int durSeconds = request.getDuration() != null ? request.getDuration() : 600;
+
         // 获取行程类型
         Integer tripType = request.getTripType() != null ? request.getTripType() : 0;
+
+        // L-03 修复：根据实际距离校验 tripType，防止用户篡改获取低价
+        // 距离 ≥ 50km 视为长途，与 calcStepPrice 中程/远程分界一致
+        int expectedTripType = (distMeters >= 50000) ? 1 : 0;
+        if (tripType != expectedTripType) {
+            if (request.getTripType() != null) {
+                log.warn("tripType 与实际距离不符：前端传入={}, 实际距离={}m, 已纠正为={}",
+                        tripType, distMeters, expectedTripType);
+            }
+            tripType = expectedTripType;
+        }
 
         // 根据行程类型推荐车型
         Long carTypeId = request.getCarTypeId();
@@ -50,10 +65,6 @@ public class PricingServiceImpl implements PricingService {
         if (carType == null || carType.getStatus() == 0) {
             throw new BusinessException(ErrorCode.ORDER_CAR_TYPE_INVALID);
         }
-
-        // 距离和时长
-        int distMeters = request.getDistance() != null ? request.getDistance() : 5000;
-        int durSeconds = request.getDuration() != null ? request.getDuration() : 600;
 
         // 计算阶梯价格
         PriceDetailVO detail = calcStepPrice(carType, distMeters, durSeconds);
