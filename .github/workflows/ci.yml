@@ -48,14 +48,25 @@ jobs:
 
       - name: Initialize database schema
         run: |
-          mysql -h 127.0.0.1 -u root -proot smart_travel < jiangnan-travel/src/main/resources/sql/schema.sql
-        continue-on-error: true
+          mysql -h 127.0.0.1 -u root -proot smart_travel < jiangnan-travel/src/main/resources/sql/init.sql
+          mysql -h 127.0.0.1 -u root -proot smart_travel < jiangnan-travel/src/main/resources/sql/seed_data.sql
+          mysql -h 127.0.0.1 -u root -proot smart_travel < jiangnan-travel/src/main/resources/sql/test_accounts.sql
+          mysql -h 127.0.0.1 -u root -proot smart_travel < jiangnan-travel/src/main/resources/sql/migration_optimize.sql
 
       - name: Build backend
         run: mvn -B -f jiangnan-travel/pom.xml clean compile
 
       - name: Run backend tests
         run: mvn -B -f jiangnan-travel/pom.xml test
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_NAME: smart_travel
+          DB_USER: root
+          DB_PASS: root
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+          JWT_SECRET: ci-test-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256
         continue-on-error: true
 
   frontend:
