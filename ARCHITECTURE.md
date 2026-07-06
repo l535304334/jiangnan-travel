@@ -908,6 +908,9 @@ management:
 | 脚本 | 用途 |
 |---|---|
 | `init.sql` | 完整建表（27 张）+ 管理员/车型/地标等种子数据 |
+| `migration_v1.1.sql` | 新增 `t_bill` 账单表 |
+| `migration_v1.2.sql` | `t_driver` 补 `last_active_time`、`rejection_count` 字段（司机运行时模型） |
+| `migration_state_machine.sql` | 新增 `t_order_event`、`t_payment_trace`；`t_payment` 补 `idempotent_key`/`retry_count`/`fail_reason` |
 | `migration_optimize.sql` | 补充 update_time 字段；新增 `t_notification`（有 Entity）与 `t_user_preferred_driver`（无 Entity，规划未落地）两张表；需求热点索引优化 |
 | `indexes.sql` | 订单高频查询联合索引优化 |
 | `seed_data.sql` | 长途车型种子数据（城际快车、长途大巴） |
@@ -915,7 +918,16 @@ management:
 | `fix_chinese_data.sql` | 修复中文乱码数据（城市地标、城市语录等） |
 | `fix_password.sql` | 重置用户/管理员密码 |
 
-### 12.6 CI/CD 配置
+**执行顺序**（CI 已按此顺序初始化）：
+`init.sql` → `seed_data.sql` → `test_accounts.sql` → `migration_v1.2.sql` → `migration_state_machine.sql` → `migration_optimize.sql`
+
+### 12.6 业务可配置项
+
+| 配置项 | 默认值 | 说明 |
+|---|---|---|
+| `payment.mock.success-rate` | `90` | 模拟支付成功率（0-100）。生产环境接入真实支付 SDK 后可设为 100；测试环境建议设为 100 以消除随机失败 |
+
+### 12.7 CI/CD 配置
 
 | 文件 | 说明 |
 |---|---|
@@ -927,13 +939,26 @@ management:
 
 ## 十三、测试
 
-当前有 3 个测试文件：
+当前有 10 个测试类，81 个测试用例（全部通过）：
 
-| 文件 | 测试内容 |
-|---|---|
-| `UserServiceTest.java` | 发送验证码 → 注册 → 重复注册异常 → 验证码登录 → 获取个人信息 |
-| `OrderServiceTest.java` | 发送验证码 → 注册 → 创建订单 → 列表查询 → 订单详情 → 取消订单 → 行程分享 → 重复取消异常 |
-| `DriverServiceTest.java` | 用户注册 → 司机注册 → 未审核登录异常 → 审核通过 → 司机登录 → 个人信息 → 状态与位置更新 → 收入统计 → 线上数量统计 → 重复注册异常 |
+| 文件 | 用例数 | 测试内容 |
+|---|---|---|
+| `UserServiceTest.java` | 5 | 发送验证码 → 注册 → 重复注册异常 → 验证码登录 → 获取个人信息 |
+| `OrderServiceTest.java` | 8 | 注册 → 创建订单 → 列表查询 → 订单详情 → 取消订单 → 行程分享 → 重复取消异常 |
+| `DriverServiceTest.java` | 10 | 用户注册 → 司机注册 → 未审核登录异常 → 审核通过 → 司机登录 → 个人信息 → 状态与位置更新 → 收入统计 → 线上数量统计 → 重复注册异常 |
+| `OrderStateMachineTest.java` | 18 | 订单状态机纯单元测试（合法/非法流转、风控拦截、退款、取消等） |
+| `CampaignServiceTest.java` | 6 | 活动创建/查询/状态流转 |
+| `CouponServiceTest.java` | 6 | 优惠券创建/领取/使用/过期 |
+| `InvoiceServiceTest.java` | 7 | 发票开具/查询/重复开票/取消 |
+| `PaymentServiceTest.java` | 7 | 支付/回调/查询/列表/行程中订单支付报错（配置 `payment.mock.success-rate=100` 消除随机失败） |
+| `UserAddressServiceTest.java` | 6 | 用户地址 CRUD |
+| `VipServiceTest.java` | 8 | VIP 等级创建/列表/购买/折扣/续费 |
+
+**测试约定：**
+- 集成测试使用 `@SpringBootTest(properties = "jiangnan.websocket.enabled=false")` 禁用 WebSocket
+- 涉及随机性的测试需通过配置项控制（如 `payment.mock.success-rate=100`）
+- 测试数据使用 `System.currentTimeMillis()` 生成唯一标识，避免跨运行碰撞
+- 测试类按 `@Order` 注解顺序执行，共享 static 变量传递状态
 
 ---
 
