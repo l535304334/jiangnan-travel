@@ -40,7 +40,7 @@ class VipServiceTest {
 
     private static final String SMS_PREFIX = "sms:code:";
     private static final String PHONE = String.format("13688%06d", System.currentTimeMillis() % 1_000_000);
-    private static final int VIP_LEVEL = (int)(System.currentTimeMillis() % 100 + 10);
+    private static final int VIP_LEVEL = (int)(System.currentTimeMillis() % 9000 + 1000);
     private static Long userId;
     private static Long levelId;
     private static String testCode;
@@ -55,6 +55,10 @@ class VipServiceTest {
     @Order(1)
     @DisplayName("创建测试VIP等级")
     void testCreateVipLevel() {
+        // 防御性清理：若同 level 残留记录则先删除（避免 UNIQUE 约束冲突）
+        vipLevelMapper.delete(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<VipLevel>()
+                .eq(VipLevel::getLevel, VIP_LEVEL));
+
         VipLevel level = new VipLevel();
         level.setName("黄金会员");
         level.setLevel(VIP_LEVEL);

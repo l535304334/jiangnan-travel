@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -45,6 +46,10 @@ public class PaymentServiceImpl implements PaymentService {
     private static final String PAY_IDEMPOTENT_PREFIX = "pay:idempotent:";
     /** 最大重试次数 */
     private static final int MAX_RETRY = 3;
+
+    /** 模拟支付成功率（0-100），默认 90%；测试环境可配置为 100 以消除随机失败 */
+    @Value("${payment.mock.success-rate:90}")
+    private int mockSuccessRate;
 
     @Override
     public PaymentVO pay(Long orderId, Long userId, String payMethod, String idempotentKey) {
@@ -117,7 +122,7 @@ public class PaymentServiceImpl implements PaymentService {
                 long startMs = System.currentTimeMillis();
                 String payNo = "P" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                         + String.format("%04d", new Random().nextInt(10000));
-                boolean paySuccess = new Random().nextInt(100) < 90; // 90% 模拟成功率
+                boolean paySuccess = new Random().nextInt(100) < mockSuccessRate; // 可配置的模拟成功率
 
                 if (!paySuccess) {
                     int costMs = (int) (System.currentTimeMillis() - startMs);

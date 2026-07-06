@@ -25,7 +25,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(properties = "jiangnan.websocket.enabled=false")
+@SpringBootTest(properties = {"jiangnan.websocket.enabled=false", "payment.mock.success-rate=100"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PaymentServiceTest {
 
@@ -146,9 +146,9 @@ class PaymentServiceTest {
 
     @Test
     @Order(7)
-    @DisplayName("未完成订单支付应报错")
+    @DisplayName("行程中订单支付应报错")
     void testPayUncompletedOrder() {
-        // Create a new order with status=0
+        // 创建订单（status=CREATED）
         CreateOrderRequest req = new CreateOrderRequest();
         req.setStartAddress("江南大学东门");
         req.setStartLat(new BigDecimal("31.2304"));
@@ -161,7 +161,13 @@ class PaymentServiceTest {
         req.setCarTypeId(1L);
         OrderVO vo = orderService.create(req, userId);
 
-        // Try to pay uncompleted order
+        // 把订单状态改为 IN_PROGRESS（行程中）— 此状态不允许支付
+        com.jiangnan.travel.entity.Order orderEntity = orderMapper.selectById(vo.getId());
+        assertNotNull(orderEntity);
+        orderEntity.setStatus(com.jiangnan.travel.enums.OrderStatus.IN_PROGRESS.getCode());
+        orderMapper.updateById(orderEntity);
+
+        // 行程中订单支付应报错
         assertThrows(Exception.class,
                 () -> paymentService.pay(vo.getId(), userId, "alipay", null));
     }
