@@ -56,16 +56,17 @@ cd jiangnan-travel-web && npm run dev
 
 ## 环境变量
 
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `SPRING_PROFILES_ACTIVE` | `prod` | Spring Profile |
-| `DB_HOST` | `localhost` | 数据库地址 |
-| `DB_PORT` | `3306` | 数据库端口 |
-| `DB_NAME` | `smart_travel` | 数据库名 |
-| `DB_USER` | `root` | 数据库用户 |
-| `DB_PASS` | `Lai20050802@` | 数据库密码 |
-| `REDIS_HOST` | `localhost` | Redis 地址 |
-| `REDIS_PORT` | `6379` | Redis 端口 |
+> 所有敏感配置通过 `deploy/.env` 文件注入（参考 `.env.example`），**禁止在 docker-compose.yml 或文档中硬编码真实密码/API Key**。
+
+| 变量 | 说明 |
+|------|------|
+| `SPRING_PROFILES_ACTIVE` | Spring Profile（默认 `prod`） |
+| `MYSQL_ROOT_PASSWORD` | MySQL root 密码（从 .env 读取） |
+| `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASS` | 数据库连接参数 |
+| `REDIS_HOST` / `REDIS_PORT` | Redis 连接参数 |
+| `JWT_SECRET` | JWT 签名密钥（≥256 位） |
+| `DEEPSEEK_API_KEY` | DeepSeek AI API Key |
+| `AMAP_WEB_API_KEY` / `AMAP_JS_API_KEY` / `AMAP_SECURITY_CODE` | 高德地图配置 |
 
 ## 技术栈
 

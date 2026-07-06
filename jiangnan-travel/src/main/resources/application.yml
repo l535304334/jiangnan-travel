@@ -7,9 +7,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/smart_travel?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: root
-    password: Lai20050802@
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:smart_travel}?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: ${DB_PASS:}
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -76,7 +76,7 @@ knife4j:
 
 # JWT 配置
 jwt:
-  secret: ${JWT_SECRET:jiangnan-travel-jwt-secret-key-2024-must-be-at-least-256-bits-long}
+  secret: ${JWT_SECRET:}
   expiration: 86400000  # 24小时
 
 # DeepSeek AI 配置
@@ -90,7 +90,7 @@ amap:
   web-api-key: ${AMAP_WEB_API_KEY:}
   base-url: https://restapi.amap.com/v3/direction/driving
   js-api-key: ${AMAP_JS_API_KEY:}
-  security-code: ${AMAP_SECURITY_CODE:01646b6ce6b541c2057afc03bb2ea17a}
+  security-code: ${AMAP_SECURITY_CODE:}
 
 # 日志
 logging:

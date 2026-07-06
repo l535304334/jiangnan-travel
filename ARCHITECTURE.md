@@ -544,7 +544,7 @@ controller → dto → service → mapper → entity
 |---|---|
 | 算法 | HMAC-SHA256（jjwt 0.12.5） |
 | 有效期 | 86400000ms（24 小时） |
-| 密钥 | `jiangnan-travel-jwt-secret-key-2024-must-be-at-least-256-bits-long`（≥256 位） |
+| 密钥 | 通过环境变量 `JWT_SECRET` 注入（≥256 位，禁止硬编码） |
 | Token 内容 | sub=userId, claim("phone")=phone, claim("role")=ROLE |
 | 密码加密 | BCryptPasswordEncoder |
 

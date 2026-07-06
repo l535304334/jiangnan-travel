@@ -11,6 +11,13 @@ const __dirname = dirname(__filename)
 
 const CLEANUP_SQL = join(__dirname, 'cleanup_test_data.sql')
 
+// 数据库连接配置 — 通过环境变量 DB_PASS 注入，禁止硬编码
+const DB_HOST = process.env.DB_HOST || 'localhost'
+const DB_PORT = process.env.DB_PORT || '3306'
+const DB_USER = process.env.DB_USER || 'root'
+const DB_PASS = process.env.DB_PASS || ''
+const DB_NAME = process.env.DB_NAME || 'smart_travel'
+
 const args = process.argv.slice(2)
 const skipSecurity = args.includes('--skip-security')
 const cleanup = args.includes('--cleanup')
@@ -114,7 +121,7 @@ async function main() {
   if (existsSync(CLEANUP_SQL)) {
     try {
       const sql = readFileSync(CLEANUP_SQL, 'utf8')
-      const mysql = spawn('mysql', ['-h', 'localhost', '-P', '3306', '-u', 'root', '-pLai20050802@', 'smart_travel'], {
+      const mysql = spawn('mysql', ['-h', DB_HOST, '-P', DB_PORT, '-u', DB_USER, `-p${DB_PASS}`, DB_NAME], {
         stdio: ['pipe', 'ignore', 'ignore']
       })
       mysql.stdin.write(sql)
