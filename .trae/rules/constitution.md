@@ -12,6 +12,11 @@
 | **最高** (P0) | **AGENTS.md** | `./AGENTS.md` | AI 代理总入口 — 核心原则、默认行为、文件读取清单、Skill/MCP 调用原则、质量门禁 |
 | **P0** | **EXECUTION_MODE.md** | `./EXECUTION_MODE.md` | 企业级执行模式 — 启动流程、Task 推进规则、文档维护、开发纪律、停止条件、汇报规范 |
 | **P1** | **PROJECT_RULES.md** | `./PROJECT_RULES.md` | 编码规范 — 包结构、Controller/Service/Mapper/DTO/VO/Result/异常/日志/Git/AI 规范 |
+| **P1** | **privacy-and-security.md** | `./.trae/rules/privacy-and-security.md` | 隐私保护 + 安全规范 — 个人隐私不上云端、密钥管理、OWASP 防护、Spring Security 要点 |
+| **P1** | **coding-standards.md** | `./.trae/rules/coding-standards.md` | 编码规范 — Java/Spring Boot 后端规范 + Vue 3 前端规范 + 命名/包结构/代码质量 |
+| **P1** | **testing-standards.md** | `./.trae/rules/testing-standards.md` | 测试规范 — 80% 覆盖率最低要求、TDD 工作流、AAA 模式、Playwright E2E |
+| **P1** | **git-safety.md** | `./.trae/rules/git-safety.md` | Git 安全操作 — Commit 格式、破坏性操作防护、分支策略、提交前检查 |
+| **P1** | **environment-rules.md** | `./.trae/rules/environment-rules.md` | 环境维护原则 — 最小修改、检查点机制、会话管理、禁止行为 |
 | **P2** | **ARCHITECTURE.md** | `./ARCHITECTURE.md` | 架构文档（唯一） — 数据库 28 张表、22 个 Controller、97 个 API 端点、安全/缓存/WebSocket 架构 |
 | **P3** | **AI_WORKFLOW.md** | `./AI_WORKFLOW.md` | Skill + MCP 工作流 — 8 阶段流程、每阶段调用哪个 Skill 和 MCP |
 
@@ -22,7 +27,11 @@
 当文件之间存在冲突时，按以下优先级裁决：
 
 ```
-AGENTS.md (P0) == EXECUTION_MODE.md (P0) > PROJECT_RULES.md (P1) > ARCHITECTURE.md (P2) > AI_WORKFLOW.md (P3)
+AGENTS.md (P0) == EXECUTION_MODE.md (P0)
+  > PROJECT_RULES.md == privacy-and-security.md == coding-standards.md
+    == testing-standards.md == git-safety.md == environment-rules.md (P1)
+  > ARCHITECTURE.md (P2)
+  > AI_WORKFLOW.md (P3)
 ```
 
 具体规则：
@@ -58,7 +67,11 @@ AGENTS.md (P0) == EXECUTION_MODE.md (P0) > PROJECT_RULES.md (P1) > ARCHITECTURE.
 | 新增前端页面或路由 | `ARCHITECTURE.md`（第九章前端架构） |
 | 新增 Maven/npm 依赖 | `ARCHITECTURE.md`（第八章或第九章） |
 | 新增外部服务集成 | `ARCHITECTURE.md`（第十二章配置清单） |
-| 编码规范无法覆盖的新场景 | `PROJECT_RULES.md` |
+| 编码规范无法覆盖的新场景 | `PROJECT_RULES.md` 或 `coding-standards.md` |
+| 新增安全策略或发现安全漏洞 | `privacy-and-security.md` |
+| 测试策略调整或覆盖率目标变更 | `testing-standards.md` |
+| Git 工作流或分支策略变更 | `git-safety.md` |
+| 环境配置或开发原则调整 | `environment-rules.md` |
 | 工作流需要调整 | `AI_WORKFLOW.md` |
 | 执行模式需要调整 | `EXECUTION_MODE.md` 或 `AGENTS.md` |
 

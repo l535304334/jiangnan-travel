@@ -39,10 +39,10 @@
 
 ---
 
-## 核心工作流（8 阶段）
+## 核心工作流（9 阶段）
 
 ```
-需求分析 → Spec → 用户确认 → Task 拆分 → 逐个 Task(测试→编码→Review) → 文档 → Git 提交
+需求分析 → Spec → 用户确认 → Task 拆分 → 逐个 Task(测试→编码→Review→验证) → 文档 → Git 提交
 ```
 
 | 阶段 | 使用的 Skill | 调用的 MCP |
@@ -51,10 +51,11 @@
 | ② 编写 Spec | `spec-driven-development` | MySQL（确认表结构） |
 | ③ Task 拆分 | `planning-and-task-breakdown` | — |
 | ④ 数据库设计 | `database-design` | MySQL（describe_table, inspect_schema） |
-| ⑤ API 设计 | `rest-api-design` | Sequential Thinking（可选） |
-| ⑥ 增量开发 | `test-driven-development` + `java-architect` / `web-dev` | MySQL / Playwright |
-| ⑦ Code Review | `code-review-and-quality` | Git（git_diff） |
-| ⑧ 文档 + 提交 | `documentation-and-adrs` + `git-workflow-and-versioning` | Git（全流程） |
+| ⑤ API 设计 | `rest-api-design` + `error-handling` | Sequential Thinking（可选） |
+| ⑥ 增量开发 | `test-driven-development` + `java-architect` / `vue-frontend` | MySQL / Playwright |
+| ⑦ 验证 | `springboot-verification` + `e2e-testing` | MySQL / Playwright |
+| ⑧ Code Review | `code-review-and-quality` | Git（git_diff） |
+| ⑨ 文档 + 提交 | `documentation-and-adrs` + `git-workflow-and-versioning` | Git（全流程） |
 
 ---
 
@@ -67,6 +68,33 @@
 - ❌ 需求不明确时猜测实现
 - ❌ 生成 TODO / 占位符代码
 - ❌ 跳过测试
+
+---
+
+## 项目规则文件（`.trae/rules/`）
+
+以下规则文件在每次开发任务时自动生效，无需手动加载：
+
+| 规则文件 | 内容 |
+|---------|------|
+| `constitution.md` | 项目宪法总纲（本文件遵循的上级规则） |
+| `privacy-and-security.md` | 个人隐私保护、密钥管理、安全编码规范 |
+| `coding-standards.md` | Java 后端 + Vue 前端编码规范 |
+| `testing-standards.md` | 测试覆盖率要求、TDD 工作流 |
+| `git-safety.md` | Git 安全操作、Commit 格式、分支保护 |
+| `environment-rules.md` | 环境维护原则、最小修改原则 |
+
+## 可用 Skills（新增）
+
+除原有 Skills 外，本项目新增以下专用 Skills：
+
+| Skill | 用途 |
+|-------|------|
+| `vue-frontend` | Vue 3 + Element Plus + Pinia 前端开发（41 个页面） |
+| `springboot-verification` | 后端改动后验证流程（编译→测试→启动→API） |
+| `e2e-testing` | Playwright E2E 测试（20 个测试脚本） |
+| `error-handling` | 统一异常处理、错误码设计 |
+| `ponytail` | YAGNI 极简模式 — 标准库优先、最小代码、禁止过度设计 |
 
 ---
 
