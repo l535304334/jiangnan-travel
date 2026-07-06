@@ -249,10 +249,10 @@ public class OrderServiceImpl implements OrderService {
         guardTransition(order, OrderStatus.CANCELLED);
         checkRiskR2(userId);
 
-        // 已接单订单取消后恢复司机在线状态
-        if (order.getStatus() == OrderStatus.ASSIGNED.getCode() && order.getDriverId() != null) {
+        // 已接单订单取消后恢复司机在线状态（ASSIGNED 和 ARRIVED 状态均有司机分配）
+        if (order.getDriverId() != null) {
             Driver driver = driverMapper.selectById(order.getDriverId());
-            if (driver != null) {
+            if (driver != null && driver.getStatus() == 2) {
                 driver.setStatus(1);
                 driverMapper.updateById(driver);
             }
