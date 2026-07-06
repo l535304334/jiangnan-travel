@@ -5,6 +5,7 @@ import com.jiangnan.travel.entity.Order;
 import com.jiangnan.travel.service.DriverContext;
 import com.jiangnan.travel.service.ScoringEngine;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * ponytail: in-memory ConcurrentHashMap; persist to DB if cross-restart required.
  */
 @Slf4j
+@Primary
 @Component("dynamicScoringEngine")
 public class DynamicScoringEngine implements ScoringEngine {
 

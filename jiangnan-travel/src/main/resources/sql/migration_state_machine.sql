@@ -45,14 +45,16 @@ CREATE TABLE t_payment_trace (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='支付追踪日志';
 
 -- 3. t_payment 补充字段（幂等键已存在于 entity 中但表中缺）
-ALTER TABLE t_payment
-    ADD COLUMN IF NOT EXISTS idempotent_key VARCHAR(128) DEFAULT '' COMMENT '幂等键' AFTER pay_no,
-    ADD COLUMN IF NOT EXISTS retry_count    TINYINT      DEFAULT 0  COMMENT '重试次数' AFTER status,
-    ADD COLUMN IF NOT EXISTS fail_reason    VARCHAR(500) DEFAULT '' COMMENT '失败原因' AFTER retry_count;
+-- MySQL 8.0 不支持 ADD COLUMN IF NOT EXISTS，拆分为单独 ALTER 语句，用 --force 容错执行
+ALTER TABLE t_payment ADD COLUMN idempotent_key VARCHAR(128) DEFAULT '' COMMENT '幂等键' AFTER pay_no;
+ALTER TABLE t_payment ADD COLUMN retry_count    TINYINT      DEFAULT 0  COMMENT '重试次数' AFTER status;
+ALTER TABLE t_payment ADD COLUMN fail_reason    VARCHAR(500) DEFAULT '' COMMENT '失败原因' AFTER retry_count;
 
--- 注: MySQL 8.0 不支持 ADD COLUMN IF NOT EXISTS。
--- 如果字段已存在会报错，可手动逐条执行或改用存储过程判断。
--- 简化方案：直接执行，若字段已存在忽略错误继续。
+-- 3.1 t_order_event / t_payment_trace 补充 BaseEntity 所需的 deleted / update_time 字段
+ALTER TABLE t_order_event ADD COLUMN deleted     TINYINT    DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER event_time;
+ALTER TABLE t_order_event ADD COLUMN update_time DATETIME   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间' AFTER create_time;
+ALTER TABLE t_payment_trace ADD COLUMN deleted     TINYINT    DEFAULT 0 COMMENT '逻辑删除 0未删 1已删' AFTER create_time;
+ALTER TABLE t_payment_trace ADD COLUMN update_time DATETIME   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间' AFTER deleted;
 
 -- ============================================================
 -- 回滚脚本（如需撤销）

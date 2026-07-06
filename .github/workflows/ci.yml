@@ -51,6 +51,8 @@ jobs:
           mysql -h 127.0.0.1 -u root -proot smart_travel < jiangnan-travel/src/main/resources/sql/init.sql
           mysql -h 127.0.0.1 -u root -proot smart_travel < jiangnan-travel/src/main/resources/sql/seed_data.sql
           mysql -h 127.0.0.1 -u root -proot smart_travel < jiangnan-travel/src/main/resources/sql/test_accounts.sql
+          mysql -h 127.0.0.1 -u root -proot smart_travel < jiangnan-travel/src/main/resources/sql/migration_v1.2.sql
+          mysql -h 127.0.0.1 -u root -proot smart_travel < jiangnan-travel/src/main/resources/sql/migration_state_machine.sql
           mysql -h 127.0.0.1 -u root -proot smart_travel < jiangnan-travel/src/main/resources/sql/migration_optimize.sql
 
       - name: Build backend
