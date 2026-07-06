@@ -86,6 +86,14 @@
 | L-03 | ✅ 已修复 | `PricingServiceImpl.estimate` 根据实际距离（≥50km 为长途）校验并纠正前端传入的 `tripType`，防止用户篡改获取低价。显式传入且不符时记录 warn 日志，未传入时静默纠正。 |
 | L-04 | ✅ 已确认修复 | `UserServiceImpl.passwordLogin` 已实现暴力破解防护：5 次失败后锁定 15 分钟（Redis 计数器 `login:attempt:{phone}`），登录成功清除计数。 |
 
+### RC 第 10 轮（2026-07-07）
+
+| ID | 状态 | 修复说明 |
+|---|---|---|
+| B-10 | ✅ 已确认无需修复 | 当前路径为 `@RequestMapping("/api")` + `@GetMapping("/ai/hotspots")` = `/api/ai/hotspots`（单层 api），前端 `request.js` baseURL 为 `/api`，路径匹配正确。原描述的双 `/api/api/` 前缀不存在。 |
+| B-11 | ✅ 已确认修复 | `migration_optimize.sql` 第 153-156 行已补 `t_user_address.update_time` 字段，CI 已包含此 migration。 |
+| B-02 | ✅ 部分修复 | `router/index.js` 的 `clearAllAuth()` 函数漏清 `driverInfo` 已修复（添加 `localStorage.removeItem('driverInfo')`）。双 key 设计（token/adminToken/driverToken）为有意的多角色路由守卫支持，不重构。原描述的"与 AdminLogin.vue 逻辑重复"已过时（AdminLogin.vue 不存在，管理员登录集成在 Login.vue）。 |
+
 ### RC 第 8 轮（2026-07-07）
 
 | ID | 状态 | 修复说明 |
@@ -113,10 +121,7 @@
 |---|---|---|
 | B-06 | P1 | `TripTracking.vue` WebSocket 未实际连接，司机位置不更新 |
 | L-05 | P1 | WebSocket 无限流，仅 HTTP 层有限流 |
-| B-02 | P1 | `Login.vue` 与 `AdminLogin.vue` 登录态管理不一致 |
 | B-07~B-09 | P1 | 司机端首页/收入/个人信息硬编码假数据 |
-| B-10 | P1 | `AIDataController` 路径不 RESTful（/api/api/ai/hotspots） |
-| B-11 | P1 | `t_user_address` DDL 无 update_time |
 | B-12~B-15 | P2 | 密码强度、幂等键过期、前端密钥暴露、多余依赖 |
 | L-01 | P2 | `/api/ai/**` 公开访问，未登录可调用消耗 Token |
 | S-04 | 中 | `CorsConfig` 允许所有 origin |

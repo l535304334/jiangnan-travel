@@ -25,6 +25,7 @@ function clearAllAuth() {
   localStorage.removeItem('adminToken')
   localStorage.removeItem('adminInfo')
   localStorage.removeItem('driverToken')
+  localStorage.removeItem('driverInfo')
 }
 
 const routes = [
