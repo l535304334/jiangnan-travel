@@ -63,6 +63,12 @@ onMounted(() => {
   }
   window._AMapSecurityConfig = { securityJsCode: securityCode }
   if (window.AMap) { tryInit(); return }
+  // P-03 修复：全局加载标志，防止多实例重复注入 script
+  if (window._AMapLoading) {
+    intervalId = setInterval(tryInit, 500)
+    return
+  }
+  window._AMapLoading = true
   const script = document.createElement('script')
   script.src = `https://webapi.amap.com/maps?v=2.0&key=${amapKey}&callback=amapOnLoad`
   window.amapOnLoad = () => { tryInit(); if (intervalId) clearInterval(intervalId) }

@@ -138,13 +138,14 @@ public class AiChatServiceImpl implements AiChatService {
 
     @Override
     public List<String> getSessions(Long userId) {
-        // 查询该用户的去重 sessionId 列表，按最后消息时间倒序
+        // 查询该用户的去重 sessionId 列表，按最后消息时间倒序，限制 50 条
         List<AiChatLog> logs = aiChatLogMapper.selectList(
                 new LambdaQueryWrapper<AiChatLog>()
                         .eq(userId != null, AiChatLog::getUserId, userId)
                         .select(AiChatLog::getSessionId)
                         .groupBy(AiChatLog::getSessionId)
-                        .orderByDesc(AiChatLog::getCreateTime));
+                        .orderByDesc(AiChatLog::getCreateTime)
+                        .last("LIMIT 50"));
         return logs.stream()
                 .map(AiChatLog::getSessionId)
                 .distinct()

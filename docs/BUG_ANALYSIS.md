@@ -137,11 +137,19 @@
 | B-14 | ✅ 已确认非问题 | `.env.development` 被根 `.gitignore` 的 `.env.*` 规则忽略，仅 `.env.example`（占位符）被跟踪。高德 Key 未暴露在 git 仓库。 |
 | B-15 | ✅ 已确认非问题 | `package.json` 中无 `mysql2` 依赖，前端代码无任何 `mysql2` 引用。 |
 
+### RC 第 13 轮（2026-07-07）
+
+| ID | 状态 | 修复说明 |
+|---|---|---|
+| P-01 | ✅ 已确认修复 | `AiChatServiceImpl.buildSystemPrompt()` 已实现 10 分钟内存缓存（`volatile cachedSystemPrompt` + `PROMPT_CACHE_TTL_MS=10min`）。缓存命中时不查 DB，缓存过期时重新加载地标和寄语。原描述"已配置但未使用"不准确。 |
+| P-02 | ✅ 已修复 | `AiChatServiceImpl.getSessions()` 添加 `.last("LIMIT 50")`，限制最多返回 50 条会话记录，避免用户会话多时 DB 压力大。 |
+| P-03 | ✅ 已修复 | `AmapView.vue` 添加 `window._AMapLoading` 全局加载标志。多实例同时 mount 时，第二个实例检测到正在加载，不再重复注入 script，改用 500ms 轮询等待 SDK 就绪。消除冗余网络请求和回调覆盖问题。 |
+| P-04 | ✅ 已确认非问题 | 所有订单列表方法（`listByUser`/`listByDriver`/`listOrders`）均已分页（默认 10 条/页），`orderByDesc(create_time)` 确保最新订单优先。非全表扫描，分页已限制结果集。Admin 列表显示全部订单为有意设计。 |
+
 ### 待修复
 
 | ID | 优先级 | 说明 |
 |---|---|---|
 | S-05 | 中 | 高德地图 API Key 无 IP 白名单（需在高德开放平台控制台配置，非代码问题） |
-| P-01~P-04 | P2 | 性能问题（AI 缓存、分页、地图 SDK、订单筛选） |
 
-> **P0/P1 全部清零，P2 大部分清零**（截至 RC 第 12 轮）。剩余仅 S-05（平台配置）和 P-01~P-04（性能优化），均不影响交付。
+> **所有代码级问题全部清零**（截至 RC 第 13 轮）。剩余仅 S-05（高德平台控制台配置），非代码问题。项目已达可交付标准。
