@@ -18,6 +18,7 @@ import com.jiangnan.travel.vo.OrderVO;
 import com.jiangnan.travel.websocket.OrderTrackingServer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
@@ -56,6 +57,8 @@ public class OrderServiceImpl implements OrderService {
     private final TransactionTemplate transactionTemplate;
 
     private static final String IDEMPOTENT_PREFIX = "order:idempotent:";
+    private static final String IDEMPOTENT_RESULT_PREFIX = "order:idempotent:result:";
+    private static final long IDEMPOTENT_TTL_HOURS = 24;
     private static final String ACCEPT_LOCK_PREFIX = "order:lock:accept:";
     private static final String PAY_LOCK_PREFIX = "order:lock:pay:";
 
@@ -103,6 +106,16 @@ public class OrderServiceImpl implements OrderService {
         }
 
         try {
+            // 1.1 幂等结果检查：若同 key 已创建过订单，直接返回已有订单
+            RBucket<Long> idempotentBucket = redissonClient.getBucket(IDEMPOTENT_RESULT_PREFIX + idempotentKey);
+            Long existingOrderId = idempotentBucket.get();
+            if (existingOrderId != null) {
+                Order existingOrder = orderMapper.selectById(existingOrderId);
+                if (existingOrder != null) {
+                    return toVO(existingOrder);
+                }
+            }
+
             // 2. 风控R4：深夜跨城安全提示
             checkRiskR4(userId, request);
 
@@ -162,6 +175,9 @@ public class OrderServiceImpl implements OrderService {
             order.setTollFee(BigDecimal.ZERO);
             order.setStatus(0);
             orderMapper.insert(order);
+
+            // 6.1 记录幂等结果，24h 内同 key 重试直接返回该订单
+            idempotentBucket.set(order.getId(), IDEMPOTENT_TTL_HOURS, TimeUnit.HOURS);
 
             // 7. 标记优惠券已使用
             if (request.getCouponId() != null && couponDiscount.compareTo(BigDecimal.ZERO) > 0) {

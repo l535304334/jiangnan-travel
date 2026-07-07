@@ -126,14 +126,22 @@
 | S-03 | ✅ 已修复 | 数据库密码改为 `${DB_PASS:}` 环境变量注入，无默认值 fail-fast。 |
 | S-06 | ✅ 已修复 | DeepSeek API Key 改为 `${DEEPSEEK_API_KEY:}` 环境变量注入。 |
 
+### RC 第 12 轮（2026-07-07）
+
+| ID | 状态 | 修复说明 |
+|---|---|---|
+| B-12 | ✅ 已修复 | `ChangePasswordRequest.newPassword` 添加 `@Size(min=6, max=20)` 注解，与 `RegisterRequest.password` 惯例一致。Service 层无补充验证，DTO 层为唯一校验点。 |
+| B-13 | ✅ 已修复 | `OrderServiceImpl.create` 添加 Redis 持久化幂等检查。使用 `RBucket<Long>` 存储 `order:idempotent:result:{key}` → orderId，TTL 24h。锁内先检查幂等结果，命中则直接返回已有订单；订单插入后写入幂等结果。锁仅做并发控制（10s），Redis bucket 做长期幂等（24h）。 |
+| L-01 | ✅ 已确认非问题 | `/api/ai/**` 未出现在任何 `permitAll()` 规则中，落到 `.anyRequest().authenticated()` 需要认证。`AiChatController`/`AiPredictionController` 所有端点都使用 `Authentication` 参数提取 userId。RateLimitConfig 全局 60 req/min 限流覆盖 `/api/**`。原描述"未登录可调用"不准确。 |
+| S-04 | ✅ 已确认非问题 | 当前无 `CorsConfig` 类，无 `allowedOrigins("*")` 代码。SecurityConfig 的 `.cors(cors -> {})` 在无 `CorsConfigurationSource` bean 时默认拒绝跨域请求。开发环境用 Vite proxy（`/api` → `:8080`），生产用 Nginx 反向代理，均为同源，CORS 不需要。`application.yml` 的 `web.cors` 配置为 dead code（无类消费），但不影响功能。 |
+| B-14 | ✅ 已确认非问题 | `.env.development` 被根 `.gitignore` 的 `.env.*` 规则忽略，仅 `.env.example`（占位符）被跟踪。高德 Key 未暴露在 git 仓库。 |
+| B-15 | ✅ 已确认非问题 | `package.json` 中无 `mysql2` 依赖，前端代码无任何 `mysql2` 引用。 |
+
 ### 待修复
 
 | ID | 优先级 | 说明 |
 |---|---|---|
-| B-12~B-15 | P2 | 密码强度、幂等键过期、前端密钥暴露、多余依赖 |
-| L-01 | P2 | `/api/ai/**` 公开访问，未登录可调用消耗 Token |
-| S-04 | 中 | `CorsConfig` 允许所有 origin |
-| S-05 | 中 | 高德地图 API Key 无 IP 白名单 |
+| S-05 | 中 | 高德地图 API Key 无 IP 白名单（需在高德开放平台控制台配置，非代码问题） |
 | P-01~P-04 | P2 | 性能问题（AI 缓存、分页、地图 SDK、订单筛选） |
 
-> **P0/P1 全部清零**（截至 RC 第 11 轮）。剩余问题均为 P2 及以下，不影响交付。
+> **P0/P1 全部清零，P2 大部分清零**（截至 RC 第 12 轮）。剩余仅 S-05（平台配置）和 P-01~P-04（性能优化），均不影响交付。
