@@ -186,15 +186,40 @@ Metrics（数据）→ Health（评分）→ Anomaly（检测），分别对应�
 
 ## 八、项目截图
 
-> 截图存放于 `docs/screenshots/` 目录，以下为各端核心页面预览位置。
+> 截图存放于 `docs/screenshots/` 目录，共 9 张核心页面截图。
 
-| 端 | 页面 | 截图文件 |
-|----|------|---------|
-| 乘客端 | 登录 / 下单 / 订单追踪 | `docs/screenshots/passenger-*.png` |
-| 司机端 | 接单 / 行程 / 收入 | `docs/screenshots/driver-*.png` |
-| 管理后台 | 大屏 / 订单管理 / 风控告警 | `docs/screenshots/admin-*.png` |
+### 8.1 乘客端（Passenger）
 
-> 截图将在部署后补充。
+| 页面 | 截图 | 说明 |
+|------|------|------|
+| 登录 | ![Passenger Login](docs/screenshots/01-passenger-login.png) | 三端登录选择（乘客/司机/管理员）+ 测试账号 |
+| 首页 | ![Passenger Home](docs/screenshots/02-passenger-home.png) | 用户信息、订单统计、常用功能入口 |
+| 下单 | ![Passenger Order Create](docs/screenshots/03-passenger-order-create.png) | 集成高德地图的选点下单页面 |
+| 订单列表 | ![Passenger Orders](docs/screenshots/09-passenger-orders.png) | 历史订单（全部/待接单/已接单/已完成/已取消） |
+
+### 8.2 司机端（Driver）
+
+| 页面 | 截图 | 说明 |
+|------|------|------|
+| 司机首页 | ![Driver Home](docs/screenshots/06-driver-home.png) | 在线时长/完成订单/今日收入 + 待接订单列表 |
+| 收入统计 | ![Driver Earnings](docs/screenshots/07-driver-earnings.png) | 今日/本周汇总 + 近期订单收益明细 |
+| 个人中心 | ![Driver Profile](docs/screenshots/08-driver-profile.png) | 司机信息、评分、车辆信息、审核状态 |
+
+### 8.3 管理后台（Admin）
+
+| 页面 | 截图 | 说明 |
+|------|------|------|
+| 数据大屏 | ![Admin Dashboard](docs/screenshots/04-admin-dashboard.png) | 总用户/今日订单/在线司机/风控告警 + 7 日趋势图 |
+| 订单监控 | ![Admin Orders](docs/screenshots/05-admin-orders.png) | 实时订单列表（按状态筛选 + 分页） |
+
+### 8.4 端到端流程示意
+
+```
+乘客下单 ──→ 平台派单 ──→ 司机接单 ──→ 开始行程 ──→ 完成订单 ──→ 平台监控
+   ↓           ↓           ↓           ↓           ↓           ↓
+ 03-下      05-订单     06-司机     (WebSocket   09-订单     04-大屏
+ 单页面      监控        首页       实时推送)    列表        实时数据
+```
 
 ---
 
