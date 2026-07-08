@@ -146,10 +146,23 @@
 | P-03 | ✅ 已修复 | `AmapView.vue` 添加 `window._AMapLoading` 全局加载标志。多实例同时 mount 时，第二个实例检测到正在加载，不再重复注入 script，改用 500ms 轮询等待 SDK 就绪。消除冗余网络请求和回调覆盖问题。 |
 | P-04 | ✅ 已确认非问题 | 所有订单列表方法（`listByUser`/`listByDriver`/`listOrders`）均已分页（默认 10 条/页），`orderByDesc(create_time)` 确保最新订单优先。非全表扫描，分页已限制结果集。Admin 列表显示全部订单为有意设计。 |
 
+### RC 第 14 轮（2026-07-08）— 最终验收
+
+| 事项 | 状态 | 决策说明 |
+|---|---|---|
+| Git author 信息 | ✅ 已评估，不处理（Accepted Risk） | Git author/committer 元数据（姓名 `赖睿轩`、邮箱 `535304334@qq.com`）属于正常的软件协作记录，不属于项目代码中的敏感凭据或隐私泄露风险。保留真实 commit 归属信息。 |
+| — | ✅ 决策记录 | 不执行 `git filter-branch`、`git filter-repo`、`rebase` 重写历史；不进行 `force push`；后续保持正常 Git 提交流程。 |
+| 个人信息脱敏 | ✅ 已完成 | README.md、项目开发总结报告.md、CHANGELOG.md、系统设计文档 v1.5 中的姓名/学校/实习单位（含"江南出行运输服务有限公司宁都分公司"）/本地路径/Git 用户邮箱全部替换为 `[已脱敏]` 或 `[项目根目录]`。 |
+| README.md 更新 | ✅ 已完成 | 测试数量更新（18→81）、新增 Docker 部署说明、新增第十章项目状态、文档索引补充 BUG_ANALYSIS.md。 |
+| GitHub 远程同步 | ✅ 已完成 | 本地与 origin/main 完全同步（commit `abcef92`）。 |
+| AI 工具配置提交 | ✅ 已完成 | .trae/rules/*.md（17 个）+ .trae/skills/（5 个）+ ai-workspace.yaml 已提交并推送。 |
+| dead config 清理 | ✅ 已完成 | application.yml 中 `spring.web.cors` 段落（无类消费）已移除。 |
+| CLAUDE.md 信息迁移 | ✅ 已完成 | 原 .claude/CLAUDE.md 项目专属信息已迁移到 AGENTS.md 第七章。 |
+
 ### 待修复
 
 | ID | 优先级 | 说明 |
 |---|---|---|
 | S-05 | 中 | 高德地图 API Key 无 IP 白名单（需在高德开放平台控制台配置，非代码问题） |
 
-> **所有代码级问题全部清零**（截至 RC 第 13 轮）。剩余仅 S-05（高德平台控制台配置），非代码问题。项目已达可交付标准。
+> **所有代码级问题全部清零**（截至 RC 第 14 轮最终验收）。剩余仅 S-05（高德平台控制台配置），非代码问题。项目正式进入 Release 状态。
