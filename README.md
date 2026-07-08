@@ -1,7 +1,7 @@
 # 江南出行智慧服务平台
 
-> 南昌大学软件工程 2307 班毕业实习项目 | 全栈开发 + 分布式调度系统设计
-> 时间：2026.7.6 - 2026.8.6 | 实习单位：江南出行运输服务有限公司宁都分公司
+> 软件工程专业毕业实习项目 | 全栈开发 + 分布式调度系统设计
+> 时间：2026.7.6 - 2026.8.6 | 实习单位：[已脱敏]
 
 ---
 
@@ -147,8 +147,17 @@ npm install && npm run dev
 
 ### 5. 运行测试
 ```bash
-cd jiangnan-travel && mvn test -Dtest="OrderStateMachineTest"  # 单元测试
-node tests/test-suite.mjs                                       # E2E 测试
+cd jiangnan-travel && mvn test                                    # 全部单元/集成测试（81 个）
+cd jiangnan-travel && mvn test -Dtest="OrderStateMachineTest"     # 单个测试类
+node tests/test-suite.mjs                                         # E2E 测试
+```
+
+### 6. Docker 部署
+```bash
+cd deploy
+docker-compose up -d              # 启动 MySQL + Redis + 后端 + 前端 + Nginx
+# 前端: http://localhost
+# 后端 API 文档: http://localhost/api/doc.html
 ```
 
 ---
@@ -186,6 +195,7 @@ Metrics（数据）→ Health（评分）→ Anomaly（检测），分别对应�
 | [AI 开发实践记录](docs/ai-development-log.md) | Vibe Coding 实践 + 人机协作比例 |
 | [架构文档](ARCHITECTURE.md) | 完整数据库、API、安全、缓存架构 |
 | [测试指南](tests/TEST_GUIDE.md) | 18 测试脚本使用说明 |
+| [Bug 分析与修复](docs/BUG_ANALYSIS.md) | RC 阶段问题跟踪与修复记录 |
 
 ---
 
@@ -199,4 +209,13 @@ Metrics（数据）→ Health（评分）→ Anomaly（检测），分别对应�
 
 ---
 
-> 单元测试：18 个，全部通过 ✅ | 压测：100 订单 × 20 司机，零重复分配 ✅
+## 十、项目状态
+
+| 维度 | 状态 |
+|------|------|
+| 单元/集成测试 | 81/81 全部通过 ✅ |
+| 压测 | 100 订单 × 20 司机，零重复分配 ✅ |
+| 安全审计 | P0/P1 问题全部清零，P2 已修复 ✅ |
+| RC 阶段 | 13 轮迭代完成，所有代码级问题清零 ✅ |
+| 凭据管理 | 全部外部化（环境变量），无硬编码 ✅ |
+| 文档同步 | 架构、API、测试、Bug 修复全程记录 ✅ |

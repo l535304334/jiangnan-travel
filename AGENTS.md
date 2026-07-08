@@ -20,13 +20,13 @@
 
 ### 1.2 默认进入执行模式
 
-**本项目遵循 [CLAUDE.md](./.claude/CLAUDE.md)（项目级）+ 全局 CLAUDE.md（20 Rules）定义的开发规范。**
+**本项目遵循 [constitution.md](./.trae/rules/constitution.md)（项目宪法）+ [.trae/rules/](./.trae/rules/) 规则集 + [.claude/CLAUDE.md](./.claude/CLAUDE.md)（通用编码规则）定义的开发规范。**
 
 - 收到"继续开发""开发 Task-NNN"等指令后，AI **自动执行**完整开发流程
 - 每个 Task 完成后，AI **自动输出开发报告**，等待用户确认后再继续
 - 除非用户明确要求退出，否则永久保持该模式
 
-> 详细执行流程、开发纪律、汇报规范 → 参见 `.claude/CLAUDE.md` 及全局 CLAUDE.md
+> 详细执行流程、开发纪律、汇报规范 → 参见 `constitution.md` 及 `.claude/CLAUDE.md`
 
 ---
 
@@ -75,7 +75,7 @@
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-> **详细流程**（启动流程、Task 推进、冲突处理）→ 参见 CLAUDE.md Rule 10（检查点）和 Rule 15（开发环境原则）
+> **详细流程**（启动流程、Task 推进、冲突处理）→ 参见 `constitution.md` 及 `.trae/rules/development-workflow.md`
 
 ---
 
@@ -108,7 +108,7 @@
 | **文档** | `documentation-and-adrs` | API 文档、ADR |
 | **Git** | `git-workflow-and-versioning` | 提交规范、分支策略 |
 
-> 详细 Skill 调用矩阵（含排除列表、触发条件、产出物）→ 参见 CLAUDE.md Section 三（Skill 自动绑定表）
+> 详细 Skill 调用矩阵（含排除列表、触发条件、产出物）→ 参见 `.trae/rules/development-workflow.md`
 
 ---
 
@@ -137,7 +137,7 @@
 | **Git 提交** | Git | 全流程工具 |
 | **调试** | MySQL + Playwright | 数据 + 页面联合调试 |
 
-> 详细 MCP 调用矩阵（含工具名、调用条件、限制说明）→ 参见 CLAUDE.md Section 五（MCP 工具自动使用表）
+> 详细 MCP 调用矩阵（含工具名、调用条件、限制说明）→ 参见 `AI_WORKFLOW.md`
 
 ---
 
@@ -164,7 +164,56 @@
 
 ---
 
-## 七、环境信息
+## 七、项目专属信息
+
+> 本章节由原 `.claude/CLAUDE.md`（项目级配置，2026-06-24 版）迁移而来，避免 sync-ai 工具覆盖丢失。
+
+### 7.1 技术栈自动识别
+
+| 层级 | 技术 | 自动绑定 |
+|------|------|---------|
+| 后端框架 | Spring Boot 3.2.6 / Java 17 | S8, S9, S10, S15 |
+| ORM | MyBatis-Plus 3.5.7 | S11 |
+| 数据库 | MySQL 8.0 | S6, S7, M3 |
+| 缓存 | Redis + Redisson 3.32.0 | — |
+| 前端 | Vue 3.4 + Vite 5 | S12, S13, S14 |
+| UI 库 | Element Plus 2.7 | — |
+| AI | DeepSeek API | S20 |
+| 地图 | 高德地图 | — |
+| 安全 | Spring Security + JWT | A4 |
+| 文档 | Knife4j (Swagger) | — |
+
+### 7.2 项目目录结构
+
+```
+软件工程2307班实习材料/
+├── jiangnan-travel/          # Spring Boot 后端
+│   └── src/main/java/com/jiangnan/travel/
+│       ├── controller/       # 22 个 Controller
+│       ├── service/          # 21 个 Service 接口
+│       ├── mapper/           # 29 个 Mapper
+│       ├── entity/           # 30 个 Entity
+│       └── config/           # 7 个 Config
+├── jiangnan-travel-web/      # Vue 3 前端
+│   └── src/
+│       ├── views/            # 41 个页面
+│       ├── api/              # 13 个 API 模块
+│       └── composables/      # 2 个 Composable
+├── tests/                    # 20 个 E2E 测试脚本
+└── deploy/                   # Docker + Nginx 部署
+```
+
+### 7.3 项目专属规则
+
+1. **后端改了 API** → 同步更新前端 `api/` 模块 + Knife4j 文档
+2. **数据库改了表** → 同步更新 `sql/init.sql` + Entity + Mapper
+3. **前端新增页面** → 在 `router/` 注册路由 + 三端鉴权守卫
+4. **任何改动** → 3 步以上的任务每步汇报（规则 #10）
+5. **实习材料（doc/docx）** → 只读，不修改
+
+---
+
+## 八、环境信息
 
 | 配置 | 值 |
 |---|---|
@@ -180,6 +229,6 @@
 ---
 
 > **文件体系：**  
-> `AGENTS.md`（入口）→ `.claude/CLAUDE.md`（项目规则）→ `ARCHITECTURE.md`（架构参考）→ `docs/`（设计文档+面试材料）  
+> `AGENTS.md`（入口+项目专属信息）→ `constitution.md`（项目宪法）→ `.trae/rules/`（规则集）→ `.claude/CLAUDE.md`（通用编码规则）→ `ARCHITECTURE.md`（架构参考）→ `docs/`（设计文档+面试材料）  
 > 优先级规则见 `constitution.md`。  
-> 生成时间：2026-06-24
+> 最后更新：2026-07-07（RC 第 14 轮 — 迁移原 CLAUDE.md 项目专属信息到本文件第七章）

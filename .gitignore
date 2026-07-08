@@ -54,3 +54,7 @@ tests/test-report-*.json
 # 实习日志、实习材料、含个人身份信息的文件仅入本地仓库，禁止推送到远程
 实习日志/
 实习材料/
+
+# ======= AI 工具产物（本地状态，不提交） =======
+.ai-backups/
+.ai-workspace-state.json
