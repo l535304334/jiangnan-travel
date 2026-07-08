@@ -1,0 +1,8 @@
+name: jiangnan-travel
+description: 江南出行智慧服务平台 — Spring Boot + Vue 3 + MySQL + Redis
+profiles: [personal, java, springboot, mysql, redis, vue, git, docker]
+platforms: [claude-code, trae]
+project_docs:
+  - ARCHITECTURE.md
+  - AGENTS.md
+  - docs/江南出行调度系统_系统设计文档_v1.5.md
