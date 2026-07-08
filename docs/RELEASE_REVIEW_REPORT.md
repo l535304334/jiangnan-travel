@@ -139,8 +139,7 @@
 | constitution.md | ✅ 已更新 | 项目宪法（5 个宪法文件清单 + 优先级规则） |
 | 系统设计文档 v1.5 | ✅ 完整 | 完整架构 + 复杂度分析 + 面试脚本 |
 | 项目开发总结报告.md | ✅ 已更新 | 开发历程 + 技术决策 + 完成度评估 |
-| BUG_ANALYSIS.md | ✅ 已更新 | 31 个问题跟踪 + 14 轮 RC 修复记录 |
-| RELEASE_REVIEW_REPORT.md | ✅ 本文件 | 最终 Release 验收报告 |
+| RELEASE_REVIEW_REPORT.md | ✅ 本文件 | 最终 Release 验收报告（含 31 个问题跟踪与 14 轮 RC 修复记录） |
 
 ### 5.2 AI 工具配置
 

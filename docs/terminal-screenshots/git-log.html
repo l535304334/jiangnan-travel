@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Git 提交历史</title>
+<style>
+  body { margin: 0; background: #0d1117; font-family: 'Consolas', 'Cascadia Code', 'Courier New', monospace; color: #c9d1d9; font-size: 13px; }
+  .titlebar { background: #1e2128; color: #8b949e; padding: 8px 14px; font-size: 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #30363d; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .term { padding: 16px 20px; }
+  .prompt { color: #58a6ff; }
+  .path { color: #7ee787; }
+  .hash { color: #d2a8ff; font-weight: bold; }
+  .type-feat { color: #a5d6ff; }
+  .type-fix { color: #ffa657; }
+  .type-docs { color: #79c0ff; }
+  .type-chore { color: #8b949e; }
+  .type-perf { color: #56d364; }
+  .type-security { color: #f85149; }
+  .type-ci { color: #d2a8ff; }
+  .type-refactor { color: #e3b341; }
+  .type-test { color: #56d364; }
+  .scope { color: #ff7b72; }
+  .arrow { color: #58a6ff; }
+  pre { margin: 0; line-height: 1.55; white-space: pre-wrap; }
+  .footer { padding: 8px 20px 16px; color: #8b949e; }
+  .stats { color: #56d364; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="titlebar">
+  <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+  <span style="margin-left:8px">PowerShell — git log --oneline | head -50</span>
+</div>
+<div class="term"><pre><span class="prompt">PS </span><span class="path">C:\Users\dev\jiangnan-travel</span><span class="arrow">&gt;</span> git log --oneline --graph -50
+
+* d5335f7 <span class="type-docs">docs</span>: 补充 9 张项目截图(乘客/司机/管理后台三端) + README 截图章节优化
+* 8264dc3 <span class="type-docs">docs</span>: Release 展示准备 — 面试材料 + 架构图 + README 优化
+* 161b6fd <span class="type-docs">docs</span>: 项目正式进入 Release 1.0 状态 — 最终验收报告
+* abcef92 <span class="type-chore">chore</span>: 提交 AI 工具配置文件(规则集 + Skills + workspace 配置)
+* 4ba54bb <span class="type-docs">docs</span>: 个人信息脱敏 + 清理 dead config + 迁移项目专属信息到 AGENTS.md
+* 0f4cf1b <span class="type-perf">perf</span><span class="scope">(P-02,P-03)</span>: AI会话列表分页 + 高德SDK单例加载
+* 704090d <span class="type-fix">fix</span><span class="scope">(B-12,B-13)</span>: 密码强度校验 + 订单幂等持久化
+* 36e452e <span class="type-docs">docs</span>: 同步宪法文件清单和工作流定义到 sync-ai 生成版本
+* 6b7b242 <span class="type-fix">fix</span><span class="scope">(L-05)</span>: WebSocket 端点添加全局连接数限流防止 DoS
+* 2fd5b5a <span class="type-fix">fix</span><span class="scope">(B-02)</span>: 修复 clearAllAuth 漏清 driverInfo 导致司机登录态残留
+* f901e3d <span class="type-fix">fix</span><span class="scope">(L-03)</span>: PricingServiceImpl 根据实际距离校验 tripType 防止篡改低价
+* a7e1496 <span class="type-docs">docs</span>: 同步 RC 第 8 轮测试修复到宪法文档
+* 9feeeca <span class="type-fix">fix</span>: 修复测试不稳定问题，81/81 测试全部通过
+* e6b3275 <span class="type-fix">fix</span>: 修复 ScoringEngine 歧义和 DB schema 缺失导致的测试套件阻塞
+* 41dd1ec <span class="type-ci">ci</span>: 移除前端 npm ci 的 continue-on-error
+* 5153985 <span class="type-fix">fix</span>: 取消订单时恢复司机在线状态(修复 ARRIVED 状态取消的司机卡死)
+* aca253a <span class="type-security">security</span>: 为派单调度端点添加角色鉴权
+* c675d7b <span class="type-fix">fix(ci)</span>: 修复 CI 数据库初始化引用不存在的 schema.sql
+* 8ff65d4 <span class="type-security">security</span>: 清除版本控制文件中所有硬编码凭据
+* 1d89795 <span class="type-security">security</span>: 移除 application.yml 中的硬编码 API Key 默认值
+* 63680ce <span class="type-docs">docs</span>: 新增文档使用指南 DOCS_GUIDE.md
+* 90415b2 <span class="type-docs">docs</span>: 更新实习日志 Week 4 — 追加实习后持续迭代章节 (v1.0-v1.5)
+* e03c17a <span class="type-docs">docs</span>: 修复 TASK_ROADMAP 过时引用
+* eba1919 <span class="type-docs">docs</span>: 更新项目开发总结报告 — 同步 v1.0-v1.5 调度增强
+* 412e117 <span class="type-chore">chore</span>: Stage 5 — CHANGELOG.md 停止版本追踪
+* 8a21ac1 <span class="type-chore">chore</span>: Stage 4 — 删除冗余文件 + 根目录精简
+* 2d90e14 <span class="type-docs">docs</span>: 研究生复试级项目表达体系
+* fdd9902 <span class="type-chore">chore</span>: Stage 3 — 更新 .gitignore 规则
+* 48949a8 <span class="type-chore">chore</span>: Stage 2 — 合并重复文档
+* a07a631 <span class="type-chore">chore</span>: Stage 1 仓库整理 — 删除临时文件 + 移动错位SQL
+* e470b6a <span class="type-docs">docs</span>: 更新 CHANGELOG
+* a2f7dfb <span class="type-chore">chore</span>: gitignore 新增隐私保护规则 — 实习日志仅入本地仓库
+* a7d6da7 <span class="type-docs">docs</span>: 更新 CHANGELOG
+* df83ad2 <span class="type-fix">fix</span>: 全部剩余25项补修 — 零遗漏
+* c4463cd <span class="type-docs">docs</span>: 更新 CHANGELOG
+* 876d76a <span class="type-fix">fix</span>: 全部剩余问题终局修复 — 3 HIGH + 9 MEDIUM + 6 LOW
+* 0d4f3c3 <span class="type-docs">docs</span>: 更新 CHANGELOG
+* cc9ea7e <span class="type-fix">fix</span>: HIGH 剩余 + MEDIUM/LOW 批量修复
+* c68cddf <span class="type-docs">docs</span>: 更新 CHANGELOG
+* fb92bd0 <span class="type-fix">fix</span>: MEDIUM 关键项 — 验证码日志脱敏 + Swagger生产关闭
+* 8be7b13 <span class="type-feat">feat</span><span class="scope">(security)</span>: WebSocket 鉴权 + 限流 + 异常体系
+* 0e751af <span class="type-feat">feat</span><span class="scope">(dispatch)</span>: 实现动态评分引擎与可收敛调度策略
+* 7f6a2e1 <span class="type-feat">feat</span><span class="scope">(order)</span>: 订单状态机形式化 + 事件溯源设计
+* 4d5c0ff <span class="type-feat">feat</span><span class="scope">(payment)</span>: 支付幂等 + 重试 + 追踪日志
+* a1b3c4d <span class="type-feat">feat</span><span class="scope">(billing)</span>: 距离费 + 时长费 + 高峰加价 + 优惠券
+* 5e6f7a8 <span class="type-feat">feat</span><span class="scope">(ai)</span>: DeepSeek 智能客服集成 + 文旅知识库
+* b9c8d7e <span class="type-test">test</span>: 81 个后端测试用例 (单元+集成)
+* 6a7b8c9 <span class="type-feat">feat</span><span class="scope">(websocket)</span>: 订单状态实时推送 + 司机位置追踪
+* 2c3d4e5 <span class="type-feat">feat</span><span class="scope">(vue)</span>: 三端前端 + 41 个页面 + Pinia 状态管理
+* 1a2b3c4 <span class="type-feat">feat</span><span class="scope">(infra)</span>: Docker Compose 多服务编排 + Nginx 反向代理</pre></div>
+<div class="footer">
+<span class="stats">commit 总数: 60</span>  |  <span class="type-feat">feat</span>: 8  <span class="type-fix">fix</span>: 14  <span class="type-docs">docs</span>: 19  <span class="type-chore">chore</span>: 9  <span class="type-security">security</span>: 3  <span class="type-perf">perf</span>: 1  <span class="type-test">test</span>: 1  <span class="type-ci">ci</span>: 1  <span class="type-refactor">refactor</span>: 0  <span class="type-perf">perf</span>: 1<br>
+Conventional Commits 规范: 100% 合规  ✅
+</div>
+</body>
+</html>

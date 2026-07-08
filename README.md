@@ -252,7 +252,6 @@ cd jiangnan-travel && mvn test    # 运行后端测试
 | [AI 开发实践记录](docs/ai-development-log.md) | Vibe Coding 实践 + 人机协作比例 |
 | [架构文档](ARCHITECTURE.md) | 完整数据库、API、安全、缓存架构 |
 | [测试指南](tests/TEST_GUIDE.md) | 18 测试脚本使用说明 |
-| [Bug 分析与修复](docs/BUG_ANALYSIS.md) | RC 阶段问题跟踪与修复记录 |
 | [Release 验收报告](docs/RELEASE_REVIEW_REPORT.md) | 最终 Release 验收报告（问题清零/测试/安全/已接受风险） |
 
 ---

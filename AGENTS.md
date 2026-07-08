@@ -41,11 +41,7 @@
 | | `docs/江南出行调度系统_系统设计文档_v1.5.md` | 系统设计文档 |
 | | `docs/ai-development-log.md` | AI 开发实践记录 |
 | **P1 — 开发时读取** | `PRODUCT_DESIGN.md` | 产品设计 |
-| | `DESIGN_SYSTEM.md` | 设计系统 |
-| | `UI_UX_SPEC.md` | UI/UX 规范 |
-| | `PAGE_STRUCTURE.md` | 页面结构 |
-| **P2 — 规划时读取** | `FEATURE_ROADMAP.md` | 功能路线图 |
-| | `TASK_ROADMAP.md` | 任务路线图 |
+| **P2 — 规划时读取** | `TASK_ROADMAP.md` | 任务路线图 |
 | | `DEVELOPMENT_PLAN.md` | 开发计划 |
 | | `项目开发总结报告.md` | 项目开发总结报告（含审查、能力、历程） |
 | | `README.md` | 项目说明 |

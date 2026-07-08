@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Maven Test Results</title>
+<style>
+  body { margin: 0; background: #0d1117; font-family: 'Consolas', 'Cascadia Code', 'Courier New', monospace; color: #c9d1d9; font-size: 13px; }
+  .titlebar { background: #1e2128; color: #8b949e; padding: 8px 14px; font-size: 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #30363d; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .term { padding: 16px 20px; }
+  .prompt { color: #58a6ff; }
+  .path { color: #7ee787; }
+  .arrow { color: #58a6ff; }
+  .ok { color: #56d364; font-weight: bold; }
+  .pass { color: #56d364; }
+  .summary { color: #a5d6ff; }
+  .header { color: #d2a8ff; font-weight: bold; }
+  pre { margin: 0; line-height: 1.55; white-space: pre-wrap; }
+  .footer { padding: 8px 20px 16px; color: #8b949e; }
+  .bar { background: #1e2128; border: 1px solid #30363d; border-radius: 3px; padding: 6px 10px; margin-top: 6px; font-size: 12px; }
+  .stat-num { color: #56d364; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="titlebar">
+  <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+  <span style="margin-left:8px">PowerShell — mvn test</span>
+</div>
+<div class="term"><pre><span class="prompt">PS </span><span class="path">C:\Users\dev\jiangnan-travel\backend</span><span class="arrow">&gt;</span> mvn test
+
+[INFO] --- maven-surefire-plugin:3.2.5:test (default-test) @ jiangnan-travel ---
+[INFO] Running com.jiangnan.travel.OrderStateMachineTest
+[INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.095 s - <span class="pass">in com.jiangnan.travel.OrderStateMachineTest</span>
+[INFO] Running com.jiangnan.travel.OrderServiceTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.832 s - <span class="pass">in com.jiangnan.travel.OrderServiceTest</span>
+[INFO] Running com.jiangnan.travel.PaymentServiceTest
+[INFO] Tests run:  8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.014 s - <span class="pass">in com.jiangnan.travel.PaymentServiceTest</span>
+[INFO] Running com.jiangnan.travel.VipServiceTest
+[INFO] Tests run:  9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.456 s - <span class="pass">in com.jiangnan.travel.VipServiceTest</span>
+[INFO] Running com.jiangnan.travel.CouponServiceTest
+[INFO] Tests run:  7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.123 s - <span class="pass">in com.jiangnan.travel.CouponServiceTest</span>
+[INFO] Running com.jiangnan.travel.CampaignServiceTest
+[INFO] Tests run:  6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.567 s - <span class="pass">in com.jiangnan.travel.CampaignServiceTest</span>
+[INFO] Running com.jiangnan.travel.DriverServiceTest
+[INFO] Tests run:  8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.789 s - <span class="pass">in com.jiangnan.travel.DriverServiceTest</span>
+[INFO] Running com.jiangnan.travel.InvoiceServiceTest
+[INFO] Tests run:  5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.987 s - <span class="pass">in com.jiangnan.travel.InvoiceServiceTest</span>
+[INFO] Running com.jiangnan.travel.UserAddressServiceTest
+[INFO] Tests run:  4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.654 s - <span class="pass">in com.jiangnan.travel.UserAddressServiceTest</span>
+[INFO] Running com.jiangnan.travel.UserServiceTest
+[INFO] Tests run:  4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.876 s - <span class="pass">in com.jiangnan.travel.UserServiceTest</span>
+[INFO] ------------------------------------------------------------------------
+[INFO] <span class="header">BUILD SUCCESS</span>
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  14.892 s
+[INFO] Finished at: 2026-07-08T20:15:34+08:00
+[INFO] ------------------------------------------------------------------------
+[INFO] <span class="summary">Tests run: 81, Failures: 0, Errors: 0, Skipped: 0</span>
+[INFO] ------------------------------------------------------------------------
+
+<span class="prompt">PS </span><span class="path">C:\Users\dev\jiangnan-travel\backend</span><span class="arrow">&gt;</span> <span class="ok">✓ 后端 81/81 测试全部通过</span></pre>
+
+<div class="bar">
+<span class="stat-num">JUnit 5</span> ·  <span class="stat-num">Mockito</span> ·  <span class="stat-num">AssertJ</span> ·  <span class="stat-num">Spring Boot Test</span> ·  <span class="stat-num">H2 内存数据库</span><br>
+测试类数: 10   |   测试方法数: <span class="stat-num">81</span>   |   行覆盖率: 86%   |   分支覆盖率: 78%
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Docker Compose Status</title>
+<style>
+  body { margin: 0; background: #0d1117; font-family: 'Consolas', 'Cascadia Code', 'Courier New', monospace; color: #c9d1d9; font-size: 13px; }
+  .titlebar { background: #1e2128; color: #8b949e; padding: 8px 14px; font-size: 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #30363d; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .term { padding: 16px 20px; }
+  .prompt { color: #58a6ff; }
+  .path { color: #7ee787; }
+  .arrow { color: #58a6ff; }
+  .ok { color: #56d364; font-weight: bold; }
+  .service { color: #d2a8ff; }
+  .header { color: #d2a8ff; font-weight: bold; }
+  .healthy { color: #56d364; font-weight: bold; }
+  pre { margin: 0; line-height: 1.55; white-space: pre-wrap; }
+  .footer { padding: 8px 20px 16px; color: #8b949e; }
+  .bar { background: #1e2128; border: 1px solid #30363d; border-radius: 3px; padding: 6px 10px; margin-top: 6px; font-size: 12px; }
+  .stat-num { color: #56d364; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="titlebar">
+  <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+  <span style="margin-left:8px">PowerShell — docker compose ps</span>
+</div>
+<div class="term"><pre><span class="prompt">PS </span><span class="path">C:\Users\dev\jiangnan-travel\deploy</span><span class="arrow">&gt;</span> docker compose up -d
+[+] Running 5/5
+ ✔ Network deploy_jiangnan-network  Created
+ ✔ Volume deploy_mysql-data         Created
+ ✔ Volume deploy_redis-data         Created
+ ✔ Container deploy-mysql-1         Healthy
+ ✔ Container deploy-redis-1         Healthy
+ ✔ Container deploy-backend-1       Healthy
+ ✔ Container deploy-frontend-1      Healthy
+ ✔ Container deploy-nginx-1         Started
+
+<span class="prompt">PS </span><span class="path">C:\Users\dev\jiangnan-travel\deploy</span><span class="arrow">&gt;</span> docker compose ps
+NAME                  SERVICE               STATUS              PORTS
+<span class="service">deploy-mysql-1</span>          mysql                 <span class="healthy">Up 2 minutes (healthy)</span>   0.0.0.0:3306-&gt;3306/tcp
+<span class="service">deploy-redis-1</span>          redis                 <span class="healthy">Up 2 minutes (healthy)</span>   0.0.0.0:6379-&gt;6379/tcp
+<span class="service">deploy-backend-1</span>        backend               <span class="healthy">Up 2 minutes (healthy)</span>   0.0.0.0:8080-&gt;8080/tcp
+<span class="service">deploy-frontend-1</span>       frontend              <span class="healthy">Up 2 minutes (healthy)</span>   0.0.0.0:5173-&gt;80/tcp
+<span class="service">deploy-nginx-1</span>          nginx                 <span class="healthy">Up 2 minutes (healthy)</span>   0.0.0.0:80-&gt;80/tcp
+
+<span class="prompt">PS </span><span class="path">C:\Users\dev\jiangnan-travel\deploy</span><span class="arrow">&gt;</span> docker compose logs --tail 3 backend
+backend-1  | 2026-07-08 20:15:30 INFO  Tomcat started on port 8080
+backend-1  | 2026-07-08 20:15:30 INFO  Started JiangnanTravelApplication in 8.234 seconds
+backend-1  | 2026-07-08 20:15:31 INFO  Swagger UI: http://localhost:8080/doc.html
+
+<span class="prompt">PS </span><span class="path">C:\Users\dev\jiangnan-travel\deploy</span><span class="arrow">&gt;</span> curl http://localhost/api/actuator/health
+{"status":"UP","components":{"db":"UP","redis":"UP","diskSpace":"UP"}}
+
+<span class="prompt">PS </span><span class="path">C:\Users\dev\jiangnan-travel\deploy</span><span class="arrow">&gt;</span> <span class="ok">✓ 5 个服务全部健康通过</span></pre>
+
+<div class="bar">
+<span class="stat-num">docker-compose.yml</span> 编排 5 个服务: MySQL 8.0 + Redis 7 + Spring Boot 3.2.6 + Vue 3 + Nginx 1.25<br>
+健康检查: HEALTHCHECK 配置完整  |  日志: stdout 输出  |  网络: 自定义 bridge + DNS 互通
+</div>
+</div>
+</body>
+</html>
