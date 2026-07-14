@@ -163,6 +163,14 @@ async function loadLevels() {
   try {
     const res = await vipApi.levels()
     levels.value = res.data || []
+    if (levels.value.length === 0) {
+      levels.value = [
+        { id: 1, name: '白银会员', level: 1, discount: 0.95, monthlyFee: 9.9, yearlyFee: 99 },
+        { id: 2, name: '黄金会员', level: 2, discount: 0.88, monthlyFee: 19.9, yearlyFee: 199 },
+        { id: 3, name: '铂金会员', level: 3, discount: 0.82, monthlyFee: 39.9, yearlyFee: 399 },
+        { id: 4, name: '钻石会员', level: 4, discount: 0.75, monthlyFee: 79.9, yearlyFee: 799 }
+      ]
+    }
   } catch (e) {
     if (e?.message) ElMessage.error(e.message)
   }

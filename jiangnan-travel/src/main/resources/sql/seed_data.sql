@@ -10,3 +10,12 @@ INSERT INTO t_car_type (name, base_price, mid_per_km, long_per_km, super_long_pe
 -- 新增长的：城际快车(id=4)、长途大巴(id=5)
 -- 短途（trip_type=0）推荐车型：1,2,3
 -- 长途（trip_type=1）推荐车型：4,5
+
+-- ============================================
+-- VIP 等级种子数据
+-- ============================================
+INSERT INTO t_vip_level (name, level, discount, min_spend, monthly_fee, yearly_fee, icon, status) VALUES
+('白银会员', 1, 0.95, 0.00, 9.90, 99.00, '', 1),
+('黄金会员', 2, 0.88, 0.00, 19.90, 199.00, '', 1),
+('铂金会员', 3, 0.82, 0.00, 39.90, 399.00, '', 1),
+('钻石会员', 4, 0.75, 0.00, 79.90, 799.00, '', 1);

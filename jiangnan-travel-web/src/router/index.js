@@ -97,7 +97,7 @@ const authRequiredRoutes = [
   'Home', 'OrderCreate', 'OrderList', 'OrderDetail', 'OrderReview', 'TripTracking',
   'AddressManage', 'CouponCenter', 'Profile',
   'SecuritySettings', 'AboutCompany', 'MessageCenter',
-  'CampaignList', 'CampaignDetail', 'VipCenter', 'LandmarkExplore', 'AiAssistant', 'Payment', 'InvoiceCenter', 'InvoiceApply', 'BusLine'
+  'CampaignList', 'CampaignDetail', 'LandmarkExplore', 'AiAssistant', 'Payment', 'InvoiceCenter', 'InvoiceApply', 'BusLine', 'VipCenter'
 ]
 
 // 需要司机登录的路由名称列表
