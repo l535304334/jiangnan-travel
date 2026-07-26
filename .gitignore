@@ -58,3 +58,7 @@ tests/test-report-*.json
 # ======= AI 工具产物（本地状态，不提交） =======
 .ai-backups/
 .ai-workspace-state.json
+.trae/
+.agents/
+jiangnan-travel-web/.agents/
+.claude/launch.json
