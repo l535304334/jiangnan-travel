@@ -21,92 +21,50 @@
 
 ## 二、项目目录结构
 
+> 目录树只标注职责，不维护文件计数（计数随迭代变化，以文件系统为准）。
+
 ```
-jiangnan-travel/                        # 后端 Maven 项目
-├── pom.xml                             # Maven 构建（Spring Boot 3.2.6）
-├── src/
-│   ├── main/
-│   │   ├── java/com/jiangnan/travel/
-│   │   │   ├── TravelApplication.java       # 启动类
-│   │   │   ├── common/
-│   │   │   │   ├── BusinessException.java   # 业务异常
-│   │   │   │   ├── ErrorCode.java           # 错误码枚举
-│   │   │   │   ├── GlobalExceptionHandler.java # 全局异常处理
-│   │   │   │   └── Result.java              # 统一响应封装
-│   │   │   ├── config/
-│   │   │   │   ├── CorsConfig.java          # 跨域配置
-│   │   │   │   ├── DeepSeekConfig.java      # AI 客户端配置
-│   │   │   │   ├── Knife4jConfig.java       # API 文档配置
-│   │   │   │   ├── MyMetaObjectHandler.java # 自动填充处理器
-│   │   │   │   ├── MybatisPlusConfig.java   # MyBatis-Plus 插件
-│   │   │   │   ├── RateLimitConfig.java     # Redis 限流
-│   │   │   │   ├── RedisCacheConfig.java    # 缓存管理
-│   │   │   │   └── TestDataInitializer.java # 测试数据初始化
-│   │   │   ├── controller/          (22个)
-│   │   │   ├── dto/                 (26个)
-│   │   │   ├── entity/              (30个，含 BaseEntity)
-│   │   │   ├── mapper/              (29个)
-│   │   │   ├── security/
-│   │   │   │   ├── JwtUtil.java
-│   │   │   │   ├── JwtAuthFilter.java
-│   │   │   │   └── SecurityConfig.java
-│   │   │   ├── service/
-│   │   │   │   ├── *.java           (22个接口)
-│   │   │   │   └── impl/*.java      (22个实现)
-│   │   │   ├── vo/                  (17个)
-│   │   │   └── websocket/
-│   │   │       ├── DriverLocationServer.java
-│   │   │       ├── NotificationWebSocketServer.java
-│   │   │       ├── OrderTrackingServer.java
-│   │   │       └── WebSocketConfig.java
-│   │   └── resources/
-│   │       ├── application.yml
-│   │       └── sql/
-│   │           ├── init.sql
-│   │           ├── migration_optimize.sql
-│   │           ├── indexes.sql
-│   │           ├── seed_data.sql
-│   │           ├── test_accounts.sql
-│   │           ├── fix_chinese_data.sql
-│   │           └── fix_password.sql
-│   └── test/java/com/jiangnan/travel/
-│       └── UserServiceTest.java
+jiangnan-travel/                        # 后端 Maven 项目（Spring Boot 3.2.6 / Java 17）
+├── pom.xml
+├── src/main/java/com/jiangnan/travel/
+│   ├── TravelApplication.java          # 启动类
+│   ├── common/                         # Result 统一响应 / BusinessException / ErrorCode / GlobalExceptionHandler
+│   ├── config/                         # DeepSeek、Knife4j、MyBatis-Plus、元数据填充、限流、RestTemplate、测试数据初始化
+│   ├── controller/                     # REST 控制器（薄路由层，按业务域拆分）
+│   ├── dto/                            # 请求对象 XxxRequest（@Valid 校验）
+│   ├── entity/                         # MyBatis-Plus 实体（继承 BaseEntity，逻辑删除 + 自动填充）
+│   ├── enums/                          # OrderStatus 状态机 / PaymentStatus / DriverStatus
+│   ├── mapper/                         # BaseMapper 接口（XML 位于 resources/mapper/）
+│   ├── security/                       # SecurityConfig / JwtUtil / JwtAuthFilter / TokenBlacklistService
+│   ├── service/                        # 业务接口（含 ScoringEngine 可插拔评分引擎接口）
+│   │   └── impl/                       # 业务实现（含 Weighted/Dynamic 两个评分引擎实现）
+│   ├── aspect/                         # OperationLogAspect 操作审计 / SlowQueryAspect 慢查询
+│   ├── annotation/                     # @LogOperation
+│   ├── vo/                             # 响应对象 XxxVO
+│   └── websocket/                      # 三个 WS 端点 + JwtCookieConfigurator（Cookie 握手鉴权）
+├── src/main/resources/
+│   ├── application.yml                 # 默认配置（开发）
+│   ├── application-prod.yml            # 生产 profile
+│   ├── mapper/                         # MyBatis XML
+│   └── sql/                            # init.sql（27 表全量）+ seed/test_accounts + migration_* 增量脚本
+└── src/test/java/com/jiangnan/travel/  # 11 个测试类（9 个 @SpringBootTest 集成 + 2 个纯单元）
 
-jiangnan-travel-web/                    # 前端 Vue 项目
-├── package.json                        # npm 依赖
-├── vite.config.js                      # Vite 构建配置
-├── index.html
+jiangnan-travel-web/                    # 前端 Vue 3 项目（Vite 5 + Element Plus + Pinia）
+├── vite.config.js                      # dev 代理 /api → 8080；echarts/element-plus 手动分包
 └── src/
-    ├── api/                    (13个文件)
-    │   ├── request.js                  # Axios 实例 + 拦截器
-    │   ├── user.js                     # 用户 API
-    │   ├── order.js                    # 订单 API
-    │   ├── driver.js                   # 司机 API
-    │   ├── admin.js                    # 管理后台 API
-    │   ├── coupon.js                   # 优惠券 API
-    │   ├── ai.js                       # AI/文旅 API
-    │   ├── notification.js             # 消息通知 API
-    │   ├── payment.js                  # 支付 API
-    │   ├── invoice.js                  # 发票 API
-    │   ├── campaign.js                 # 活动 API
-    │   ├── vip.js                      # VIP API
-    │   ├── bus.js                      # 班线 API
-    ├── assets/
-    │   ├── style.css                   # 全局样式（水墨江南主题）
-    │   └── transitions.css             # 动画系统
-    ├── components/
-    │   ├── AiChatFloat.vue             # AI 聊天悬浮窗
-    │   └── AmapView.vue                # 高德地图组件
-    ├── composables/
-    │   ├── useSmsCode.js               # 短信验证码
-    │   ├── useFeedback.js              # 反馈处理
-    │   └── useAmapPoiSearch.js         # 高德POI搜索
-    ├── router/index.js                 # 路由配置 + 守卫
-    ├── stores/user.js                  # Pinia 状态管理
-    ├── views/                   (41个)
+    ├── api/                            # request.js（Axios 拦截器：token 注入 + 统一错误提示）+ 按域 API 模块
+    ├── assets/                         # style.css（水墨江南设计 token 体系）/ transitions.css（动画）
+    ├── components/                     # AiChatFloat（SSE 流式聊天）/ AmapView（高德地图）/ CdnAvatar
+    ├── composables/                    # useSmsCode（含测试）/ useAmapPoiSearch
+    ├── router/index.js                 # 路由 + meta.requiresAuth 三端鉴权守卫
+    ├── stores/user.js                  # Pinia 用户态（token 同步写 Cookie 供 WS 握手）
+    └── views/                          # 乘客端 / 司机端（Driver*）/ 管理端（Admin*）三端页面
 
-docs/
-└── spec/                               # 功能规格说明
+deploy/                                 # Docker 部署（compose + 前后端 Dockerfile + Nginx）
+tests/                                  # API 级 E2E 测试脚本（node tests/test-suite.mjs）
+e2e/                                    # Playwright 浏览器端 E2E
+scripts/                                # test-backend.ps1 一键后端测试
+docs/                                   # 项目文档（导航见 docs/README.md）
 ```
 
 ---
@@ -118,11 +76,11 @@ docs/
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Controller 层 (@RestController)                       │
-│  22 个 Controller · 97 个 API 端点                       │
+│  23 个 Controller · 98 个 API 端点                       │
 │  职责：URL 路由、参数校验、认证提取、调用 Service        │
 ├─────────────────────────────────────────────────────────┤
 │  Service 层 (Interface + Impl)                          │
-│  22 个接口 + 22 个实现                                  │
+│  23 个业务接口 + 实现（含可插拔评分引擎）                 │
 │  职责：业务逻辑、事务管理、风控规则、AI 调用              │
 ├──────────────────┬──────────────────────────────────────┤
 │  Mapper 层        │  Security 层                        │
@@ -305,7 +263,9 @@ controller → dto → service → mapper → entity
 
 ---
 
-## 五、API 接口清单（97 个端点）
+## 五、API 接口清单（98 个端点）
+
+> 实时接口文档以开发环境 Knife4j（`http://localhost:8080/doc.html`）为准，本清单用于离线检索。
 
 ### 5.1 用户模块 — `/api/user`（7 个）
 
@@ -349,13 +309,14 @@ controller → dto → service → mapper → entity
 | GET | `/api/driver/earning` | 收入统计 | 司机身份 |
 | GET | `/api/driver/earning/weekly` | 周收入统计 | 司机身份 |
 
-### 5.5 订单管理 — `/api/order`（9 个）
+### 5.5 订单管理 — `/api/order`（10 个）
 
 | 方法 | 路径 | 说明 | 鉴权 |
 |---|---|---|---|
 | POST | `/api/order/estimate` | 预估价格 | 公开 |
 | POST | `/api/order/create` | 创建订单 | 需登录 |
 | GET | `/api/order/list` | 订单列表 | 需登录 |
+| GET | `/api/order/count` | 用户历史订单总数（首页看板） | 需登录 |
 | GET | `/api/order/{id}` | 订单详情 | 需登录 |
 | PUT | `/api/order/{id}/cancel` | 取消订单 | 需登录 |
 | GET | `/api/order/{id}/share` | 行程分享 | 公开 |
@@ -939,7 +900,8 @@ management:
 
 ## 十三、测试
 
-当前有 10 个测试类，81 个测试用例（全部通过）：
+当前有 11 个测试类，86 个测试用例（81 个既有用例全绿；5 个为 2026-07-26 升级新增）。
+统一运行入口：`powershell -File scripts/test-backend.ps1`（自动加载 `deploy/.env` 环境变量）。
 
 | 文件 | 用例数 | 测试内容 |
 |---|---|---|
@@ -953,6 +915,7 @@ management:
 | `PaymentServiceTest.java` | 7 | 支付/回调/查询/列表/行程中订单支付报错（配置 `payment.mock.success-rate=100` 消除随机失败） |
 | `UserAddressServiceTest.java` | 6 | 用户地址 CRUD |
 | `VipServiceTest.java` | 8 | VIP 等级创建/列表/购买/折扣/续费 |
+| `TravelInsightServiceTest.java` | 5 | 文旅洞察纯单元测试（热点 5km 半径排序、常走路线聚合、空数据兜底，Mockito 免数据库） |
 
 **测试约定：**
 - 集成测试使用 `@SpringBootTest(properties = "jiangnan.websocket.enabled=false")` 禁用 WebSocket
@@ -980,6 +943,6 @@ management:
 
 ---
 
-> 本文档为项目唯一架构文档，由 AI 开发环境全量扫描自动生成。  
-> 后续每次新增模块必须同步更新本文档。  
-> 生成时间：2026-06-24
+> 本文档为项目唯一架构事实源（Single Source of Truth），与代码同步维护。  
+> 后续每次新增模块必须同步更新本文档（见第十四章指引）。  
+> 最近全面校准：2026-07-26（同步内容：TravelInsightService 抽取、/api/order/count 端点、VipService 管理端方法、测试基线 86 例）

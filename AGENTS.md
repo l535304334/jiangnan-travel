@@ -37,14 +37,17 @@
 | 优先级 | 文件 | 用途 |
 |---|---|---|
 | **P0 — 必须读取** | `AGENTS.md` | AI 总入口（本文件） |
-| | `ARCHITECTURE.md` | 架构文档 |
-| | `docs/江南出行调度系统_系统设计文档_v1.5.md` | 系统设计文档 |
-| | `docs/ai-development-log.md` | AI 开发实践记录 |
-| **P1 — 开发时读取** | `PRODUCT_DESIGN.md` | 产品设计 |
-| **P2 — 规划时读取** | `TASK_ROADMAP.md` | 任务路线图 |
-| | `DEVELOPMENT_PLAN.md` | 开发计划 |
-| | `项目开发总结报告.md` | 项目开发总结报告（含审查、能力、历程） |
+| | `ARCHITECTURE.md` | 架构唯一事实源（目录/分层/数据库/API/安全） |
+| | `CONTRIBUTING.md` | 开发规范、测试与验证流程 |
+| | `docs/江南出行调度系统_系统设计文档_v1.5.md` | 调度系统深度设计 |
+| **P1 — 开发时读取** | `docs/configuration.md` | 环境变量与配置总表 |
+| | `docs/ai-development-log.md` | AI 开发实践记录与行为约束 |
+| **P2 — 规划时读取** | `docs/PRODUCT_DESIGN.md` | 产品设计（归档） |
+| | `docs/TASK_ROADMAP.md` | 任务路线图与后续规划 |
+| | `项目开发总结报告.md` | 项目盘点（含历程与量化数据） |
 | | `README.md` | 项目说明 |
+
+> 完整文档导航：`docs/README.md`。文档与代码冲突时，**一律以代码为准**并回改文档。
 
 > **冲突处理**：读取时如果发现文件间存在冲突，按 `constitution.md` 的优先级规则裁决。无法裁决时，立即停止并请示用户。
 
@@ -181,22 +184,17 @@
 
 ### 7.2 项目目录结构
 
+> 只标注职责，不维护计数；权威目录树见 `ARCHITECTURE.md` 第二章。
+
 ```
 软件工程2307班实习材料/
-├── jiangnan-travel/          # Spring Boot 后端
-│   └── src/main/java/com/jiangnan/travel/
-│       ├── controller/       # 22 个 Controller
-│       ├── service/          # 21 个 Service 接口
-│       ├── mapper/           # 29 个 Mapper
-│       ├── entity/           # 30 个 Entity
-│       └── config/           # 7 个 Config
-├── jiangnan-travel-web/      # Vue 3 前端
-│   └── src/
-│       ├── views/            # 41 个页面
-│       ├── api/              # 13 个 API 模块
-│       └── composables/      # 2 个 Composable
-├── tests/                    # 20 个 E2E 测试脚本
-└── deploy/                   # Docker + Nginx 部署
+├── jiangnan-travel/          # Spring Boot 后端（controller/service/mapper/entity/...）
+├── jiangnan-travel-web/      # Vue 3 前端（views 三端页面 / api 模块 / composables）
+├── tests/                    # API 级 E2E 测试脚本（node tests/test-suite.mjs）
+├── e2e/                      # Playwright 浏览器端 E2E
+├── scripts/                  # test-backend.ps1 一键后端测试
+├── deploy/                   # Docker + Nginx 部署
+└── docs/                     # 文档（导航：docs/README.md）
 ```
 
 ### 7.3 项目专属规则
