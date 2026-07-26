@@ -69,7 +69,6 @@ jobs:
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
           JWT_SECRET: ci-test-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256
-        continue-on-error: true
 
   frontend:
     name: Frontend Build
@@ -88,6 +87,10 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        working-directory: jiangnan-travel-web
+
+      - name: Run frontend tests
+        run: npm test
         working-directory: jiangnan-travel-web
 
       - name: Build frontend

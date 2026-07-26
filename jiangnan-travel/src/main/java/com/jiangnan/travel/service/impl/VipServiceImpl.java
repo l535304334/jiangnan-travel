@@ -118,6 +118,29 @@ public class VipServiceImpl implements VipService {
     }
 
     @Override
+    public List<VipLevel> listAllLevels() {
+        return vipLevelMapper.selectList(
+                new LambdaQueryWrapper<VipLevel>().orderByAsc(VipLevel::getLevel));
+    }
+
+    @Override
+    public void createLevel(VipLevel level) {
+        level.setId(null);
+        vipLevelMapper.insert(level);
+    }
+
+    @Override
+    public void updateLevel(Long id, VipLevel level) {
+        level.setId(id);
+        vipLevelMapper.updateById(level);
+    }
+
+    @Override
+    public void deleteLevel(Long id) {
+        vipLevelMapper.deleteById(id);
+    }
+
+    @Override
     public BigDecimal getVipDiscount(Long userId) {
         if (userId == null) return BigDecimal.ONE;
 

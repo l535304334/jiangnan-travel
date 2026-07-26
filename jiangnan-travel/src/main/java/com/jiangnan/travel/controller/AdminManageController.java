@@ -6,7 +6,6 @@ import com.jiangnan.travel.dto.*;
 import com.jiangnan.travel.entity.BusLine;
 import com.jiangnan.travel.entity.Campaign;
 import com.jiangnan.travel.entity.VipLevel;
-import com.jiangnan.travel.mapper.VipLevelMapper;
 import com.jiangnan.travel.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,7 +13,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -34,13 +32,12 @@ public class AdminManageController {
     private final CarTypeService carTypeService;
     private final CampaignService campaignService;
     private final BusLineService busLineService;
-    private final VipLevelMapper vipLevelMapper;
+    private final VipService vipService;
 
     @GetMapping("/users")
     @Operation(summary = "用户列表", description = "分页查询用户列表")
     public Result<?> listUsers(@RequestParam(defaultValue = "1") Integer page,
-                                @RequestParam(defaultValue = "10") Integer size,
-                                Authentication authentication) {
+                                @RequestParam(defaultValue = "10") Integer size) {
         return Result.ok(userService.listUsers(page, size));
     }
 
@@ -48,8 +45,7 @@ public class AdminManageController {
     @Operation(summary = "修改用户状态", description = "修改指定用户账号状态")
     @LogOperation("修改用户状态")
     public Result<?> updateUserStatus(@PathVariable Long id,
-                                       @Valid @RequestBody UpdateUserStatusRequest request,
-                                       Authentication authentication) {
+                                       @Valid @RequestBody UpdateUserStatusRequest request) {
         Integer status = request.getStatus();
         if (status == null || (status != 0 && status != 1 && status != 2)) {
             return Result.fail("无效的状态值");
@@ -62,8 +58,7 @@ public class AdminManageController {
     @Operation(summary = "司机列表", description = "分页查询司机列表")
     public Result<?> listDrivers(@RequestParam(required = false) Integer verifyStatus,
                                   @RequestParam(defaultValue = "1") Integer page,
-                                  @RequestParam(defaultValue = "10") Integer size,
-                                  Authentication authentication) {
+                                  @RequestParam(defaultValue = "10") Integer size) {
         return Result.ok(driverService.listDrivers(verifyStatus, page, size));
     }
 
@@ -71,8 +66,7 @@ public class AdminManageController {
     @Operation(summary = "审核司机", description = "审核司机认证信息")
     @LogOperation("审核司机")
     public Result<?> verifyDriver(@PathVariable Long id,
-                                   @Valid @RequestBody VerifyDriverRequest request,
-                                   Authentication authentication) {
+                                   @Valid @RequestBody VerifyDriverRequest request) {
         Integer verifyStatus = request.getStatus();
         if (verifyStatus == null || (verifyStatus != 1 && verifyStatus != 2)) {
             return Result.fail("无效的审核状态值");
@@ -85,8 +79,7 @@ public class AdminManageController {
     @Operation(summary = "订单列表", description = "分页查询订单列表")
     public Result<?> listOrders(@RequestParam(required = false) Integer status,
                                  @RequestParam(defaultValue = "1") Integer page,
-                                 @RequestParam(defaultValue = "10") Integer size,
-                                 Authentication authentication) {
+                                 @RequestParam(defaultValue = "10") Integer size) {
         return Result.ok(orderService.listOrders(status, page, size));
     }
 
@@ -94,8 +87,7 @@ public class AdminManageController {
     @Operation(summary = "告警列表", description = "分页查询风控告警")
     public Result<?> listAlerts(@RequestParam(required = false) Integer handled,
                                  @RequestParam(defaultValue = "1") Integer page,
-                                 @RequestParam(defaultValue = "10") Integer size,
-                                 Authentication authentication) {
+                                 @RequestParam(defaultValue = "10") Integer size) {
         return Result.ok(riskAlertService.listAlerts(handled, page, size));
     }
 
@@ -103,15 +95,14 @@ public class AdminManageController {
     @Operation(summary = "处理风控告警", description = "处理指定风控告警记录")
     @LogOperation("处理风控告警")
     public Result<?> handleAlert(@PathVariable Long id,
-                                  @Valid @RequestBody HandleAlertRequest request,
-                                  Authentication authentication) {
+                                  @Valid @RequestBody HandleAlertRequest request) {
         riskAlertService.handleAlert(id, request.getHandleRemark());
         return Result.ok("预警处理成功");
     }
 
     @GetMapping("/car-types")
     @Operation(summary = "车型列表", description = "查询车型定价列表")
-    public Result<?> listCarTypes(Authentication authentication) {
+    public Result<?> listCarTypes() {
         return Result.ok(carTypeService.listAll());
     }
 
@@ -119,8 +110,7 @@ public class AdminManageController {
     @Operation(summary = "修改车型定价", description = "更新车型定价信息")
     @LogOperation("修改车型定价")
     public Result<?> updateCarType(@PathVariable Long id,
-                                    @Valid @RequestBody UpdateCarTypeRequest request,
-                                    Authentication authentication) {
+                                    @Valid @RequestBody UpdateCarTypeRequest request) {
         carTypeService.update(id, request);
         return Result.ok("车型更新成功");
     }
@@ -128,7 +118,7 @@ public class AdminManageController {
     @GetMapping("/dashboard")
     @Operation(summary = "数据大屏", description = "获取管理后台统计数据")
     @Cacheable(value = "dashboard", key = "'stats'")
-    public Result<?> dashboard(Authentication authentication) {
+    public Result<?> dashboard() {
         long totalUsers = userService.countUsers();
         long todayOrders = orderService.countTodayOrders();
         long onlineDrivers = driverService.countOnlineDrivers();
@@ -148,7 +138,7 @@ public class AdminManageController {
     @GetMapping("/dashboard/chart")
     @Operation(summary = "图表数据", description = "获取近7天订单趋势和收入趋势")
     @Cacheable(value = "dashboard", key = "'chart'")
-    public Result<?> chartData(Authentication authentication) {
+    public Result<?> chartData() {
         return Result.ok(orderService.getLast7DaysStats());
     }
 
@@ -204,29 +194,30 @@ public class AdminManageController {
     @GetMapping("/vip-levels")
     @Operation(summary = "VIP等级列表", description = "管理端查看所有VIP等级")
     public Result<?> listVipLevels() {
-        return Result.ok(vipLevelMapper.selectList(null));
+        return Result.ok(vipService.listAllLevels());
     }
 
     @PostMapping("/vip-levels/create")
     @Operation(summary = "创建VIP等级", description = "创建新的VIP等级")
+    @LogOperation("创建VIP等级")
     public Result<?> createVipLevel(@Valid @RequestBody VipLevel level) {
-        level.setId(null);
-        vipLevelMapper.insert(level);
+        vipService.createLevel(level);
         return Result.ok("创建成功");
     }
 
     @PutMapping("/vip-levels/{id}")
     @Operation(summary = "更新VIP等级", description = "更新VIP等级信息")
+    @LogOperation("更新VIP等级")
     public Result<?> updateVipLevel(@PathVariable Long id, @Valid @RequestBody VipLevel level) {
-        level.setId(id);
-        vipLevelMapper.updateById(level);
+        vipService.updateLevel(id, level);
         return Result.ok("更新成功");
     }
 
     @DeleteMapping("/vip-levels/{id}")
     @Operation(summary = "删除VIP等级", description = "删除VIP等级")
+    @LogOperation("删除VIP等级")
     public Result<?> deleteVipLevel(@PathVariable Long id) {
-        vipLevelMapper.deleteById(id);
+        vipService.deleteLevel(id);
         return Result.ok("删除成功");
     }
 

@@ -56,6 +56,14 @@ public class OrderController {
         return Result.ok(orderService.listByUser(userId, status, page, size));
     }
 
+    @GetMapping("/count")
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "订单总数", description = "当前用户历史订单总数")
+    public Result<Long> count(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return Result.ok(orderService.countByUser(userId));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER','DRIVER')")
     @Operation(summary = "订单详情", description = "查询订单详情")

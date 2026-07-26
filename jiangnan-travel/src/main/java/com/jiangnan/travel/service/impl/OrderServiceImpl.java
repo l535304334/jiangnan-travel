@@ -10,8 +10,10 @@ import com.jiangnan.travel.entity.*;
 import com.jiangnan.travel.entity.RiskAlert;
 import com.jiangnan.travel.enums.OrderStatus;
 import com.jiangnan.travel.mapper.*;
+import com.jiangnan.travel.service.BillingService;
 import com.jiangnan.travel.service.NotificationService;
 import com.jiangnan.travel.service.OrderService;
+import com.jiangnan.travel.service.PricingService;
 import com.jiangnan.travel.service.RiskAlertService;
 import com.jiangnan.travel.vo.DailyOrderStatVO;
 import com.jiangnan.travel.vo.OrderVO;
@@ -48,11 +50,11 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentMapper paymentMapper;
     private final UserCouponMapper userCouponMapper;
     private final RiskAlertMapper riskAlertMapper;
-    private final PricingServiceImpl pricingService;
+    private final PricingService pricingService;
     private final RedissonClient redissonClient;
     private final NotificationService notificationService;
     private final RiskAlertService riskAlertService;
-    private final BillingServiceImpl billingService;
+    private final BillingService billingService;
     private final OrderEventMapper orderEventMapper;
     private final TransactionTemplate transactionTemplate;
 
@@ -239,6 +241,12 @@ public class OrderServiceImpl implements OrderService {
         IPage<Order> page = orderMapper.selectPage(
                 new Page<>(pageNum != null ? pageNum : 1, pageSize != null ? pageSize : 10), wrapper);
         return toVOList(page.getRecords());
+    }
+
+    @Override
+    public long countByUser(Long userId) {
+        return orderMapper.selectCount(
+                new LambdaQueryWrapper<Order>().eq(Order::getUserId, userId));
     }
 
     @Override

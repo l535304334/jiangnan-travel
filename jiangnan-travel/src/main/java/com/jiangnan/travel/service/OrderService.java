@@ -17,6 +17,9 @@ public interface OrderService {
 
     List<OrderVO> listByUser(Long userId, Integer status, Integer page, Integer size);
 
+    /** 用户历史订单总数（首页看板用）。 */
+    long countByUser(Long userId);
+
     List<OrderVO> listByDriver(Long driverId, Integer status, Integer page, Integer size);
 
     void cancel(Long orderId, Long userId, String reason);
