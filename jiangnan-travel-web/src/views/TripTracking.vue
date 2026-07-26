@@ -91,7 +91,8 @@ const statusStepMap = { '待接单':0, '已接单':0, '已到达':1, '行程中'
 function connectWebSocket(orderId) {
   const token = localStorage.getItem('token')
   if (!token) return
-  const wsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/order/${orderId}?token=${token}`
+  // 鉴权走 Cookie（见后端 JwtCookieConfigurator），token 不入 URL 以免进代理日志
+  const wsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/order/${orderId}`
   try {
     ws = new WebSocket(wsUrl)
     ws.onmessage = (event) => {

@@ -218,7 +218,7 @@ onMounted(() => {
 /* 头部 */
 .ai-header {
   display: flex; align-items: center; gap: 12px;
-  padding: 16px; background: linear-gradient(135deg, #667eea, #764ba2);
+  padding: 16px; background: var(--gradient-brand-violet);
   color: #fff; margin-bottom: 12px;
 }
 .ai-avatar { font-size: 2.2rem; }

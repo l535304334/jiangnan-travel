@@ -87,10 +87,10 @@ const displayLandmarks = computed(() => {
 
 // 城市颜色映射
 const cityColors = {
-  '南昌': { bg: 'linear-gradient(135deg, #e74c3c, #c0392b)', tag: 'danger' },
-  '九江': { bg: 'linear-gradient(135deg, #3498db, #2980b9)', tag: 'primary' },
-  '赣州': { bg: 'linear-gradient(135deg, #e67e22, #d35400)', tag: 'warning' },
-  '景德镇': { bg: 'linear-gradient(135deg, #1abc9c, #16a085)', tag: 'success' },
+  '南昌': { bg: 'var(--gradient-landmark-nanchang)', tag: 'danger' },
+  '九江': { bg: 'var(--gradient-landmark-jiujiang)', tag: 'primary' },
+  '赣州': { bg: 'var(--gradient-landmark-ganzhou)', tag: 'warning' },
+  '景德镇': { bg: 'var(--gradient-landmark-jingdezhen)', tag: 'success' },
   '吉安': { bg: 'linear-gradient(135deg, #9b59b6, #8e44ad)', tag: '' },
   '上饶': { bg: 'linear-gradient(135deg, #2ecc71, #27ae60)', tag: 'success' },
   '抚州': { bg: 'linear-gradient(135deg, #f39c12, #e67e22)', tag: 'warning' },
@@ -99,7 +99,7 @@ const cityColors = {
   '萍乡': { bg: 'linear-gradient(135deg, #e74c3c, #c0392b)', tag: 'danger' },
   '新余': { bg: 'linear-gradient(135deg, #3498db, #9b59b6)', tag: 'primary' },
 }
-const getCityColor = (city) => cityColors[city] || { bg: 'linear-gradient(135deg, #667eea, #764ba2)', tag: 'primary' }
+const getCityColor = (city) => cityColors[city] || { bg: 'var(--gradient-landmark-default)', tag: 'primary' }
 
 const typeEmoji = (name) => {
   if (!name) return '📍'

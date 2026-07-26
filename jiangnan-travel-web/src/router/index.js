@@ -33,6 +33,7 @@ const routes = [
     path: '/',
     component: () => import('@/views/Layout.vue'),
     redirect: '/home',
+    meta: { requiresAuth: 'user' },
     children: [
       { path: 'home', name: 'Home', component: () => import('@/views/Home.vue'), meta: { title: '首页' } },
       { path: 'order-create', name: 'OrderCreate', component: () => import('@/views/OrderCreate.vue'), meta: { title: '下单' } },
@@ -63,6 +64,7 @@ const routes = [
     path: '/driver',
     component: () => import('@/views/DriverLayout.vue'),
     redirect: '/driver/home',
+    meta: { requiresAuth: 'driver' },
     children: [
       { path: 'home', name: 'DriverHome', component: () => import('@/views/DriverHome.vue'), meta: { title: '司机端' } },
       { path: 'order/:id', name: 'DriverOrder', component: () => import('@/views/DriverOrder.vue'), meta: { title: '订单详情' } },
@@ -75,6 +77,7 @@ const routes = [
     path: '/admin',
     component: () => import('@/views/AdminLayout.vue'),
     redirect: '/admin/dashboard',
+    meta: { requiresAuth: 'admin' },
     children: [
       { path: 'dashboard', name: 'AdminDashboard', component: () => import('@/views/AdminDashboard.vue'), meta: { title: '管理后台' } },
       { path: 'users', name: 'AdminUsers', component: () => import('@/views/AdminUsers.vue'), meta: { title: '用户管理' } },
@@ -92,26 +95,12 @@ const routes = [
   { path: '/orders', redirect: '/order-list' }
 ]
 
-// 需要登录认证的路由名称列表
-const authRequiredRoutes = [
-  'Home', 'OrderCreate', 'OrderList', 'OrderDetail', 'OrderReview', 'TripTracking',
-  'AddressManage', 'CouponCenter', 'Profile',
-  'SecuritySettings', 'AboutCompany', 'MessageCenter',
-  'CampaignList', 'CampaignDetail', 'LandmarkExplore', 'AiAssistant', 'Payment', 'InvoiceCenter', 'InvoiceApply', 'BusLine', 'VipCenter'
-]
-
-// 需要司机登录的路由名称列表
-const driverAuthRoutes = [
-  'DriverHome', 'DriverOrder', 'DriverEarnings', 'DriverProfile'
-]
-
-// 需要管理员登录的路由名称列表
-const adminAuthRoutes = [
-  'AdminDashboard', 'AdminUsers', 'AdminDrivers',
-  'AdminOrders', 'AdminAlerts', 'AdminCarTypes',
-  'AdminCampaigns', 'AdminVipLevels', 'AdminBusLines',
-  'AdminProfile'
-]
+// 三端鉴权配置：角色 → token 存储键 + 登录页
+const AUTH_CONFIG = {
+  user: { tokenKey: 'token', loginPath: '/login' },
+  driver: { tokenKey: 'driverToken', loginPath: '/driver/login' },
+  admin: { tokenKey: 'adminToken', loginPath: '/admin/login' }
+}
 
 const router = createRouter({
   history: createWebHistory(),
@@ -127,40 +116,17 @@ router.beforeEach((to, from, next) => {
     document.title = `${to.meta.title} - 江南出行`
   }
 
-  const token = localStorage.getItem('token')
-  const adminToken = localStorage.getItem('adminToken')
-  const driverToken = localStorage.getItem('driverToken')
+  // 从匹配链上取鉴权要求（父路由声明，子路由自动继承）
+  const required = to.matched.find(r => r.meta.requiresAuth)?.meta.requiresAuth
+  if (!required) return next()
 
-  // 管理员路由鉴权
-  if (adminAuthRoutes.includes(to.name)) {
-    if (!adminToken || isTokenExpired(adminToken)) {
-      clearAllAuth()
-      ElMessage.warning('登录已过期，请重新登录')
-      return next('/admin/login')
-    }
-    return next()
+  const { tokenKey, loginPath } = AUTH_CONFIG[required]
+  const token = localStorage.getItem(tokenKey)
+  if (!token || isTokenExpired(token)) {
+    clearAllAuth()
+    ElMessage.warning('登录已过期，请重新登录')
+    return next(loginPath)
   }
-
-  // 司机路由鉴权
-  if (driverAuthRoutes.includes(to.name)) {
-    if (!driverToken || isTokenExpired(driverToken)) {
-      clearAllAuth()
-      ElMessage.warning('登录已过期，请重新登录')
-      return next('/driver/login')
-    }
-    return next()
-  }
-
-  // 乘客路由鉴权
-  if (authRequiredRoutes.includes(to.name)) {
-    if (!token || isTokenExpired(token)) {
-      clearAllAuth()
-      ElMessage.warning('登录已过期，请重新登录')
-      return next('/login')
-    }
-    return next()
-  }
-
   next()
 })
 

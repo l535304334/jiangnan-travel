@@ -66,7 +66,7 @@ function formatDateRange(start, end) {
 }
 
 const bgColors = [
-  'linear-gradient(135deg, #667eea, #764ba2)',
+  'var(--gradient-brand-violet)',
   'linear-gradient(135deg, #f093fb, #f5576c)',
   'linear-gradient(135deg, #4facfe, #00f2fe)',
   'linear-gradient(135deg, #43e97b, #38f9d7)',

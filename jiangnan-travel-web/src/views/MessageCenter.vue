@@ -59,7 +59,8 @@ const token = localStorage.getItem('token')
 
 function connectWebSocket() {
   if (!token || !userInfo.id) return
-  const wsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/notification/${userInfo.id}?token=${token}`
+  // 鉴权走 Cookie（见后端 JwtCookieConfigurator），token 不入 URL 以免进代理日志
+  const wsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/notification/${userInfo.id}`
   try {
     ws = new WebSocket(wsUrl)
     ws.onmessage = (event) => {

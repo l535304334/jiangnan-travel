@@ -203,10 +203,10 @@ onMounted(async () => {
   margin-bottom: 16px;
 }
 .vip-status-card.is-vip {
-  background: linear-gradient(135deg, #ffd700, #f0c040);
+  background: var(--gradient-gold);
 }
 .vip-status-card:not(.is-vip) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--gradient-brand-violet);
 }
 .vip-status-bg {
   padding: 20px;

@@ -43,6 +43,14 @@
   --gradient-landmark-jingdezhen: linear-gradient(135deg, #1ABC9C, #16A085);
   --gradient-landmark-default: linear-gradient(135deg, #667EEA, #764BA2);
 
+  /* ---------- 渐变色（通用语义） ---------- */
+  --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  --gradient-blue: linear-gradient(135deg, #2196F3, #64B5F6);
+  --gradient-violet: linear-gradient(135deg, #9C27B0, #CE93D8);
+  --gradient-gold: linear-gradient(135deg, #FFD700, #F0C040);
+  --gradient-deep-blue: linear-gradient(135deg, #1A73E8, #0D47A1);
+  --gradient-brand-violet: var(--gradient-landmark-default);
+
   /* ---------- 字体体系 ---------- */
   --font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", -apple-system, BlinkMacSystemFont, sans-serif;
 
@@ -615,5 +623,45 @@ body.admin-layout-open {
 }
 
 /* ============================================================
-   十三、移动端共享样式（统一使用 .card / .card-list-item，见第六节）
+   十三、移动端页面骨架（app-* 组件类）
+   乘客端/司机端 22 个页面共用的布局原语：
+   .app-page > .app-section > .app-card / .app-list-item
    ============================================================ */
+.app-page {
+  padding-bottom: var(--spacing-2xl);
+}
+
+.app-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.app-section-title {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--color-text);
+  margin-bottom: var(--spacing-md);
+}
+
+.app-card {
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-lg);
+  transition: box-shadow var(--transition-fast);
+}
+
+.app-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.app-list-item {
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  transition: box-shadow var(--transition-fast);
+}
+
+.app-list-item + .app-list-item {
+  margin-top: var(--spacing-sm);
+}

@@ -13,11 +13,11 @@
           </template>
         </el-table-column>
         <el-table-column prop="name" label="名称" width="80" />
-        <el-table-column prop="discountRate" label="折扣率" width="90">
-          <template #default="{ row }">{{ row.discountRate }}折</template>
+        <el-table-column prop="discount" label="折扣率" width="90">
+          <template #default="{ row }">{{ row.discount }}折</template>
         </el-table-column>
-        <el-table-column prop="monthPrice" label="月费(元)" width="100" />
-        <el-table-column prop="yearPrice" label="年费(元)" width="100" />
+        <el-table-column prop="monthlyFee" label="月费(元)" width="100" />
+        <el-table-column prop="yearlyFee" label="年费(元)" width="100" />
         <el-table-column prop="minSpend" label="累计消费门槛" min-width="120" />
         <el-table-column label="操作" width="140" fixed="right">
           <template #default="{ row }">
@@ -45,15 +45,15 @@
           <el-input-number v-model="form.level" :min="1" :max="10" />
         </el-form-item>
         <el-form-item label="名称" prop="name"><el-input v-model="form.name" /></el-form-item>
-        <el-form-item label="折扣率" prop="discountRate">
-          <el-input-number v-model="form.discountRate" :min="0.5" :max="1" :step="0.05" />
+        <el-form-item label="折扣率" prop="discount">
+          <el-input-number v-model="form.discount" :min="0.5" :max="1" :step="0.05" />
           <span style="margin-left:6px;font-size:0.78rem;color:#888">如0.95表示95折</span>
         </el-form-item>
-        <el-form-item label="月费(元)" prop="monthPrice">
-          <el-input-number v-model="form.monthPrice" :min="0" :step="10" />
+        <el-form-item label="月费(元)" prop="monthlyFee">
+          <el-input-number v-model="form.monthlyFee" :min="0" :step="10" />
         </el-form-item>
-        <el-form-item label="年费(元)" prop="yearPrice">
-          <el-input-number v-model="form.yearPrice" :min="0" :step="50" />
+        <el-form-item label="年费(元)" prop="yearlyFee">
+          <el-input-number v-model="form.yearlyFee" :min="0" :step="50" />
         </el-form-item>
         <el-form-item label="消费门槛" prop="minSpend">
           <el-input-number v-model="form.minSpend" :min="0" :step="100" />
@@ -79,11 +79,11 @@ const editing = ref(null)
 const submitting = ref(false)
 const formRef = ref()
 
-const form = ref({ level: 1, name: '', discountRate: 0.95, monthPrice: 0, yearPrice: 0, minSpend: 0 })
+const form = ref({ level: 1, name: '', discount: 0.95, monthlyFee: 0, yearlyFee: 0, minSpend: 0 })
 const rules = {
   level: [{ required: true, message: '请输入等级' }],
   name: [{ required: true, message: '请输入名称' }],
-  discountRate: [{ required: true, message: '请设置折扣率' }]
+  discount: [{ required: true, message: '请设置折扣率' }]
 }
 
 onMounted(() => load())
@@ -106,11 +106,11 @@ function openForm(row) {
   editing.value = row
   if (row) {
     form.value = {
-      level: row.level, name: row.name, discountRate: row.discountRate,
-      monthPrice: row.monthPrice, yearPrice: row.yearPrice, minSpend: row.minSpend
+      level: row.level, name: row.name, discount: row.discount,
+      monthlyFee: row.monthlyFee, yearlyFee: row.yearlyFee, minSpend: row.minSpend
     }
   } else {
-    form.value = { level: 1, name: '', discountRate: 0.95, monthPrice: 0, yearPrice: 0, minSpend: 0 }
+    form.value = { level: 1, name: '', discount: 0.95, monthlyFee: 0, yearlyFee: 0, minSpend: 0 }
   }
   formVisible.value = true
 }

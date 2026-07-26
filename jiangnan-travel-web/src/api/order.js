@@ -13,6 +13,9 @@ export const orderApi = {
   list(params) {
     return request.get('/order/list', { params })
   },
+  count() {
+    return request.get('/order/count')
+  },
   detail(id) {
     return request.get(`/order/${id}`)
   },

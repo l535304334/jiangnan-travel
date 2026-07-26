@@ -105,21 +105,21 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { UserFilled, ArrowRight } from '@element-plus/icons-vue'
 import { ElRow, ElCol } from 'element-plus'
-import { aiApi } from '@/api/ai'
 import { userApi } from '@/api/user'
 import { vipApi } from '@/api/vip'
+import { orderApi } from '@/api/order'
+import { couponApi } from '@/api/coupon'
 import CdnAvatar from '@/components/CdnAvatar.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
-const recommends = ref([])
 const savedAddresses = ref([])
 const myVipStatus = ref(0)
 const vipDiscountText = ref('')
 
-// 数据统计
-const orderCount = computed(() => recommends.value.reduce((sum, r) => sum + (r.orderCount || 0), 0))
-const couponCount = computed(() => 3)
+// 数据统计（真实数据：订单总数接口 + 我的优惠券 + 收藏地址）
+const orderCount = ref(0)
+const couponCount = ref(0)
 const addressCount = computed(() => savedAddresses.value.length)
 
 const statsList = computed(() => [
@@ -130,12 +130,14 @@ const statsList = computed(() => [
 
 onMounted(async () => {
   try {
-    const [r, a] = await Promise.all([
-      aiApi.recommendDest(),
-      userApi.getAddresses()
+    const [c, a, m] = await Promise.all([
+      orderApi.count(),
+      userApi.getAddresses(),
+      couponApi.myCoupons()
     ])
-    if (r.code === 200) recommends.value = r.data || []
+    if (c.code === 200) orderCount.value = c.data || 0
     if (a.code === 200) savedAddresses.value = a.data || []
+    if (m.code === 200) couponCount.value = (m.data || []).length
   } catch (e) {
     console.warn('首页数据加载失败:', e)
   }
@@ -152,14 +154,14 @@ onMounted(async () => {
   } catch { vipDiscountText.value = '无折扣' /* VIP 未开通或加载失败，降级显示 */ }
 })
 
-const goShortTrip = () => router.push('/order?tripType=0')
-const goLongTrip = () => router.push('/order?tripType=1')
+const goShortTrip = () => router.push('/order-create?tripType=0')
+const goLongTrip = () => router.push('/order-create?tripType=1')
 
 const quickActionsShort = [
-  { label: '市内出行', icon: '🚗', desc: '快速接驾，即时到达', action: goShortTrip, bg: 'linear-gradient(135deg, #2D8A6E, #4CAF50)' },
-  { label: '城际出行', icon: '🚙', desc: '跨城直达，舒适长途', action: goLongTrip, bg: 'linear-gradient(135deg, #E67E22, #F39C12)' },
-  { label: '收藏地址', icon: '⭐', desc: '常用地址管理', action: () => router.push('/address'), bg: 'linear-gradient(135deg, #2196F3, #64B5F6)' },
-  { label: '历史订单', icon: '📋', desc: '查看出行记录', action: () => router.push('/orders'), bg: 'linear-gradient(135deg, #9C27B0, #CE93D8)' }
+  { label: '市内出行', icon: '🚗', desc: '快速接驾，即时到达', action: goShortTrip, bg: 'var(--gradient-primary)' },
+  { label: '城际出行', icon: '🚙', desc: '跨城直达，舒适长途', action: goLongTrip, bg: 'var(--gradient-long-distance)' },
+  { label: '收藏地址', icon: '⭐', desc: '常用地址管理', action: () => router.push('/address'), bg: 'var(--gradient-blue)' },
+  { label: '历史订单', icon: '📋', desc: '查看出行记录', action: () => router.push('/orders'), bg: 'var(--gradient-violet)' }
 ]
 
 const goOrder = (dest) => {
@@ -211,7 +213,7 @@ const goOrder = (dest) => {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--gradient-brand-violet);
   border-radius: var(--radius-md);
   color: #fff;
   cursor: pointer;
@@ -222,7 +224,7 @@ const goOrder = (dest) => {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
-.bus-entry { background: linear-gradient(135deg, #1a73e8, #0d47a1); }
+.bus-entry { background: var(--gradient-deep-blue); }
 .campaign-entry-icon { font-size: 2rem; }
 .campaign-entry-text { flex: 1; }
 .campaign-entry-title { font-size: 1rem; font-weight: 600; }
@@ -233,7 +235,7 @@ const goOrder = (dest) => {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: linear-gradient(135deg, #ffd700, #f0c040);
+  background: var(--gradient-gold);
   border-radius: var(--radius-md);
   color: #7c6a00;
   cursor: pointer;

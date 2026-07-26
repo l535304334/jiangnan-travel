@@ -79,7 +79,7 @@ const isActive = computed(() => {
 
 const bannerBg = computed(() => {
   const imageUrl = campaign.value?.bannerUrl || getCampaignBannerUrl(campaign.value?.name || '')
-  return `url(${imageUrl}) center/cover, linear-gradient(135deg, #667eea, #764ba2)`
+  return `url(${imageUrl}) center/cover, var(--gradient-brand-violet)`
 })
 
 function formatDateRange(start, end) {

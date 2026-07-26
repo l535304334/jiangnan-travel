@@ -272,8 +272,8 @@ const fetchRoutePlan = async () => {
     }
   } catch (e) {
     console.warn('路线规划失败，使用直线估算', e)
-    // 直线fallback也做距离判断
-    tripType.value = 5000 > 50000 ? 1 : 0
+    // 无路线数据时无法判断距离，回退为市内短途
+    tripType.value = 0
   }
   routeLoading.value = false
 }

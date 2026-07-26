@@ -129,7 +129,7 @@ const goOrder = () => {
 .payment-page { padding: 16px; background: #f5f5f5; min-height: calc(100vh - 120px); }
 
 .amount-card {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--gradient-brand-violet);
   color: #fff; border-radius: 14px; padding: 24px; text-align: center;
   margin-bottom: 12px;
 }

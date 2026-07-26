@@ -69,7 +69,7 @@ const startWork = async () => {
   try {
     await driverApi.updateStatus(1)
     ElMessage.success('已开始接单')
-  } catch {}
+  } catch {} // 错误提示由 request.js 响应拦截器统一弹出
 }
 
 onMounted(loadHomeData)

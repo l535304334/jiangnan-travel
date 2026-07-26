@@ -61,11 +61,12 @@ const revenueChartRef = ref(null)
 let orderChart = null
 let revenueChart = null
 
+// 卡片配色对齐设计 token：info 蓝 / accent 金 / primary 墨绿 / warning 橙（见 style.css）
 const cards = computed(() => [
   { label: '总用户数', value: stats.totalUsers, icon: User, color: '#409EFF', bg: '#E8F4FD' },
-  { label: '今日订单', value: stats.todayOrders, icon: Tickets, color: '#52C41A', bg: '#EBF8E8' },
+  { label: '今日订单', value: stats.todayOrders, icon: Tickets, color: '#D9A23C', bg: '#FDF6E9' },
   { label: '在线司机', value: stats.onlineDrivers, icon: Van, color: '#2D8A6E', bg: '#E8F5EE' },
-  { label: '风控告警', value: stats.alertCount, icon: Warning, color: '#FAAD14', bg: '#FFF7E6' }
+  { label: '风控告警', value: stats.alertCount, icon: Warning, color: '#E6A23C', bg: '#FFF7E6' }
 ])
 
 async function renderCharts(data) {
@@ -97,7 +98,7 @@ async function renderCharts(data) {
 
   // 收入趋势柱状图
   if (revenueChartRef.value) {
-    if (!revenueChart) revenueChart = echarts.init(revenueChartRef.value)
+    if (!revenueChart) revenueChart = echartsLib.init(revenueChartRef.value)
     revenueChart.setOption({
       tooltip: { trigger: 'axis', valueFormatter: v => '¥' + v },
       grid: { left: 50, right: 20, top: 20, bottom: 30 },
@@ -107,8 +108,8 @@ async function renderCharts(data) {
         type: 'bar', data: revenues,
         itemStyle: {
           color: new echartsLib.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: '#409EFF' },
-            { offset: 1, color: '#52C41A' }
+            { offset: 0, color: '#4BAF8B' },
+            { offset: 1, color: '#1A6B52' }
           ]),
           borderRadius: [4, 4, 0, 0]
         }
