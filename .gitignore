@@ -62,3 +62,5 @@ tests/test-report-*.json
 .agents/
 jiangnan-travel-web/.agents/
 .claude/launch.json
+.codex/
+.claude/settings.local.json*

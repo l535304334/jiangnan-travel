@@ -42,9 +42,8 @@ async function testPublic() {
     ['GET', '/api/vip/benefits', 'VIP权益'],
     ['GET', '/api/bus-line/list', '班线列表'],
     ['GET', '/api/common/city-quote', '城市语录'],
-    ['GET', '/api/ai/hotspots', '需求热点'],
     ['POST', '/api/order/estimate', '预估价格', { startAddress: '南昌八一广场', startLat: 28.68, startLng: 115.89, endAddress: '南昌西站', endLat: 28.65, endLng: 115.92, distance: 12000, duration: 1800, carTypeId: 1 }],
-    ['POST', '/api/ai/chat', 'AI聊天', { message: '你好', sessionId: null }],
+    // /api/ai/* 已收紧为需登录（安全加固），移至用户端分组测试
   ];
   for (const ep of endpoints) {
     const [method, path, name, body] = ep;
@@ -96,6 +95,12 @@ async function testUser() {
 
   const notifications = await request('GET', '/api/notification/list', null, userToken);
   record('通知列表', '/api/notification/list', notifications.status, notifications.status === 200 && notifications.data?.code === 200);
+
+  const hotspots = await request('GET', '/api/ai/hotspots', null, userToken);
+  record('需求热点(需登录)', '/api/ai/hotspots', hotspots.status, hotspots.status === 200 && hotspots.data?.code === 200);
+
+  const aiChat = await request('POST', '/api/ai/chat', { message: '你好', sessionId: null }, userToken);
+  record('AI聊天(需登录)', '/api/ai/chat', aiChat.status, aiChat.status === 200 && aiChat.data?.code === 200);
 
   const unread = await request('GET', '/api/notification/unread-count', null, userToken);
   record('未读通知数', '/api/notification/unread-count', unread.status, unread.status === 200 && unread.data?.code === 200);
